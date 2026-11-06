@@ -31,7 +31,7 @@ Wolt leży w kołysce serwisowej w hali stacji. Kołyska jest martwa. Obraz jest
 2. Pulsujące światło prowadzi do **stanowiska testowego**: przeszklona komora z ramieniem i kablami, w niej bateria (prototyp Q-1, oznaczenie na obudowie wytarte, czytelne tylko „Q-1” i znak misji: stylizowana zorza).
 3. Komora jest zamknięta. Obok wisi ręczna dźwignia awaryjna. Pierwsza prosta zagadka: dźwignia ma za mało siły, więc trzeba podważyć ją rurą leżącą przy ścianie (pierwszy przedmiot w rękach).
 4. Wolt bierze baterię i wkłada ją w gniazdo w klatce piersiowej. **Kluczowy moment gry:** dźwięk się otwiera, obraz nabiera koloru (wciąż wyblakłego), ruch staje się płynny. Pojawia się HUD: energia, temperatura, wilgotność.
-5. Na ekranie stanowiska wyświetla się na sekundę fragment logu, zniekształcony: „…TEST 4411… STABILNY… NIE ODŁĄCZAĆ OD…” i obraz gaśnie. To pierwszy fragment fabuły.
+5. Na ekranie stanowiska wyświetla się na sekundę fragment logu, zniekształcony: „…TEST 4411… STABILNY… NIE ODŁĄCZAĆ OD…” i obraz gaśnie. To pierwszy fragment fabuły. Obok stanowiska leży wydruk **raportu z testu 4411** (pierwsza notatka w Archiwum, patrz [SWIAT.md, Notatki i archiwum](SWIAT.md#notatki-i-archiwum)).
 
 **Stan po scenie:** bateria daje energię, ale ma ograniczoną moc chwilową (np. 200 W). Wolt może pracować, lecz nie zasili całej stacji.
 
@@ -45,14 +45,14 @@ Wszystko jest bez prądu. Drzwi do warsztatu mają elektryczny zamek.
 
 **Czego uczy:** Wolt jako źródło prądu, porty, kabel, koszt energii, rozbiórka złomu, fabrykator.
 
-1. Przy drzwiach warsztatu jest port. Wolt ma w ciele **krótki kabel własny (3 m)**, którym może się wpiąć w port i oddać trochę energii. Drzwi się otwierają, a pasek Wolta spada. Lekcja: każda rzecz, którą zasilasz z siebie, to Twoje życie.
+1. Na drzwiach warsztatu wisi **kartka technika** („Zamek padł znowu. Jak nie ma prądu, wepnij się w port po lewej…”). To pierwsza notatka-wskazówka: zamiast okienka samouczka gracz dostaje podpowiedź od człowieka, który tu pracował. Przy drzwiach jest port. Wolt ma w ciele **krótki kabel własny (3 m)**, którym może się wpiąć w port i oddać trochę energii. Drzwi się otwierają, a pasek Wolta spada. Lekcja: każda rzecz, którą zasilasz z siebie, to Twoje życie.
 2. W warsztacie stoi **fabrykator**, ale potrzebuje więcej mocy niż Wolt może dać. Prowadzi to do celu: uruchomić turbinę na maszcie.
-3. Turbina stoi, bo **łożysko się zatarło** i łopata jest pęknięta. Pierwsza naprawa (samouczek maintenance): rozebrać złom na podwórzu (stara stacja meteo, przewrócony płot, skrzynki pomiarowe), zdobyć żelazo i smar, wymienić łożysko na szczycie masztu (wspinaczka po drabince, wiatr kołysze kamerą).
+3. Ta sama kartka wspominała łożysko i smar „w magazynie, druga półka”. Turbina stoi, bo **łożysko się zatarło** i łopata jest pęknięta. Pierwsza naprawa (samouczek maintenance): rozebrać złom na podwórzu (stara stacja meteo, przewrócony płot, skrzynki pomiarowe), zdobyć żelazo i smar, wymienić łożysko na szczycie masztu (wspinaczka po drabince, wiatr kołysze kamerą).
 4. Turbina rusza, ale prąd z masztu trzeba doprowadzić do maszynowni. Kabel z nawijaka: pierwsze metry robi się w fabrykatorze… którego jeszcze nie da się zasilić. Rozwiązanie: w magazynie jest **szpula starego kabla, 12 m**, za krótka do maszynowni prostą drogą (ok. 15 m), ale wystarcza, jeśli poprowadzić kabel przez okno dyżurki. Pierwsza zagadka kablowa z owijaniem o przeszkody.
 5. Maszynownia ożywa, światła w stacji zapalają się po kolei z charakterystycznym brzęczeniem. Fabrykator działa. Od teraz da się robić kabel (5 m = 1 miedź + 1 plastik, jak w poziomie „Rozruch”).
 6. Stacja staje się **pierwszą bazą**: Wolt ładuje się w kołysce, a fabrykator działa tylko gdy wieje (akumulatory stacji są zdegradowane i trzymają mało).
 
-**Fabuła w tej scenie:** w dyżurce jest tablica z kartkami (rysunki dzieci? zdjęcia zespołu?), kubek, kurtka na krześle. Ludzie stąd wyszli w pośpiechu. Na mapie ściennej ktoś zakreślił markerem siedem punktów połączonych linią (Sieć Siedmiu Stacji) i jeden punkt w górach, przekreślony.
+**Fabuła w tej scenie:** w dyżurce jest tablica z kartkami (rysunki dzieci? zdjęcia zespołu?), kubek, kurtka na krześle. Ludzie stąd wyszli w pośpiechu. W szufladzie leży **notatka służbowa** kierowniczki stacji, która odmawia przeniesienia Q-1 do laboratorium (pierwszy ślad wątku „Spór o Q-2”). Na mapie ściennej ktoś zakreślił markerem siedem punktów połączonych linią (Sieć Siedmiu Stacji) i jeden punkt w górach, przekreślony.
 
 ## Scena 3. Pierwsza noc (temperatura, wilgoć, mikroboty, ok. 9 min)
 
@@ -100,7 +100,7 @@ W dolinie (obszar startowy):
 
 - **Rozdzielnia polowa** z małą baterią słoneczną (600 W) za ścianą kontenerów. To jest obecny poziom testowy „Rozruch”: pierwsze ładowanie pojazdu z obcego źródła i pierwszy dłuższy kabel (20 m). W docelowej grze to pierwsza wyprawa poza stację.
 - **Wiatrak** na wzgórzu: stary, drewniany, z prądnicą dobudowaną przez misję. Druga baza do adaptacji, ale jego prądnica ma inny standard złącza. Pierwsza **analiza protokołu**: Wolt musi spędzić noc w stacji, „ucząc się” złącza, zanim zbuduje przejściówkę.
-- **Przystanek** z wiatą, gdzie leży czyjś plecak: konserwy, latarka, zeszyt z rysunkami. Rysunki pokazują ludzi schodzących pod ziemię i robota bardzo podobnego do Wolta.
+- **Przystanek** z wiatą, gdzie leży czyjś plecak: konserwy, latarka, zeszyt z rysunkami. Rysunki pokazują ludzi schodzących pod ziemię i robota bardzo podobnego do Wolta. Podpisy są odręczne i na razie nieczytelne. Odszumią się dopiero ze słownikiem (wątek „Dzieci ze Szkoły”).
 
 ## Scena 6. Pierwszy człowiek (ok. dzień 6–10 gry)
 
@@ -136,6 +136,7 @@ Hibernacja to krótka sekwencja: ekran gaśnie, puls baterii zwalnia, za oknem s
 - Żaglowóz etap 1: bojerek na płozach z żaglem z balonu i zasobnikiem 4 sloty.
 - Wolt: bateria z Echem, kabel własny 3 m, nawijak, lampa, grzanie.
 - Pierwsze słowa w słowniku i pierwszy kontakt z ludźmi.
+- Kilka notatek w Archiwum: raport z testu 4411, kartka technika, notatka służbowa, zeszyt z rysunkami.
 - Wiedza: kable się zużywają, noc jest droga, wilgoć szkodzi, mikroboty ciągną do prądu.
 
 ## Jak to się ma do obecnego prototypu

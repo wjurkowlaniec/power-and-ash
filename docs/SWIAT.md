@@ -10,17 +10,18 @@ Oznaczenia: **[ustalone]** to decyzja Wojtka, **[propozycja]** to mój pomysł d
 2. [Ton i styl](#ton-i-styl)
 3. [Historia świata](#historia-świata)
 4. [Bateria Q-1](#bateria-q-1)
-5. [Wolt](#wolt)
-6. [Rozwój: obliczenia w tle](#rozwój-obliczenia-w-tle)
-7. [Żaglowóz](#żaglowóz)
-8. [Ludzie i bunkry](#ludzie-i-bunkry)
-9. [Czas: doba, pory roku, hibernacja](#czas-doba-pory-roku-hibernacja)
-10. [Bazy](#bazy)
-11. [Zagrożenia](#zagrożenia)
-12. [Mapa świata i obszary](#mapa-świata-i-obszary)
-13. [Łuk fabularny](#łuk-fabularny)
-14. [Gra po fabule](#gra-po-fabule)
-15. [Otwarte pytania](#otwarte-pytania)
+5. [Notatki i archiwum](#notatki-i-archiwum)
+6. [Wolt](#wolt)
+7. [Rozwój: obliczenia w tle](#rozwój-obliczenia-w-tle)
+8. [Żaglowóz](#żaglowóz)
+9. [Ludzie i bunkry](#ludzie-i-bunkry)
+10. [Czas: doba, pory roku, hibernacja](#czas-doba-pory-roku-hibernacja)
+11. [Bazy](#bazy)
+12. [Zagrożenia](#zagrożenia)
+13. [Mapa świata i obszary](#mapa-świata-i-obszary)
+14. [Łuk fabularny](#łuk-fabularny)
+15. [Gra po fabule](#gra-po-fabule)
+16. [Otwarte pytania](#otwarte-pytania)
 
 ## W jednym akapicie
 
@@ -38,7 +39,7 @@ Wolt to automat badawczy z wyzerowaną pamięcią. Budzi się w stacji pomiarowe
 
 ## Historia świata
 
-**[propozycja]** Poniższa oś czasu jest szkieletem. Gracz poznaje ją we fragmentach, w dowolnej kolejności, i nigdy nie dostaje jej podanej wprost.
+**[propozycja]** Poniższa oś czasu jest szkieletem. Gracz poznaje ją we fragmentach z notatek (patrz [Notatki i archiwum](#notatki-i-archiwum)), w dowolnej kolejności, i nigdy nie dostaje jej podanej wprost.
 
 | Okres | Co się stało |
 |---|---|
@@ -68,6 +69,62 @@ Umiejętności baterii (kolejność orientacyjna):
 | **Rezonans** | ładuje urządzenia w pobliżu bez kabla, na krótki dystans | propozycja |
 | **Pamięć miejsc** | punkty, w których bateria może odbudować ciało po śmierci (zamiast w bazie) | propozycja |
 | **Dobieranie** | bateria powoli sama się ładuje z otoczenia, ale przy tym coś „wysysa” (rośliny więdną, mikroboty uciekają). Echo katastrofy Q-2. | propozycja |
+
+## Notatki i archiwum
+
+**[ustalone 2026-11-06]** Bateria zostaje kwantowa. Historię opowiadają **znajdowane notatki**, w klimacie archiwum z Control: urzędowe raporty z testów, notatki służbowe, prywatne zapiski. Różne historie różnych ludzi, a w notatkach są też **wskazówki, jak coś zrobić**.
+
+Dzięki temu bateria nie jest „magią”, tylko projektem badawczym, który miał swoje procedury, spory, błędy i ludzi. Gracz składa obraz z dokumentów, a nie z narratora.
+
+### Rodzaje notatek **[propozycja]**
+
+| Rodzaj | Wygląd | Co niesie |
+|---|---|---|
+| **Raport z testu** | druk z nagłówkiem Programu Zorza, numer testu, tabelki, fragmenty zaczernione | twarde fakty o Q-1: pomiary, anomalie, procedury bezpieczeństwa |
+| **Notatka służbowa** | krótki memo: od kogo, do kogo, temat, podpis | decyzje i spory w programie (kto naciskał na Q-2, kto był przeciw) |
+| **Instrukcja i schemat** | kartka przypięta do szafy, schemat odręczny, naklejka na urządzeniu | **wskazówki do rozgrywki**: jak ominąć zamek, które złącze z którym, kolejność uruchamiania, przepis do fabrykatora |
+| **Prywatny zapisek** | kartka w kieszeni kurtki, zeszyt, list, rysunek dziecka | ludzie z misji i z bunkrów: strach, nadzieja, codzienność |
+| **Dziennik automatu** | plik w pamięci innego robota, czytany po wpięciu kabla | zapisy maszyn misji, czasem pamięć zdarzeń, których nikt z ludzi nie widział |
+| **Nagranie** | taśma w dyktafonie, poczta głosowa w centrali bunkra | głosy ludzi; przed nauką słownika to szum, po nauce mowa |
+| **Ślad bunkrowy** | napisy kredą, tablice ogłoszeń w bunkrach, listy obecności | życie ludzi po katastrofie, nowe pokolenia po hibernacji |
+
+### Zasady **[propozycja]**
+
+- **Notatki są przedmiotami w świecie**, nie ikonkami do zbierania: kartka na biurku, podkładka na drzwiach, naklejka na szafie. Wolt podnosi i czyta, a kopia trafia do **Archiwum** w jego pamięci.
+- **Archiwum** porządkuje notatki według ludzi, miejsc i wątków. Zebrane notatki jednego wątku układają się w historię.
+- **Pismo vs mowa:** Wolt od początku czyta dokumenty misji (techniczny język, który zna). Odręczne pismo ludzi z bunkrów i ich gwara są na początku nieczytelne i odszumiają się razem ze słownikiem. Ta sama kartka czytana rok później mówi więcej.
+- **Zaczernienia:** część raportów ma zaczernione fragmenty. Pełne wersje odblokowuje analiza baterii (obliczenia w tle) albo znalezienie innej kopii tego samego dokumentu w innej bazie.
+- **Wskazówki zamiast samouczka:** dużo podpowiedzi rozgrywkowych przychodzi z notatek technika, a nie z okienek UI. Notatka z instrukcją liczy się też jako obserwacja dla systemu uczącego się, więc przyspiesza analizę danego urządzenia.
+- **Bez przymusu:** fabułę da się przejść, nie czytając wszystkiego. Notatki nagradzają ciekawość: skrótem, przepisem, zrozumieniem.
+
+### Wątki historii **[propozycja]**
+
+| Wątek | Kto | O czym | Gdzie notatki |
+|---|---|---|---|
+| **Zespół Olszanki** | kierowniczka stacji, technik, meteorolożka | codzienność stacji polowej, opieka nad Woltem, ostatnie dni przed ewakuacją | Stacja Olszanka, dolina |
+| **Test 4411** | zespół laboratorium | jak Q-1 zaczęła się stabilizować i co było w niej dziwnego | Stacja Olszanka, Cerkwiska |
+| **Spór o Q-2** | dyrekcja Programu Zorza, naukowcy przeciw | kto i dlaczego naciskał na skalowanie | Las Słupów, wieża radiolinii, laboratorium |
+| **Noc Popiołu** | ludzie w różnych miejscach tej samej nocy | ta sama noc z wielu stron, każda notatka dodaje szczegół | wszędzie, w różnych bazach |
+| **Dzieci ze Szkoły** | dziewczynka z zeszytu z rysunkami, później dorosła | robot z bajki, który kiedyś wróci; jej życie między hibernacjami Wolta | Zatopiona Wieś, przez wiele lat gry |
+| **Strażnicy** | ludzie z Klasztoru | dlaczego pilnują laboratorium i czego się boją | Cerkwiska |
+
+### Przykłady
+
+> **PROGRAM ZORZA · RAPORT Z TESTU 4411**
+> Prototyp Q-1, stanowisko polowe Olszanka.
+> Od 03:12 ogniwo oddaje więcej energii, niż przyjęło w cyklu ładowania. Nadwyżka 0,4%. Powtórzone trzykrotnie. ████████ nie potwierdza błędu pomiaru.
+> Zalecenie: NIE ODŁĄCZAĆ OD AUTOMATU SERWISOWEGO. Ogniwo stabilizuje się wyłącznie pod obciążeniem.
+
+> **Kartka na drzwiach warsztatu (pismo techniczne):**
+> Zamek padł znowu. Jak nie ma prądu, wepnij się w port po lewej, wystarczy chwila. I NIE ZOSTAWIAJ TURBINY Z TYM ŁOŻYSKIEM, smar jest w magazynie, druga półka. — T.
+
+> **Notatka służbowa**
+> Do: dyrekcja Programu. Od: kierowniczka stacji Olszanka.
+> Temat: przeniesienie Q-1 do laboratorium.
+> Odmawiam. Q-1 jest stabilne tylko u nas, z naszym automatem. Jeśli ktoś chce budować Q-2 na danych z czterech miesięcy, niech podpisze to sam.
+
+> **Zeszyt z rysunkami (pismo dziecka, początkowo nieczytelne):**
+> Mama mówi, że robot ze stacji śpi i że jak się obudzi, to zapali światło w szkole.
 
 ## Wolt
 
@@ -340,6 +397,7 @@ Decyzja na końcu nie zamyka gry, tylko zmienia świat dalej.
 - Czy Popiół jako skutek katastrofy Q-2 jest OK? To mocno ustawia ton i stosunek ludzi do baterii.
 - Kto budzi Wolta i dlaczego teraz.
 - Ile umiejętności baterii i w jakiej kolejności.
+- Ile notatek na obszar i jak bardzo mają prowadzić za rękę.
 - Kolejne obszary poza czterema ustalonymi.
 - Rytm psucia się żaglowozu i sprzętu.
 - Walka: tylko odstraszanie czy coś więcej.
