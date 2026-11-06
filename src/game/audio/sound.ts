@@ -177,6 +177,30 @@ export class GameSound {
     o.start(t); o.stop(t + dur + 0.05);
   }
 
+  /** The wheel bearing: a dry, short squeak, a little different each turn. Louder on reserve (no grease, no power). */
+  wheelCreak(dry = 1) {
+    const ctx = this.ctx; if (!ctx) return;
+    const t = ctx.currentTime, dur = 0.09 + Math.random() * 0.1;
+    const o = ctx.createOscillator(); o.type = 'triangle';
+    const f = 1500 + Math.random() * 900;
+    o.frequency.setValueAtTime(f, t);
+    o.frequency.linearRampToValueAtTime(f * (0.82 + Math.random() * 0.1), t + dur);
+    const bp = ctx.createBiquadFilter(); bp.type = 'bandpass'; bp.frequency.value = f; bp.Q.value = 6;
+    const g = ctx.createGain();
+    g.gain.setValueAtTime(0.0001, t);
+    g.gain.exponentialRampToValueAtTime(0.018 * dry, t + 0.015);
+    g.gain.exponentialRampToValueAtTime(0.0001, t + dur);
+    o.connect(bp); bp.connect(g); g.connect(this.world); g.connect(this.reverb);
+    o.start(t); o.stop(t + dur + 0.05);
+    // and the tyre on grit
+    const n = ctx.createBufferSource(); n.buffer = this.noise; n.playbackRate.value = 0.9;
+    const lp = ctx.createBiquadFilter(); lp.type = 'bandpass'; lp.frequency.value = 900; lp.Q.value = 0.7;
+    const ng = ctx.createGain();
+    ng.gain.setValueAtTime(0.03, t); ng.gain.exponentialRampToValueAtTime(0.0001, t + 0.18);
+    n.connect(lp); lp.connect(ng); ng.connect(this.world);
+    n.start(t, Math.random() * 2); n.stop(t + 0.2);
+  }
+
   /** A heavy step on concrete. */
   step(weak: boolean) {
     const ctx = this.ctx; if (!ctx) return;

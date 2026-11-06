@@ -103,7 +103,7 @@ export class HallScene implements Scene {
     const s = c.sound;
     switch (e) {
       case 'stand': s.servo(1, 0.8); s.staticBurst(0.25, 0.05); break;
-      case 'step': if (Math.random() < 0.4) s.step(true); if (!this.hall.powered && Math.random() < 0.5) s.servo(0.6, 0.9 + Math.random() * 0.2); break;
+      case 'step': s.wheelCreak(this.hall.powered ? 0.5 : 1); if (!this.hall.powered && Math.random() < 0.3) s.servo(0.5, 0.9 + Math.random() * 0.2); break;
       case 'strain': s.servo(1.2, 0.6); break;
       case 'pickup': s.clank(1.6, 0.06); break;
       case 'pry': s.clank(0.8, 0.16); break;
