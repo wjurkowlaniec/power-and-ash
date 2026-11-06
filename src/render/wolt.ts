@@ -131,7 +131,12 @@ export interface WoltFrame {
   energy: number;
   /** Target lamp strength 0..1 (0 = off). */
   lamp: number;
+  /** World point the capsule should look at while standing (the cursor), or null. */
+  lookAt: THREE.Vector3 | null;
 }
+
+/** How far the capsule swivels on its fork, each way. */
+export const LOOK_MAX = 0.75;
 
 const POSES: Record<ArmPose, [number, number, number, number]> = {
   //          shoulder pitch, spread, elbow, grip  (the arm sits on top of the capsule)
@@ -148,6 +153,7 @@ export class WoltAnimator {
   private wheelA = 0;
   private arm = [...POSES.rest];
   private guideYaw = 0;
+  private look = 0;
   private tmp = new THREE.Vector3();
 
   constructor(private m: WoltMono) {}
@@ -182,6 +188,19 @@ export class WoltAnimator {
     this.wheelA += (f.speed / WHEEL_R) * dt + this.pitchV * dt * 0.8 + (f.strain ? dt * 9 : 0);
     m.wheel.rotation.x = this.wheelA;
 
+    // ---- the capsule swivels on the fork towards the cursor; the wheel stays where it rolled
+    let lk = 0;
+    if (f.lookAt && f.speed < 0.3) {
+      const p = m.group.position;
+      lk = Math.atan2(f.lookAt.x - p.x, f.lookAt.z - p.z) - m.group.rotation.y;
+      lk = Math.atan2(Math.sin(lk), Math.cos(lk));
+      // behind him: don't twist round, just glance a little to that side
+      if (Math.abs(lk) > LOOK_MAX * 1.6) lk = Math.sign(lk) * LOOK_MAX * 0.5;
+      lk = THREE.MathUtils.clamp(lk, -LOOK_MAX, LOOK_MAX);
+    }
+    this.look += (lk - this.look) * Math.min(1, dt * 5);
+    m.body.rotation.y = this.look;
+
     // ---- reel and cable guide
     m.reel.rotation.x += f.reelSpin * dt;
     let gy = 0;
@@ -189,7 +208,7 @@ export class WoltAnimator {
       const exit = m.guide.getWorldPosition(this.tmp);
       const dx = f.cableTo.x - exit.x, dz = f.cableTo.z - exit.z;
       // the guide points backwards (-z) at 0; aim it at the cable, relative to the body
-      gy = Math.atan2(-dx, -dz) - m.group.rotation.y;
+      gy = Math.atan2(-dx, -dz) - m.group.rotation.y - this.look;
       gy = Math.atan2(Math.sin(gy), Math.cos(gy));
       gy = THREE.MathUtils.clamp(gy, -2.3, 2.3);
     }

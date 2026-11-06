@@ -130,6 +130,30 @@ export class Sound {
   }
 
   step(run: boolean) { this.burst(run ? 900 : 700, 0.7, run ? 0.32 : 0.24, 0.09, 'lowpass', 0.8 + Math.random() * 0.4, 0.02); }
+  /**
+   * Wolt's wheel: a dry bearing squeak, a short glide up and back with a little grit.
+   * `load` 0..1 makes it lower and longer (towing, a tense cable).
+   */
+  squeak(fast: boolean, load = 0) {
+    const ctx = this.ctx; if (!ctx) return;
+    const t = ctx.currentTime;
+    const f0 = (fast ? 2300 : 1900) * (1 - load * 0.3) * (0.9 + Math.random() * 0.2);
+    const dur = (0.07 + Math.random() * 0.08) * (1 + load);
+    const o = ctx.createOscillator(); o.type = 'triangle';
+    o.frequency.setValueAtTime(f0, t);
+    o.frequency.linearRampToValueAtTime(f0 * (1.12 + Math.random() * 0.1), t + dur * 0.4);
+    o.frequency.linearRampToValueAtTime(f0 * 0.95, t + dur);
+    // a little vibrato: metal on metal does not hold a clean pitch
+    const lfo = ctx.createOscillator(); lfo.frequency.value = 45 + Math.random() * 30;
+    const lg = ctx.createGain(); lg.gain.value = f0 * 0.025; lfo.connect(lg); lg.connect(o.frequency);
+    const bp = ctx.createBiquadFilter(); bp.type = 'bandpass'; bp.frequency.value = f0; bp.Q.value = 3;
+    const g = ctx.createGain(); g.gain.setValueAtTime(0.0001, t);
+    g.gain.exponentialRampToValueAtTime(0.035 + load * 0.02, t + 0.015); g.gain.exponentialRampToValueAtTime(0.0001, t + dur);
+    o.connect(bp); bp.connect(g); g.connect(this.master);
+    const w = ctx.createGain(); w.gain.value = 0.15; g.connect(w); w.connect(this.reverb);
+    o.start(t); lfo.start(t); o.stop(t + dur + 0.05); lfo.stop(t + dur + 0.05);
+    this.burst(600, 0.8, 0.05, 0.06, 'lowpass', 0.5, 0); // the tyre on the ash
+  }
   cableTick() { this.burst(3200, 4, 0.05, 0.025, 'bandpass', 1, 0); }
   grab() { this.tone(180, 0.18, 0.15, 'triangle', 0.6); this.burst(2500, 2, 0.12, 0.06, 'bandpass'); }
   plug() { this.tone(90, 0.35, 0.35, 'sine', 0.5); this.burst(1800, 3, 0.25, 0.08, 'bandpass', 1, 0.3); }
