@@ -95,7 +95,7 @@ export function obstacleMesh(o: Obstacle): THREE.Object3D {
   return g;
 }
 
-export interface YachtModel { group: THREE.Group; turbines: THREE.Object3D[]; port: THREE.Mesh }
+export interface YachtModel { group: THREE.Group; turbines: THREE.Object3D[]; port: THREE.Mesh; battery: THREE.Mesh; fabLight: THREE.Mesh; wheels: THREE.Mesh[]; sail: THREE.Mesh }
 
 export function yachtModel(r: { x: number; y: number; w: number; h: number }, portLocal: THREE.Vector3): YachtModel {
   const g = new THREE.Group();
@@ -105,14 +105,26 @@ export function yachtModel(r: { x: number; y: number; w: number; h: number }, po
   g.add(box(r.w, 0.2, r.h - 0.1, paint, 0, 0.7, 0));
   g.add(box(r.w - 0.5, 0.08, r.h - 0.7, deck, 0, 1.6, 0));
   const dark = mat(0x222426, { r: 0.7 });
+  const wheels: THREE.Mesh[] = [];
   for (const [x, z] of [[-4, -r.h / 2], [3.6, -r.h / 2], [-4, r.h / 2], [3.6, r.h / 2]]) {
     const w = mesh(new THREE.CylinderGeometry(0.85, 0.85, 0.5, 18), dark, x, 0.85, z);
-    w.rotation.x = Math.PI / 2; g.add(w);
+    w.rotation.x = Math.PI / 2; g.add(w); wheels.push(w);
+    g.add(box(0.5, 0.12, 0.12, mat(0x555555), x, 0.85, z + Math.sign(z) * 0.27));
   }
   const pale = mat(PAL.pale), steel = mat(PAL.steel, { m: 0.5, r: 0.6 });
-  g.add(box(2, 1.5, 2, pale, -4.2, 2.4, -1.3));
-  g.add(box(1, 1.2, 1.8, mat(0x3c6f86, { r: 0.5, e: 0x2b5c72, ei: 0.25 }), -2.5, 2.2, -1.3));
-  g.add(box(2.8, 1, 1.8, mat(0xbab4a8), -3.8, 2.1, 1.4));
+  // recycler (unused in level 1)
+  g.add(box(1.8, 1.4, 1.8, pale, -4.3, 2.35, 1.3));
+  // battery bank: glows with the charge
+  const battery = box(1.6, 1.1, 1.0, new THREE.MeshStandardMaterial({ color: 0x2c4f60, roughness: 0.5, emissive: 0x6fc4e6, emissiveIntensity: 0 }), -4.1, 2.15, -1.6);
+  g.add(battery);
+  // fabricator at the north rail, next to its use point
+  g.add(box(2.2, 1.0, 1.3, mat(0xbab4a8), -1.5, 2.1, -2.1));
+  const fabLight = box(0.7, 0.18, 0.5, new THREE.MeshStandardMaterial({ color: 0x222222, emissive: PAL.warn, emissiveIntensity: 0.3 }), -1.5, 2.7, -2.1);
+  g.add(fabLight);
+  // helm at the stern
+  g.add(mesh(new THREE.CylinderGeometry(0.06, 0.06, 1.1, 6), steel, -5.3, 2.15, 0));
+  const wheel = mesh(new THREE.TorusGeometry(0.42, 0.05, 6, 16), mat(0x5a4a3a), -5.3, 2.75, 0);
+  wheel.rotation.y = Math.PI / 2; g.add(wheel);
   for (let i = 0; i < 3; i++) g.add(box(0.85, 0.85, 0.85, mat(0x5a4a3a), -1.2 + i * 0.95, 2.05, 2.0));
   // mast + sail
   g.add(mesh(new THREE.CylinderGeometry(0.1, 0.14, 10, 8), steel, 1.2, 6.6, 0));
@@ -132,7 +144,8 @@ export function yachtModel(r: { x: number; y: number; w: number; h: number }, po
   }
   const port = box(0.42, 0.42, 0.42, mat(0x1d1d1d, { e: PAL.warn, ei: 1.2 }), portLocal.x, portLocal.y, portLocal.z);
   g.add(port);
-  return { group: g, turbines, port };
+  port.material = (port.material as THREE.Material).clone();
+  return { group: g, turbines, port, battery, fabLight, wheels, sail };
 }
 
 export interface StationModel {

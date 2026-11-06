@@ -3,7 +3,13 @@ import { V2 } from './vec';
 export type ObstacleKind = 'rock' | 'scrap' | 'crate' | 'container' | 'yacht' | 'station' | 'pylon' | 'barrel';
 
 /** Axis-aligned block in tile units: covers [x, x+w) × [y, y+h). */
-export interface Obstacle { kind: ObstacleKind; x: number; y: number; w: number; h: number }
+export interface Obstacle {
+  kind: ObstacleKind; x: number; y: number; w: number; h: number;
+  /** Salvageable piles carry loot; the pile disappears after salvage. */
+  loot?: Partial<Record<Material, number>>;
+}
+
+export type Material = 'iron' | 'copper' | 'plastic' | 'glass';
 
 /** Offset of cable corner points away from the obstacle, so a taut cable never touches the wall. */
 export const CORNER_EPS = 0.08;
@@ -13,14 +19,34 @@ export const CORNER_EPS = 0.08;
  */
 export class World {
   readonly blocked: Uint8Array;
-  readonly corners: V2[] = [];
+  corners: V2[] = [];
+  readonly obstacles: Obstacle[];
 
-  constructor(readonly width: number, readonly height: number, readonly obstacles: Obstacle[]) {
+  constructor(readonly width: number, readonly height: number, obstacles: Obstacle[]) {
+    this.obstacles = [...obstacles];
     this.blocked = new Uint8Array(width * height);
-    for (const o of obstacles)
+    this.rebuild();
+  }
+
+  private rebuild() {
+    this.blocked.fill(0);
+    for (const o of this.obstacles)
       for (let j = o.y; j < o.y + o.h; j++)
         for (let i = o.x; i < o.x + o.w; i++) this.setBlocked(i, j);
+    this.corners = [];
     this.computeCorners();
+  }
+
+  remove(o: Obstacle) {
+    const i = this.obstacles.indexOf(o);
+    if (i >= 0) { this.obstacles.splice(i, 1); this.rebuild(); }
+  }
+
+  /** Distance from point p to the obstacle rectangle (0 inside). */
+  static distToRect(p: V2, o: Obstacle): number {
+    const dx = Math.max(o.x - p.x, 0, p.x - (o.x + o.w));
+    const dy = Math.max(o.y - p.y, 0, p.y - (o.y + o.h));
+    return Math.hypot(dx, dy);
   }
 
   private setBlocked(i: number, j: number) {
