@@ -208,6 +208,7 @@ function showEnd() {
 // ---------- loop
 let last = performance.now();
 let stepT = 0;
+let prevFacing = 0;
 let lastLen = 0;
 function loop(now: number) {
   const dt = Math.min(0.05, (now - last) / 1000);
@@ -229,7 +230,15 @@ function loop(now: number) {
 
     // sound hooks
     const moved = dist(prev, game.pos) > 1e-4;
-    if (moved) { stepT -= dt; if (stepT <= 0) { sound.step(run); stepT = run ? 0.22 : 0.32; } } else stepT = 0;
+    // the wheel squeaks about once per half turn (≈1 m), not like a clock; more on sharp turns
+    const rolled = dist(prev, game.pos);
+    let turn = game.facing - prevFacing; turn = Math.atan2(Math.sin(turn), Math.cos(turn)); prevFacing = game.facing;
+    const load = game.tow ? 0.6 : game.cableState() === 'limit' ? 1 : game.cableState() === 'tense' ? 0.4 : 0;
+    if (moved) {
+      stepT -= rolled + Math.abs(turn) * 0.6;
+      if (stepT <= 0) { if (Math.random() < 0.75) sound.squeak(run, load); stepT = 0.8 + Math.random() * 0.6; }
+    } else if (game.strain && Math.random() < dt * 3) sound.squeak(false, 1); // spinning in place
+
     const l = game.heldLength();
     if (game.held && Math.floor(l * 2) !== Math.floor(lastLen * 2)) sound.cableTick();
     lastLen = l;

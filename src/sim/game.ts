@@ -430,11 +430,7 @@ export class Game {
       if (len(move) > 0.01) this.order = null; // keys override the mouse
       else if (this.order) move = this.followOrder(dt, inp) ?? { x: 0, y: 0 };
       this.movePlayer(dt, { ...inp, move });
-      // walking: face where you go; standing still: turn towards the cursor (the lamp follows it)
-      if (!this.moving && !this.order && inp.aim) {
-        const d = sub(inp.aim, this.pos);
-        if (len(d) > 0.6) this.facing = Math.atan2(d.y, d.x);
-      }
+      // a monocycle faces only where it rolls; standing still, the view swivels the capsule to the cursor
       if (inp.interact) this.interact();
       this.updateSalvage(dt, inp);
       this.updateCraft(dt);
