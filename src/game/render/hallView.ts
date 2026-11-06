@@ -1,5 +1,6 @@
 import * as THREE from 'three';
-import { mat, mesh, box, woltModel, WoltModel } from '../../render/models';
+import { mat, mesh, box } from '../../render/models';
+import { bodyModel, BodyModel, WHEEL_R } from './body';
 import { Models, fit } from '../../render/assets';
 import { V2 } from '../../sim/vec';
 import { Hall, HALL_W, HALL_H, layout, PRY_TIME, INSERT_TIME, WAKE_TIME } from '../sim/hall';
@@ -19,10 +20,12 @@ export class HallView {
   readonly scene = new THREE.Scene();
   readonly camera = new THREE.OrthographicCamera(-1, 1, 1, -1, 0.1, 200);
   readonly post: Post;
-  private wolt: WoltModel;
-  private woltChest: THREE.Mesh;
+  private wolt: BodyModel;
+  private tetherMesh: THREE.Mesh | null = null;
+  private tetherKey = '';
+  private droppedTether = false;
+  private lean = 0;
   private camTarget = new THREE.Vector3();
-  private walkPhase = 0;
   private battery: THREE.Group;
   private batteryMat: THREE.MeshStandardMaterial;
   private qLight: THREE.PointLight;
@@ -79,11 +82,7 @@ export class HallView {
       sheet.rotation.y = n.x * 1.7;
       s.add(sheet);
     }
-    this.wolt = woltModel();
-    this.wolt.spot.intensity = 0;
-    (this.wolt.head.material as THREE.MeshStandardMaterial).emissiveIntensity = 0.15;
-    this.woltChest = mesh(new THREE.BoxGeometry(0.22, 0.22, 0.05), new THREE.MeshStandardMaterial({ color: 0x0c140f, emissive: Q_GREEN, emissiveIntensity: 0 }), 0, 0.62, 0.27, false);
-    this.wolt.group.add(this.woltChest);
+    this.wolt = bodyModel(Q_GREEN);
     s.add(this.wolt.group);
 
     this.dust = this.buildDust(); s.add(this.dust);
@@ -340,6 +339,44 @@ export class HallView {
 
   // ---------- per frame
 
+  /** The diagnostic cable: a dark tube along the cable's bends, with a faint green glow on each pulse. */
+  private updateTether(pulse: number) {
+    const h = this.hall;
+    const pts = h.tether ? h.tether.points() : null;
+    if (!pts) {
+      // after the battery goes in, the cable drops where it lay
+      if (this.tetherMesh && !this.droppedTether) {
+        this.droppedTether = true;
+        (this.tetherMesh.material as THREE.MeshStandardMaterial).emissiveIntensity = 0;
+      }
+      return;
+    }
+    const key = pts.map(p => p.x.toFixed(2) + ',' + p.y.toFixed(2)).join(';');
+    if (key !== this.tetherKey) {
+      this.tetherKey = key;
+      const v: THREE.Vector3[] = [];
+      for (let i = 0; i < pts.length; i++) {
+        const y = i === 0 ? 0.3 : i === pts.length - 1 ? WHEEL_R + 0.5 : 0.04;
+        v.push(new THREE.Vector3(pts[i].x, y, pts[i].y));
+        if (i < pts.length - 1) {
+          const a = pts[i], b = pts[i + 1];
+          // lies on the floor between bends
+          v.push(new THREE.Vector3(a.x + (b.x - a.x) * 0.15, 0.03, a.y + (b.y - a.y) * 0.15));
+          v.push(new THREE.Vector3(a.x + (b.x - a.x) * 0.85, 0.03, a.y + (b.y - a.y) * 0.85));
+        }
+      }
+      const curve = new THREE.CatmullRomCurve3(v, false, 'centripetal');
+      const geo = new THREE.TubeGeometry(curve, Math.max(12, v.length * 8), 0.03, 6);
+      if (!this.tetherMesh) {
+        this.tetherMesh = mesh(geo, new THREE.MeshStandardMaterial({ color: 0x141616, roughness: 0.7, emissive: Q_GREEN, emissiveIntensity: 0 }), 0, 0, 0, false);
+        this.scene.add(this.tetherMesh);
+      } else { this.tetherMesh.geometry.dispose(); this.tetherMesh.geometry = geo; }
+    }
+    const m = this.tetherMesh!.material as THREE.MeshStandardMaterial;
+    const pull = Math.max(0, (h.tetherLength() - 6) / 3);
+    m.emissiveIntensity = 0.05 + pulse * 0.25 + pull * 0.2;
+  }
+
   /** A drop hit the puddle (the scene calls this when the sound plays). */
   ripple() {
     const P = layout.puddle;
@@ -375,7 +412,7 @@ export class HallView {
     this.batteryMat.emissiveIntensity = glow;
     this.qLight.intensity = h.powered ? 0.5 : 2.5 + pulse * 8;
     this.chamberEdges.emissiveIntensity = h.powered ? 0.04 : 0.12 + pulse * 0.25;
-    (this.woltChest.material as THREE.MeshStandardMaterial).emissiveIntensity = h.powered ? 0.9 + pulse * 0.6 : inHand ? glow : 0;
+    (this.wolt.cassette.material as THREE.MeshStandardMaterial).emissiveIntensity = h.powered ? 0.9 + pulse * 0.6 : inHand ? glow : 0;
     this.frontGlass.position.y = 1.55 + h.chamberOpen * 2.35;
     this.leverArm.rotation.z = h.leverDown ? -1.9 : 0.25 - Math.min(1, h.pry / PRY_TIME) * 0.6 + (h.pry > 0 ? Math.sin(t * 40) * 0.03 : 0);
     this.door.rotation.y = -h.doorOpen * 1.4;
@@ -395,33 +432,37 @@ export class HallView {
       this.pipe.visible = true; this.pipe.position.set(L.lever.x - 0.35, 0.05, L.lever.y + 0.5); this.pipe.rotation.set(0, 1.1, Math.PI / 2);
     }
 
-    // Wolt: lying in the cradle, standing up, walking
+    // the body: in the cradle, rolling off it, balancing on its wheel
     const target = Math.PI / 2 - h.facing;
     let dr = target - w.group.rotation.y; dr = Math.atan2(Math.sin(dr), Math.cos(dr));
-    w.group.rotation.y += dr * Math.min(1, dt * (h.powered ? 12 : 4));
+    w.group.rotation.y += dr * Math.min(1, dt * (h.powered ? 10 : 4));
     const k = THREE.MathUtils.smoothstep(h.wake, 0, 1);
-    const lie = { x: L.cradle.x + 1.1, y: 0.62, z: L.cradle.y + 1.5 };
+    const rest = { x: L.cradle.x + 1.2, y: 0.3, z: L.cradle.y + 1.5 };
+    const speed = h.moving ? h.speed() : 0;
+    this.lean += ((h.moving ? 0.16 : 0) - this.lean) * Math.min(1, dt * 5);
+    // on reserve the body keeps catching its balance; with the battery it is steady
+    const wob = h.powered ? 0.015 : 0.07;
+    let wobZ = Math.sin(t * 2.3) * wob + Math.sin(t * 5.1) * wob * 0.4;
     if (!h.awake) {
-      // lying on the back, feet towards the room; a twitch while waking
-      w.group.position.set(THREE.MathUtils.lerp(lie.x, h.pos.x, k), THREE.MathUtils.lerp(lie.y, 0, k), THREE.MathUtils.lerp(lie.z, h.pos.y, k));
-      w.group.rotation.set(0, Math.PI / 2 - h.facing, 0);
-      w.group.rotateX(0);
-      w.group.rotateZ((1 - k) * 1.35 + (h.wake > 0 && h.wake < 0.5 ? Math.sin(t * 30) * 0.04 : 0));
+      w.group.position.set(THREE.MathUtils.lerp(rest.x, h.pos.x, k), THREE.MathUtils.lerp(rest.y, 0, Math.min(1, k * 1.6)), THREE.MathUtils.lerp(rest.z, h.pos.y, k));
+      // slumped back in the cradle, then the jolt of rolling off
+      w.balance.rotation.x = (1 - k) * -0.5 + (h.wake > 0 && h.wake < 0.6 ? Math.sin(t * 24) * 0.05 : 0);
+      wobZ = h.wake > 0 ? Math.sin(k * 9) * 0.25 * (1 - k) : 0;
     } else {
-      w.group.rotation.x = 0; w.group.rotation.z = 0;
-      if (h.moving) this.walkPhase += dt * (h.powered ? 11 : 7);
-      const bob = h.moving ? Math.abs(Math.sin(this.walkPhase)) * (h.powered ? 0.05 : 0.025) : 0;
-      // in reserve mode he sags forward a little
-      w.group.position.set(h.pos.x, bob, h.pos.y);
-      w.group.children[0].rotation.x = h.powered ? 0 : 0.12;
+      w.group.position.set(h.pos.x, 0, h.pos.y);
+      w.balance.rotation.x = this.lean + (h.powered ? 0 : 0.06);
     }
-    w.legs[0].position.y = 0.21 + (h.moving ? Math.max(0, Math.sin(this.walkPhase)) * 0.08 : 0);
-    w.legs[1].position.y = 0.21 + (h.moving ? Math.max(0, -Math.sin(this.walkPhase)) * 0.08 : 0);
-    // eyes: a weak flicker on reserve, warm and steady once powered; the lamp comes on with the battery
-    const head = w.head.material as THREE.MeshStandardMaterial;
+    w.balance.rotation.z = wobZ;
+    w.wheel.rotation.x += speed * dt / WHEEL_R;
+    w.arms[0].rotation.x = h.hasPipe ? -1.1 : Math.sin(t * 1.3) * 0.05;
+    w.arms[1].rotation.x = h.insertT > 0 ? -1.3 : Math.sin(t * 1.1 + 1) * 0.05;
+    // the camera eye: weak flicker on reserve, steady once the battery is in; the lamp comes on with it
+    const eye = w.eye.material as THREE.MeshStandardMaterial;
     const pk = Math.min(1, h.poweredT / 3);
-    head.emissiveIntensity = h.powered ? 0.4 + pk * 1.6 : (h.wake > 0 ? 0.25 + Math.random() * 0.15 : 0.05);
+    eye.emissiveIntensity = h.powered ? 0.6 + pk * 1.6 : (h.wake > 0 || h.t > 1 ? 0.3 + Math.random() * 0.2 : 0.05);
     w.spot.intensity = h.powered ? pk * 22 : 0;
+    w.glow.intensity = h.powered ? 2 : (h.t > 1 ? 5 + Math.random() * 1.2 : 0);
+    this.updateTether(pulse);
 
     // light comes up slightly once he can see properly
     this.hemi.intensity = 0.32 + pk * 0.14;
