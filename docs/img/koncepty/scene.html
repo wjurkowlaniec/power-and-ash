@@ -1,0 +1,312 @@
+<!doctype html>
+<html><head><meta charset="utf-8">
+<style>html,body{margin:0;height:100%;overflow:hidden;background:#000}canvas{display:block}</style>
+<script type="importmap">{"imports":{"three":"../../../node_modules/three/build/three.module.js"}}</script>
+</head><body>
+<script type="module">
+// Koncept arty kluczowych miejsc. Ujęcie wybiera hash: #hala #stacja #bojerek #wies #slupy #zalew #cerkwiska
+import * as THREE from 'three';
+const shot=(location.hash||'#stacja').slice(1);
+const W=innerWidth,H=innerHeight;
+const renderer=new THREE.WebGLRenderer({antialias:true,preserveDrawingBuffer:true});
+renderer.setSize(W,H);renderer.setPixelRatio(1);
+renderer.shadowMap.enabled=true;renderer.shadowMap.type=THREE.PCFSoftShadowMap;
+renderer.toneMapping=THREE.ACESFilmicToneMapping;
+document.body.appendChild(renderer.domElement);
+const scene=new THREE.Scene();
+const cam=new THREE.PerspectiveCamera(32,W/H,0.1,600);
+
+let seed=11;const rnd=()=>((seed=(seed*16807)%2147483647)/2147483647);
+const M=(c,o={})=>new THREE.MeshStandardMaterial({color:c,roughness:o.r??0.85,metalness:o.m??0.1,flatShading:o.flat??true,emissive:o.e??0,emissiveIntensity:o.ei??1,transparent:o.t!=null,opacity:o.t??1,side:o.ds?THREE.DoubleSide:THREE.FrontSide});
+const mk=(g,m,x=0,y=0,z=0,sh=true)=>{const o=new THREE.Mesh(g,m);o.position.set(x,y,z);o.castShadow=sh;o.receiveShadow=true;return o};
+const box=(w,h,d,m,x=0,y=0,z=0)=>mk(new THREE.BoxGeometry(w,h,d),m,x,y,z);
+const cyl=(rt,rb,h,m,x=0,y=0,z=0,s=8)=>mk(new THREE.CylinderGeometry(rt,rb,h,s),m,x,y,z);
+const add=(...o)=>{o.forEach(x=>scene.add(x));return o[0]};
+
+const BATT=0x7dffb0, SODIUM=0xffa04a;
+const steel=M(0x5a6168,{r:0.6,m:0.6}), rust=M(0x6e4a36,{r:0.9,m:0.3}), dark=M(0x26292d,{r:0.7,m:0.4});
+const concrete=M(0x8f8b84,{r:1}), wood=M(0x5b4a3c,{r:1}), woodDark=M(0x3a3029,{r:1});
+
+function setup({sky,fog,fogNear,fogFar,sun,sunI,sunPos,hemi,exp}){
+ scene.background=new THREE.Color(sky);scene.fog=new THREE.Fog(fog??sky,fogNear,fogFar);
+ renderer.toneMappingExposure=exp??1;
+ scene.add(new THREE.HemisphereLight(...hemi));
+ const s=new THREE.DirectionalLight(sun,sunI);s.position.set(...sunPos);s.castShadow=true;
+ s.shadow.mapSize.set(2048,2048);Object.assign(s.shadow.camera,{left:-40,right:40,top:40,bottom:-40,near:1,far:200});s.shadow.bias=-0.0006;
+ scene.add(s);return s;}
+
+function ground(col,amp=1,size=300,f=0.04){const g=new THREE.PlaneGeometry(size,size,150,150);g.rotateX(-Math.PI/2);
+ const p=g.attributes.position;const h=(x,z)=>(Math.sin(x*f+z*f*0.6)*0.9+Math.sin(x*f*0.4-z*f*1.3)*1.4+Math.sin(z*f*3)*0.2)*amp;
+ for(let i=0;i<p.count;i++)p.setY(i,h(p.getX(i),p.getZ(i)));g.computeVertexNormals();
+ add(mk(g,M(col,{r:1}),0,0,0,false));return h;}
+
+// Wolt: niski automat serwisowy, jedno oko, zielone serce-bateria, lampa sodowa
+function wolt(x,y,z,ry=0,{lamp=false,lampI=6,batt=1,scale=1}={}){const g=new THREE.Group();
+ const body=M(0xb9b3a6,{r:0.7,m:0.3}),joint=M(0x3a3e43,{m:0.5,r:0.6});
+ g.add(box(0.22,0.55,0.26,joint,-0.22,0.28,0));g.add(box(0.22,0.55,0.26,joint,0.22,0.28,0));
+ g.add(box(0.8,0.75,0.6,body,0,0.92,0));
+ g.add(box(0.28,0.28,0.06,M(0,{e:BATT,ei:2.5*batt}),0,0.95,0.31));
+ g.add(box(0.12,0.5,0.14,joint,-0.5,0.85,0.05));g.add(box(0.12,0.5,0.14,joint,0.5,0.85,0.05));
+ g.add(box(0.56,0.4,0.48,body,0,1.55,0));
+ g.add(cyl(0.11,0.11,0.08,M(0x111111,{e:0xd8e8e0,ei:1.2}),0,1.57,0.25).rotateX(Math.PI/2));
+ g.add(box(0.06,0.35,0.06,joint,0.2,1.9,-0.1));
+ if(lamp){g.add(mk(new THREE.SphereGeometry(0.09,8,6),M(0,{e:SODIUM,ei:4}),0.2,2.1,-0.1,false));
+  const L=new THREE.PointLight(SODIUM,lampI,16,1.6);L.position.set(0.2,2.1,0.2);g.add(L);}
+ const bl=new THREE.PointLight(BATT,1.2*batt,4,2);bl.position.set(0,0.95,0.6);g.add(bl);
+ g.traverse(o=>{if(o.isMesh){o.castShadow=true}});
+ g.position.set(x,y,z);g.rotation.y=ry;g.scale.setScalar(scale);scene.add(g);return g;}
+
+function human(x,y,z,ry=0){const g=new THREE.Group();const cloth=M(0x4a4740,{r:1}),mask=M(0x2a2a2a,{r:0.6});
+ const coat=mk(new THREE.ConeGeometry(0.45,1.5,7),cloth,0,0.75,0);g.add(coat);
+ g.add(mk(new THREE.SphereGeometry(0.2,8,6),mask,0,1.65,0));g.add(mk(new THREE.ConeGeometry(0.32,0.35,7),cloth,0,1.85,0));
+ g.position.set(x,y,z);g.rotation.y=ry;scene.add(g);return g;}
+
+function tree(x,y,z,h=5,col=0x3d3a33){const g=new THREE.Group();g.add(cyl(0.08,0.14,h*0.5,woodDark,0,h*0.25,0,5));
+ for(let i=0;i<3;i++){const c=mk(new THREE.IcosahedronGeometry(h*0.22*(1-i*0.15),0),M(col),(rnd()-0.5)*0.6,h*(0.5+i*0.17),(rnd()-0.5)*0.6);g.add(c);}
+ g.position.set(x,y,z);scene.add(g);return g;}
+
+function pylon(x,y,z,h,tilt=0,ry=0,m=rust){const g=new THREE.Group();const b=1.2;
+ for(const [dx,dz] of [[-1,-1],[1,-1],[1,1],[-1,1]]){const l=box(0.14,h,0.14,m,dx*b*0.6,h/2,dz*b*0.6);g.add(l);}
+ for(let yy=1.2;yy<h;yy+=1.5){g.add(box(b*1.3,0.08,0.08,m,0,yy,-b*0.6));g.add(box(b*1.3,0.08,0.08,m,0,yy,b*0.6));g.add(box(0.08,0.08,b*1.3,m,-b*0.6,yy,0));g.add(box(0.08,0.08,b*1.3,m,b*0.6,yy,0));}
+ g.add(box(5,0.16,0.16,m,0,h,0));g.add(box(3.4,0.14,0.14,m,0,h-1.6,0));
+ g.position.set(x,y,z);g.rotation.set(0,ry,tilt);scene.add(g);return g;}
+
+function wire(a,b,sag,m=M(0x2a2420,{r:0.5,m:0.6}),r=0.03){const pts=[];for(let i=0;i<=24;i++){const t=i/24;const p=a.clone().lerp(b,t);p.y-=Math.sin(t*Math.PI)*sag;pts.push(p);}
+ add(mk(new THREE.TubeGeometry(new THREE.CatmullRomCurve3(pts),48,r,5),m,0,0,0,false));}
+
+function particles(n,area,col,size,y0,y1,opacity=0.6){const g=new THREE.BufferGeometry();const a=new Float32Array(n*3);
+ for(let i=0;i<n;i++){a[i*3]=(rnd()-0.5)*area[0]+area[2];a[i*3+1]=y0+rnd()*(y1-y0);a[i*3+2]=(rnd()-0.5)*area[1]+area[3];}
+ g.setAttribute('position',new THREE.BufferAttribute(a,3));
+ add(new THREE.Points(g,new THREE.PointsMaterial({color:col,size,transparent:true,opacity,depthWrite:false,sizeAttenuation:true})));}
+
+function churchTower(x,y,z,h){const g=new THREE.Group();const wall=M(0xa29b8f,{r:1}),roof=M(0x44403a,{r:0.9,m:0.2});
+ g.add(box(3,h,3,wall,0,h/2,0));g.add(box(3.3,0.3,3.3,wall,0,h*0.62,0));
+ for(const s of [-1,1]){g.add(box(0.5,1.4,0.1,dark,s*0.6,h-1.6,1.51));}
+ const sp=mk(new THREE.ConeGeometry(2.3,h*0.55,4),roof,0,h+h*0.27,0);sp.rotation.y=Math.PI/4;g.add(sp);
+ g.add(box(0.08,1.2,0.08,steel,0,h+h*0.6,0));g.add(box(0.6,0.08,0.08,steel,0,h+h*0.62,0));
+ g.position.set(x,y,z);scene.add(g);return g;}
+
+function cottage(x,y,z,ry=0,s=1){const g=new THREE.Group();const w=M(0x6e6255,{r:1}),roof=M(0x55504a,{r:1});
+ g.add(box(4,2.2,3,w,0,1.1,0));const r=mk(new THREE.CylinderGeometry(0.01,2.4,1.8,4,1),roof,0,3.1,0);r.rotation.y=Math.PI/4;r.scale.set(1.3,1,0.95);g.add(r);
+ g.add(box(0.7,0.8,0.05,M(0x1a1a1a),1,1.3,1.52));g.add(box(0.7,0.8,0.05,M(0x1a1a1a),-1,1.3,1.52));
+ g.position.set(x,y,z);g.rotation.y=ry;g.scale.setScalar(s);scene.add(g);return g;}
+
+function water(col,y=0,rough=0.15){const g=new THREE.PlaneGeometry(600,600);g.rotateX(-Math.PI/2);
+ const w=mk(g,new THREE.MeshStandardMaterial({color:col,roughness:rough,metalness:0.6,transparent:true,opacity:0.92}),0,y,0,false);scene.add(w);return w;}
+
+// bojerek: belka wzdłużna + poprzeczna, 3 płozy, maszt, trójkątny żagiel
+function iceYacht(x,y,z,ry,{sailCol=0xd8743a,sailTorn=true}={}){const g=new THREE.Group();const fr=M(0x6d6559,{r:0.8,m:0.4});
+ g.add(box(6,0.18,0.3,fr,0.5,0.55,0));g.add(box(0.3,0.18,4.2,fr,-0.6,0.55,0));
+ const run=(px,pz)=>{g.add(box(1.4,0.08,0.1,steel,px,0.12,pz));g.add(box(0.12,0.4,0.12,fr,px,0.33,pz));};
+ run(3.3,0);run(-0.6,-2);run(-0.6,2);
+ g.add(box(1.4,0.35,1,M(0x7d7466),-1.6,0.75,0));
+ g.add(box(0.5,0.4,0.6,M(0x3a3e43,{m:0.5}),1.4,0.8,0));
+ g.add(cyl(0.07,0.09,5.5,steel,0.6,3.3,0,6));
+ const sh=new THREE.Shape();sh.moveTo(0,0);sh.lineTo(0,4.6);
+ if(sailTorn){sh.lineTo(1.2,3.2);sh.lineTo(1.0,2.9);sh.lineTo(2.6,1.0);sh.lineTo(2.2,0.7);sh.lineTo(3,0.1);}else sh.lineTo(3,0.1);
+ sh.lineTo(0,0);
+ const sail=mk(new THREE.ShapeGeometry(sh),M(sailCol,{r:0.7,ds:true,flat:false}),0.62,0.9,0);sail.rotation.y=Math.PI*0.75;g.add(sail);
+ g.position.set(x,y,z);g.rotation.y=ry;scene.add(g);return g;}
+
+function lookFrom(p,t){cam.position.set(...p);cam.lookAt(...t);}
+
+// ---------------------------------------------------------------- UJĘCIA
+const shots={
+ hala(){ // wnętrze stacji, bateria w komorze, Wolt w martwej kołysce
+  setup({sky:0x07090b,fogNear:6,fogFar:34,sun:0x9fb4c8,sunI:0.7,sunPos:[-14,9,-4],hemi:[0x3a4652,0x121314,0.7],exp:1.7});
+  const floor=add(box(30,0.2,20,M(0x34322f,{r:1}),0,-0.1,0));floor.castShadow=false;
+  add(box(30,9,0.4,M(0x2a2a28,{r:1}),0,4.5,-8));add(box(0.4,9,20,M(0x2c2c2a,{r:1}),-10,4.5,0));
+  // okno: jedyne zimne światło
+  const win=add(box(0.2,3,5,M(0x9fb4c8,{e:0x9fb4c8,ei:0.5}),-9.75,4.5,-2));win.castShadow=false;
+  const ray=add(mk(new THREE.BoxGeometry(18,3,4.6),new THREE.MeshBasicMaterial({color:0x9fb4c8,transparent:true,opacity:0.05,depthWrite:false}),-1,3.6,-1.8,false));ray.rotation.z=-0.42;
+  // belki i suwnica
+  for(let i=-2;i<=2;i++)add(box(0.4,0.6,20,dark,i*5,8.6,0));
+  add(box(26,0.5,0.6,M(0x6a5a3a,{m:0.5}),0,7.4,-2));
+  // komora testowa
+  const ch=new THREE.Group();ch.position.set(2.5,0,-3);scene.add(ch);
+  ch.add(box(3,0.5,3,dark,0,0.25,0));ch.add(box(3,0.4,3,dark,0,3.6,0));
+  for(const [dx,dz] of [[-1,-1],[1,-1],[1,1],[-1,1]])ch.add(box(0.15,3.2,0.15,steel,dx*1.42,1.95,dz*1.42));
+  const glass=mk(new THREE.BoxGeometry(2.8,3,2.8),new THREE.MeshStandardMaterial({color:0x9fd8c0,roughness:0.05,metalness:0.2,transparent:true,opacity:0.12}),0,1.95,0,false);ch.add(glass);
+  ch.add(cyl(0.12,0.12,1.2,steel,0,3,0));
+  const bat=box(0.5,0.75,0.35,M(0x1a1f1c,{m:0.6,r:0.3}),0,2,0);ch.add(bat);
+  ch.add(box(0.3,0.5,0.37,M(0,{e:BATT,ei:4}),0,2,0));
+  const bl=new THREE.PointLight(BATT,9,14,1.5);bl.position.set(0,2,0.8);ch.add(bl);
+  // kable po podłodze od komory
+  const cm=M(0x1c1c1c,{r:0.5});
+  for(let i=0;i<5;i++){const pts=[];const ang=-0.4+i*0.5;for(let k=0;k<12;k++){const r=1.5+k*0.9;pts.push(new THREE.Vector3(2.5+Math.cos(ang+k*0.05)*r,0.06,-3+Math.sin(ang+k*0.08)*r*0.8));}
+   add(mk(new THREE.TubeGeometry(new THREE.CatmullRomCurve3(pts),40,0.06,5),cm,0,0,0,false));}
+  // kołyska serwisowa z Woltem
+  add(box(2,0.4,1.6,dark,-3,0.2,0.5));add(box(0.2,2.6,1.6,steel,-3.9,1.5,0.5));add(box(1.4,0.15,0.2,steel,-3.3,2.6,0.5));
+  wolt(-3,0.4,0.6,0.55,{batt:0.15});
+  // szafy pomiarowe z martwymi wyświetlaczami
+  for(let i=0;i<5;i++){add(box(1.4,2.6,0.9,M(0x47484a,{m:0.4,r:0.7}),7.5,1.3,-6.5+i*1.6));add(box(0.06,0.7,0.6,M(0x0d1a14,{e:0x183a2a,ei:i==2?0.8:0.15}),6.77,1.8,-6.5+i*1.6));}
+  add(box(1.2,1,0.8,M(0x5a5048),-6,0.5,-5));add(box(1,0.8,0.8,M(0x4a4440),-6.3,1.4,-5.1));
+  // dźwignia awaryjna i rura
+  add(box(0.15,1.1,0.15,M(0xa8402a,{m:0.4}),4.4,1.2,-1.4).rotateZ(0.5));
+  add(cyl(0.06,0.06,2.2,rust,0.2,0.07,1.6,6).rotateZ(Math.PI/2));
+  particles(500,[18,12,0,-1],0xb8c8c0,0.04,0.3,7,0.35);
+  lookFrom([9,4.6,10],[-0.2,1.8,-1.6]);cam.fov=36;
+ },
+ stacja(){ // Stacja Pomiarowa Olszanka o zmierzchu, w dali Zatopiona Wieś
+  setup({sky:0x5e5550,fog:0x6b5d55,fogNear:30,fogFar:170,sun:0xff9a5a,sunI:1.6,sunPos:[-60,12,-40],hemi:[0x7f7484,0x2e2824,0.7],exp:1.05});
+  const h=ground(0x7d786d,0.6,400,0.03);
+  water(0x4a4e52,-0.9,0.25).position.z=-120;
+  churchTower(-30,-1,-95,16);
+  for(let i=0;i<5;i++){const r=cottage(-10-i*9+rnd()*4,-2.6,-88-rnd()*12,rnd(),1.1);}
+  // budynek stacji
+  const st=new THREE.Group();scene.add(st);
+  st.add(box(12,3.6,7,concrete,0,1.8,0));st.add(box(12.6,0.3,7.6,M(0x5d5953),0,3.7,0));
+  st.add(box(4,2.4,4,concrete,-6.5,1.2,2));
+  for(let i=0;i<4;i++)st.add(box(1.2,1,0.1,M(0x1b1f22,{e:i==1?SODIUM:0,ei:i==1?0.7:0}),-4+i*2.6,2.2,3.52));
+  st.add(box(1.4,2.4,0.1,dark,4.5,1.2,3.52));
+  // maszt z małą turbiną
+  const mx=10,mz=-4,MH=18;
+  for(const [dx,dz] of [[-1,-1],[1,-1],[1,1],[-1,1]])add(box(0.12,MH,0.12,steel,mx+dx*0.5,MH/2,mz+dz*0.5));
+  for(let y=1.5;y<MH;y+=1.5)add(box(1.1,0.06,1.1,M(0x6a7076,{m:0.5}),mx,y,mz)).material.wireframe=false;
+  const hub=add(mk(new THREE.SphereGeometry(0.3,10,8),steel,mx,MH+0.4,mz+0.35));
+  for(let i=0;i<3;i++){const b=box(0.22,2.6,0.05,M(0xe2dccf),0,0,0);b.geometry.translate(0,1.3,0);b.position.set(mx,MH+0.4,mz+0.55);b.rotation.z=0.4+i*2.094;scene.add(b);}
+  add(box(0.4,0.4,1.4,steel,mx,MH+0.4,mz-0.2));
+  // anemometr i maszt antenowy na dachu
+  add(cyl(0.04,0.04,4,steel,-3,5.6,-1,5));add(box(1.6,0.05,0.05,steel,-3,7.4,-1));
+  // wyrzutnia balonów meteo
+  add(cyl(1.6,1.6,1.4,M(0x8a8478),-12,0.7,-5,16));const dome=add(mk(new THREE.SphereGeometry(1.6,16,8,0,Math.PI*2,0,Math.PI/2),M(0xa8a196),-12,1.4,-5));
+  // szopa z bojerkiem
+  const sh=new THREE.Group();sh.position.set(19,0,1);sh.rotation.y=-0.9;scene.add(sh);
+  sh.add(box(7,3,5,wood,0,1.5,0));const rf=box(7.6,0.2,3.2,woodDark,0,3.5,-1.2);rf.rotation.x=0.45;sh.add(rf);const rf2=rf.clone();rf2.position.z=1.2;rf2.rotation.x=-0.45;sh.add(rf2);
+  sh.add(box(3,2.6,0.1,M(0x0a0a0a),0,1.3,2.52));
+  // drzewa: olszyny
+  for(let i=0;i<40;i++){const a=rnd()*6.28,r=22+rnd()*60;const x=Math.cos(a)*r,z=Math.sin(a)*r*0.7+5;if(z<-40)continue;tree(x,h(x,z)-0.2,z,4+rnd()*4,0x3f3c35);}
+  // płot i słupy pomiarowe
+  for(let i=0;i<14;i++)add(box(0.1,1.2,0.1,woodDark,-14+i*2,0.6,12+Math.sin(i)*0.3));
+  wire(new THREE.Vector3(mx,1.2,mz),new THREE.Vector3(6,1.5,0),0.4,M(0xc0703a,{r:0.35,m:0.7}),0.05);
+  wolt(6,0,6,2.6,{lamp:true,lampI:8});
+  particles(1500,[200,140,0,-20],0xd8cfc0,0.12,0.2,25,0.35);
+  lookFrom([30,12,40],[0,4,-8]);
+ },
+ bojerek(){ // pierwsza jazda: bojerek z żaglem z balonu meteo na popielnej łące
+  setup({sky:0xbcb6aa,fogNear:25,fogFar:150,sun:0xfff0d8,sunI:2.2,sunPos:[30,40,25],hemi:[0xe0dacb,0x5e564e,1.0],exp:0.95});
+  const h=ground(0x9a9385,1.2,400,0.025);
+  const y=iceYacht(0,h(0,0)+0.05,0,0.35);
+  wolt(-1.3,h(0,0)+0.6,-0.4,0.35+Math.PI/2,{scale:0.9});
+  for(let i=0;i<60;i++){const x=(rnd()-0.5)*140,z=(rnd()-0.5)*140;if(Math.hypot(x,z)<12)continue;
+   const g=add(mk(new THREE.ConeGeometry(0.15,0.8+rnd(),4),M(0x8a826f),x,h(x,z)+0.3,z));}
+  // suche słoneczniki i trawy na pierwszym planie
+  for(let i=0;i<120;i++){const x=10+rnd()*25,z=-10+rnd()*30;const hh=0.6+rnd()*1.4;add(cyl(0.02,0.03,hh,M(0x6a6253),x,h(x,z)+hh/2,z,4));}
+  for(let i=0;i<14;i++){const a=rnd()*6.28,r=40+rnd()*50;tree(Math.cos(a)*r,h(Math.cos(a)*r,Math.sin(a)*r)-0.3,Math.sin(a)*r,5+rnd()*3,0x55524a);}
+  // smugi ślizgu w popiele
+  for(let k=-1;k<=1;k+=2)for(let i=0;i<14;i++){const t=i*1.6+3;const x=-Math.cos(0.35)*t,z=Math.sin(0.35)*t+k*2*Math.cos(0.35)*0.5;add(box(1.4,0.02,0.12,M(0x7a7266),x,h(x,z)+0.02,z)).rotation.y=0.35;}
+  pylon(-50,h(-50,-40)-0.5,-40,12,0.18,0.6);pylon(-28,h(-28,-55)-0.5,-55,12,-0.1,0.6);
+  wire(new THREE.Vector3(-48,12,-40),new THREE.Vector3(-28,12,-55),3);
+  particles(2500,[160,120,-10,0],0xe8e2d4,0.09,0.1,6,0.5);
+  lookFrom([10,3.4,9],[-0.5,1.9,-0.5]);
+ },
+ wies(){ // Zatopiona Wieś: mglisty świt, wieża kościoła z wody, chaty na palach, człowiek w łodzi
+  setup({sky:0x9aa3a6,fogNear:12,fogFar:110,sun:0xf2e2c8,sunI:1.2,sunPos:[40,18,-30],hemi:[0xb8c2c6,0x3a3e40,0.9],exp:1.0});
+  water(0x5d686c,0,0.12);
+  churchTower(-14,-4,-40,20);
+  // zatopione dachy
+  for(let i=0;i<9;i++){const x=-40+i*10+rnd()*4,z=-20-rnd()*40;const c=cottage(x,-2.1-rnd()*0.6,z,rnd()*3,1.2);}
+  // chaty na palach i kładki
+  const hut=(x,z,ry)=>{const g=new THREE.Group();for(const [dx,dz] of [[-1.6,-1.2],[1.6,-1.2],[1.6,1.2],[-1.6,1.2]])g.add(cyl(0.12,0.12,3,woodDark,dx,0.5,dz,5));
+   g.add(box(4,0.2,3,wood,0,2,0));const c=cottage(0,0,0,0,0.7);scene.remove(c);c.position.y=2.1;g.add(c);g.position.set(x,0,z);g.rotation.y=ry;scene.add(g);return g;};
+  hut(8,-6,0.3);hut(20,-14,-0.2);hut(-4,-16,0.5);
+  // kładki
+  const plank=(a,b)=>{const d=b.clone().sub(a);const n=Math.floor(d.length()/0.7);for(let i=0;i<n;i++){const p=a.clone().lerp(b,i/n);const pl=add(box(0.6,0.08,1.4,wood,p.x,1.2+Math.sin(i)*0.05,p.z));pl.rotation.y=Math.atan2(d.x,d.z)+Math.PI/2;if(i%3==0)add(cyl(0.07,0.07,2.4,woodDark,p.x,0,p.z+0.6,5));}};
+  plank(new THREE.Vector3(2,0,10),new THREE.Vector3(8,0,-4));plank(new THREE.Vector3(9,0,-6),new THREE.Vector3(19,0,-13));
+  // pomost z Woltem
+  add(box(5,0.2,3,wood,0,1.2,11));for(const [dx,dz] of [[-2.3,-1.3],[2.3,-1.3],[2.3,1.3],[-2.3,1.3]])add(cyl(0.1,0.1,2.6,woodDark,dx,0,11+dz,5));
+  wolt(0.5,1.3,10.6,Math.PI+0.5,{lamp:true,lampI:4});
+  // łódź z człowiekiem
+  const boat=new THREE.Group();boat.position.set(-7,0.05,0);boat.rotation.y=0.9;scene.add(boat);
+  const hull=mk(new THREE.CylinderGeometry(0.9,0.6,4,6,1,false,0,Math.PI),wood,0,0.3,0);hull.rotation.set(Math.PI/2,0,Math.PI);boat.add(hull);
+  const hm=human(0,0.2,-0.6,0);scene.remove(hm);boat.add(hm);boat.add(cyl(0.04,0.04,3,woodDark,0.6,0.8,0.2,4).rotateX(0.9));
+  // sieci na tyczkach
+  for(let i=0;i<4;i++)add(cyl(0.05,0.05,3,woodDark,-14+i*2.4,0.8,8+i*0.4,4));
+  add(mk(new THREE.PlaneGeometry(7,1.6,6,2),M(0x3a3a36,{t:0.55,ds:true}),-10.4,1.6,8.6,false)).rotation.y=-0.17;
+  // trzciny
+  for(let i=0;i<200;i++){const x=-30+rnd()*60,z=12+rnd()*12;const hh=0.6+rnd()*1.5;add(cyl(0.02,0.03,hh,M(0x6d6650),x,hh/2-0.2,z,3));}
+  particles(3000,[120,80,0,-10],0xe0e6e8,0.25,0,5,0.18);
+  lookFrom([10,6,30],[-4,3,-10]);
+ },
+ slupy(){ // Las Słupów nocą, mikroboty jak świetliki na drutach
+  setup({sky:0x0b0f18,fog:0x0f1522,fogNear:10,fogFar:90,sun:0x8aa0d8,sunI:0.5,sunPos:[-20,40,-30],hemi:[0x3d4a6a,0x101216,0.6],exp:1.6});
+  const h=ground(0x2a2c2c,0.5,300,0.05);
+  const pls=[];
+  for(let i=0;i<70;i++){const x=(rnd()-0.5)*90,z=-rnd()*90+15;if(Math.hypot(x,z-4)<7)continue;const hh=8+rnd()*10;const t=(rnd()-0.5)*0.5;
+   pylon(x,h(x,z)-0.3,z,hh,t,rnd()*3,rnd()<0.5?rust:M(0x4a4440,{m:0.4}));pls.push(new THREE.Vector3(x,hh*Math.cos(t)+h(x,z)-0.4,z));}
+  const ws=[];
+  for(let i=0;i<90;i++){const a=pls[Math.floor(rnd()*pls.length)],b=pls[Math.floor(rnd()*pls.length)];if(a===b||a.distanceTo(b)>22)continue;
+   const sag=1+rnd()*4;wire(a,b,sag);ws.push([a,b,sag]);}
+  // druty zwisające do ziemi
+  for(let i=0;i<30;i++){const a=pls[Math.floor(rnd()*pls.length)];wire(a,new THREE.Vector3(a.x+(rnd()-0.5)*8,0.1,a.z+(rnd()-0.5)*8),0.5);}
+  // mikroboty: roje punktów wzdłuż drutów
+  const g=new THREE.BufferGeometry();const arr=[];
+  for(const [a,b,s] of ws){if(rnd()<0.15)continue;const t0=rnd();for(let k=0;k<40;k++){const t=Math.min(1,t0+ (rnd()-0.5)*0.2);const p=a.clone().lerp(b,t);p.y-=Math.sin(t*Math.PI)*s;arr.push(p.x+(rnd()-0.5)*0.6,p.y+(rnd()-0.5)*0.6,p.z+(rnd()-0.5)*0.6);}}
+  g.setAttribute('position',new THREE.Float32BufferAttribute(arr,3));
+  add(new THREE.Points(g,new THREE.PointsMaterial({color:0xbfe6ff,size:0.32,transparent:true,opacity:0.95,depthWrite:false,blending:THREE.AdditiveBlending})));
+  for(let i=0;i<6;i++){const L=new THREE.PointLight(0x9fd0ff,2.5,10,2);L.position.set(arr[i*120],arr[i*120+1],arr[i*120+2]);scene.add(L);}
+  // krzaki i zielsko
+  for(let i=0;i<80;i++){const x=(rnd()-0.5)*80,z=-rnd()*80+15;add(mk(new THREE.IcosahedronGeometry(0.5+rnd()*0.9,0),M(0x22261f),x,h(x,z),z));}
+  wolt(0,h(0,4),4,Math.PI*0.85,{lamp:true,lampI:14});
+  const beam=add(mk(new THREE.ConeGeometry(2.6,10,16,1,true),new THREE.MeshBasicMaterial({color:SODIUM,transparent:true,opacity:0.07,depthWrite:false,side:THREE.DoubleSide}),-1.5,h(0,4)+2.6,-0.8,false));
+  beam.visible=false;
+  lookFrom([8,5,20],[-1,5,-10]);
+ },
+ zalew(){ // Szklany Zalew: lustro stopionego szkła, w dali kopuła Szklarni
+  setup({sky:0xe8e2d2,fogNear:40,fogFar:260,sun:0xfff6e0,sunI:3.2,sunPos:[20,30,-60],hemi:[0xf2ece0,0x8a8070,1.1],exp:0.85});
+  const glass=new THREE.PlaneGeometry(600,600,80,80);glass.rotateX(-Math.PI/2);const p=glass.attributes.position;for(let i=0;i<p.count;i++)p.setY(i,Math.sin(p.getX(i)*0.15)*0.05+Math.sin(p.getZ(i)*0.2)*0.05);glass.computeVertexNormals();
+  add(mk(glass,new THREE.MeshStandardMaterial({color:0xc4d4ce,roughness:0.08,metalness:0.25,flatShading:true}),0,0,0,false));
+  scene.environment=null;
+  // brzeg z popiołu
+  const h=ground(0xa49c8c,2,400,0.02);scene.children[scene.children.length-1].position.set(0,-1.4,140);
+  // odłamki szkła
+  for(let i=0;i<120;i++){const x=(rnd()-0.5)*120,z=(rnd()-0.5)*100-10;const s=0.3+rnd()*2.2;
+   const sh=add(mk(new THREE.TetrahedronGeometry(s,0),new THREE.MeshStandardMaterial({color:rnd()<0.3?0x7fa8a0:0xbcd0c8,roughness:0.05,metalness:0.4,transparent:true,opacity:0.75,flatShading:true}),x,s*0.3,z));sh.rotation.set(rnd()*3,rnd()*3,rnd()*3);}
+  // kopuła Szklarni
+  const dome=add(mk(new THREE.SphereGeometry(22,24,12,0,Math.PI*2,0,Math.PI/2),new THREE.MeshStandardMaterial({color:0xcfe0da,roughness:0.15,metalness:0.3,transparent:true,opacity:0.45,wireframe:false,flatShading:true}),-30,-2,-150,false));
+  add(mk(new THREE.SphereGeometry(22.1,24,12,0,Math.PI*2,0,Math.PI/2),new THREE.MeshBasicMaterial({color:0x6a6e6a,wireframe:true,transparent:true,opacity:0.5}),-30,-2,-150,false));
+  for(let i=0;i<6;i++)add(cyl(0.2,0.2,30,steel,-60+i*12,0,-130-i*3,5)).rotation.z=0.3*(rnd()-0.5);
+  // żaglowóz etap 2 i Wolt
+  iceYacht(4,0.05,8,-0.6,{sailCol:0xe8e0cf,sailTorn:false});
+  wolt(1,0.05,11,0.4,{scale:1});
+  // falowanie gorąca: jasne smugi
+  particles(800,[200,160,0,-40],0xfff6e0,0.4,0.2,3,0.12);
+  lookFrom([14,3.2,26],[-6,2.4,-30]);cam.fov=30;
+ },
+ cerkwiska(){ // góry, drewniana cerkiew w śniegu, wejście do laboratorium misji
+  setup({sky:0xaab4be,fogNear:30,fogFar:200,sun:0xe8eef8,sunI:1.6,sunPos:[40,35,45],hemi:[0xd0d8e2,0x5a6068,1.2],exp:1.0});
+  const h=ground(0xdfe4e8,2.2,400,0.03);
+  // góry
+  for(let i=0;i<14;i++){const x=-150+i*24+rnd()*10,z=-110-rnd()*60,hh=40+rnd()*50;
+   const m=add(mk(new THREE.ConeGeometry(30+rnd()*20,hh,6+Math.floor(rnd()*3)),M(rnd()<0.5?0x7d8690:0x8e98a2),x,hh/2-4,z));
+   add(mk(new THREE.ConeGeometry((30+rnd()*10)*0.35,hh*0.35,7),M(0xeef2f6),x,hh*0.82-4,z));}
+  // świerki
+  for(let i=0;i<90;i++){const x=(rnd()-0.5)*160,z=-rnd()*100+10;if(Math.hypot(x-2,z+12)<14)continue;const hh=3+rnd()*5;
+   const g=new THREE.Group();g.add(cyl(0.1,0.15,hh*0.3,woodDark,0,hh*0.15,0,5));for(let k=0;k<3;k++)g.add(mk(new THREE.ConeGeometry(hh*0.3*(1-k*0.2),hh*0.45,7),M(0x2e3a34),0,hh*(0.35+k*0.22),0));g.position.set(x,h(x,z)-0.2,z);scene.add(g);}
+  // cerkiew: zrąb, trzy wieże z daszkami i baniami
+  const c=new THREE.Group();c.position.set(2,h(2,-12)-0.3,-12);c.rotation.y=0.5;scene.add(c);
+  const shingle=M(0x3b342e,{r:1}),logs=M(0x7a6450,{r:1});
+  const tier=(x,y,s,levels)=>{c.add(box(s,s*0.9,s,logs,x,y+s*0.45,0));let yy=y+s*0.9,ss=s*1.25;
+   for(let l=0;l<levels;l++){const r=mk(new THREE.ConeGeometry(ss*0.75,ss*0.35,4),shingle,x,yy+ss*0.17,0);r.rotation.y=Math.PI/4;c.add(r);c.add(box(ss*0.45,ss*0.3,ss*0.45,shingle,x,yy+ss*0.45,0));yy+=ss*0.6;ss*=0.65;}
+   c.add(mk(new THREE.SphereGeometry(ss*0.55,8,6),shingle,x,yy+ss*0.4,0));c.add(box(0.06,1,0.06,steel,x,yy+ss+0.4,0));c.add(box(0.5,0.06,0.06,steel,x,yy+ss+0.5,0));};
+  tier(-4.5,0,3.4,2);tier(0,0,4.6,3);tier(4.5,0,3.2,2);
+  // śnieg na daszkach: jasne płaty
+  for(let i=0;i<8;i++)c.add(box(1.4,0.1,1.4,M(0xf0f4f8),-4+i*1.2,3.8+rnd()*2,0.4));
+  // wejście do laboratorium w skale
+  const rock=add(mk(new THREE.DodecahedronGeometry(9,0),M(0x6e7680),-22,h(-22,-24)+2,-24));rock.scale.set(1.4,0.9,1);
+  add(box(3,3.6,0.4,M(0x2a2e33,{m:0.6,r:0.5}),-16.5,h(-16,-20)+1.6,-17.5)).rotation.y=0.9;
+  add(box(0.3,0.3,0.3,M(0,{e:BATT,ei:3}),-15.4,h(-16,-20)+3.8,-16.3));
+  const gl=new THREE.PointLight(BATT,3,10,2);gl.position.set(-15,h(-16,-20)+3.6,-15.8);scene.add(gl);
+  // Wolt z kotwicą i liną na stoku
+  wolt(10,h(10,6),6,-0.9,{lamp:true,lampI:3});
+  wire(new THREE.Vector3(10.4,h(10,6)+1,6),new THREE.Vector3(20,h(20,-4)+0.2,-4),0.2,M(0xc0703a,{r:0.35,m:0.7}),0.05);
+  add(box(0.4,1,0.4,steel,20,h(20,-4)+0.3,-4));
+  particles(4000,[160,120,0,-20],0xffffff,0.14,0,30,0.7);
+  lookFrom([26,9,32],[-2,5,-12]);
+ },
+};
+(shots[shot]||shots.stacja)();
+cam.aspect=W/H;cam.updateProjectionMatrix();
+renderer.render(scene,cam);renderer.render(scene,cam);
+window.__done=true;
+</script></body></html>
