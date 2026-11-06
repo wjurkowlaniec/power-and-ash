@@ -81,12 +81,24 @@ Każde ciało Wolta to **rama bazowa** (kaseta na baterię, złącze magistrali,
 
 | Etap | Ciało | Co umożliwia |
 |---|---|---|
-| 1 | **Monocykl**: rama na jednym kole z żyroskopem, krótkie ramię chwytne, lampa | start: szybki na twardym, bezradny na schodach, piasku i błocie, mało miejsca na ładunek |
+| 1 | **Monocykl**: rama na jednym kole z żyroskopem, **ramię chwytne od samego startu**, hak holowniczy, lampa | start: szybki na twardym, bezradny na schodach, piasku i błocie, mało miejsca na ładunek |
 | 2 | Monocykl z dodatkami: drugie ramię, nawijak kabla, mały bagażnik | kabel, rozbiórka złomu, noszenie części |
 | 3 | **Latarnik**: wózek na kołach z lampą na wysięgniku, większy akumulator i więcej gniazd | dłuższa praca poza bazą, światło na mikroboty, praca w ciemnych miejscach |
 | 4+ | warianty pod teren: płozy, gąsienice, krocząca rama na stoki, pływaki | bramy metroidvanii (piasek, mokradła, góry, woda) |
 
 Wymiana modułów odbywa się w bazie albo przy żaglowozie. Zestaw modułów to w praktyce **ekwipunek i klasa naraz**: pod Szklany Zalew bierzesz chłodzenie i płozy, w góry grzałki i kroczącą ramę.
+
+### Ramię i holowanie **[ustalone 2026-11-06]**
+
+- **Ramię jest od startu**, w fabule i w grze. To nim ciało wyjmuje baterię z komory i wkłada ją w swoją ramę. Ramieniem Wolt podnosi rzeczy, przestawia dźwignie, rozbiera złom i trzyma kabel.
+- **Holowanie:** Wolt może doczepić coś do siebie i ciągnąć za sobą na linie albo haku: starą oponę, palety cegieł, skrzynkę, kawałek blachy jako sanki, później przyczepkę.
+- **Konsekwencje [propozycja]:**
+  - ciężar spowalnia i przechyla monocykl, a na zakrętach ładunek zarzuca, więc trzeba jechać łagodnie;
+  - ciągnięty ładunek ryje w popiele ślad, a na piasku i błocie stawia duży opór;
+  - lina holownicza, jak kabel, zahacza o rogi i owija się o przeszkody;
+  - kabel i lina naraz to ryzyko splątania: oba wychodzą z tyłu ramy, więc kolejność odpinania ma znaczenie;
+  - ramię zajęte trzymaniem kabla nie podniesie niczego innego.
+- **Zastosowania:** opona jako pierwsze „sanki” do zwożenia złomu, wyciąganie płozy z mułu, przeciągnięcie przeszkody, później przyczepka zamiast bagażnika.
 
 ### Zdalne sterowanie **[propozycja]**
 
