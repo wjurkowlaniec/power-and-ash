@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { Hall, HallInput, layout, RESERVE_START, RESERVE_MIN, PRY_TIME, INSERT_TIME } from '../src/game/sim/hall';
+import { Hall, HallInput, layout, RESERVE_START, RESERVE_MIN, PRY_TIME, INSERT_TIME, TETHER_MAX } from '../src/game/sim/hall';
 import { V2, sub, len } from '../src/sim/vec';
 
 const inp = (o: Partial<HallInput> = {}): HallInput => ({ move: { x: 0, y: 0 }, run: false, use: false, usePressed: false, ...o });
@@ -95,5 +95,24 @@ describe('notes in the hall', () => {
     h.update(0.5, inp({ move: { x: 1, y: 0 } }));
     expect(h.pos.x).toBeGreaterThan(p.x);
     expect(h.notesRead.has(n.id)).toBe(true);
+  });
+});
+
+describe('the diagnostic cable (the battery drives the body remotely)', () => {
+  it('keeps the body within reach of the chamber, wrapping around the chamber', () => {
+    const h = new Hall();
+    h.update(0.03, inp({ usePressed: true })); idle(h, 3);
+    // the far south-east corner is out of reach
+    walkTo(h, { x: 13.5, y: 7.5 }, 20);
+    walkTo(h, { x: 13.4, y: 10.6 }, 20);
+    expect(h.tetherLength()).toBeLessThanOrEqual(TETHER_MAX + 0.01);
+    expect(h.pos.y).toBeLessThan(10.4);
+    // the test 4411 printout behind the chamber is reachable around its corner
+    const h2 = new Hall();
+    h2.update(0.03, inp({ usePressed: true })); idle(h2, 3);
+    expect(walkTo(h2, { x: 8.3, y: 7.2 })).toBe(true);
+    expect(walkTo(h2, { x: 12.6, y: 7.0 })).toBe(true);
+    expect(walkTo(h2, { x: 13.2, y: 2.6 })).toBe(true);
+    expect(h2.tether!.anchors.length).toBeGreaterThan(1);
   });
 });

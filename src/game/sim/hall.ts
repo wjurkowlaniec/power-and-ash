@@ -1,9 +1,13 @@
 import { V2, dist, len, scale } from '../../sim/vec';
 import { World, Obstacle } from '../../sim/world';
+import { Cable } from '../../sim/cable';
 
 /**
- * Scene 1. Hala pomiarowa (docs/POCZATEK.md), pure logic. Wolt wakes up in a dead
- * service cradle on 4% reserve. A pulsing light leads to the test chamber with the Q-1
+ * Scene 1. Hala pomiarowa (docs/POCZATEK.md), pure logic. The player is the Q-1
+ * battery, locked in the test chamber. Through a diagnostic cable it drives the only
+ * machine on the test bench: an empty one-wheeled service body standing in a dead
+ * cradle on 4% of its own reserve. The cable wraps around obstacles and limits how
+ * far the body can roll from the chamber. A pulsing light leads to the test chamber with the Q-1
  * battery. The chamber's emergency lever is too stiff for him: pry it with the pipe
  * lying by the wall. Take the battery, put it in the chest socket: colour, sound and
  * smooth movement come back. Then push the heavy door open and leave.
@@ -27,6 +31,8 @@ export const INSERT_TIME = 2.6;     // s of taking the battery and putting it in
 export const WAKE_TIME = 2.2;       // s of standing up from the cradle
 export const BATTERY_CHARGE = 58;   // % in the Q-1 when found
 export const BATTERY_POWER = 200;   // W it can give at once
+export const TETHER_MAX = 9;        // m of diagnostic cable from the chamber
+export const TETHER_WARN = 7.5;     // m: the cable starts to pull
 
 export type HallPoint = 'pipe' | 'lever' | 'battery' | 'door' | 'note';
 export type HallEvent = 'stand' | 'step' | 'strain' | 'pickup' | 'pry' | 'open' | 'take' | 'insert' | 'log' | 'door' | 'exit' | 'deny' | 'note';
@@ -44,6 +50,8 @@ export const layout = {
   batteryUse: { x: 10.5, y: 6.75 },
   battery: { x: 10.5, y: 4.5 },
   door: { x: 15.35, y: 5.5 },
+  /** Where the diagnostic cable leaves the chamber base (south-west corner). */
+  tether: { x: 8.85, y: 6.15 },
   /** Notes lying around: a clipboard by the cradle, the test 4411 printout by the test stand. */
   notes: [{ id: 'protokol', x: 4.4, y: 3.7 }, { id: 'raport4411', x: 13.2, y: 2.5 }],
   puddle: { x: 7, y: 8.2 },
@@ -69,6 +77,8 @@ export function hallObstacles(): Obstacle[] {
 
 export class Hall {
   readonly world = new World(HALL_W, HALL_H, hallObstacles());
+  /** Diagnostic cable chamber → body; null once the battery is in the body. */
+  tether: Cable | null = new Cable(layout.tether, layout.start);
   pos: V2 = { ...layout.start };
   facing = Math.PI; // looking west at first, lying in the cradle
   moving = false;
@@ -140,7 +150,7 @@ export class Hall {
         return this.hasPipe
           ? { key: 'E', text: 'przytrzymaj: podważ dźwignię rurą', at: L.lever, ok: true, progress: this.pry / PRY_TIME }
           : { key: 'E', text: 'dźwignia awaryjna', at: L.lever, ok: true };
-      case 'battery': return { key: 'E', text: 'weź baterię', at: L.battery, ok: true };
+      case 'battery': return { key: 'E', text: 'weź baterię i wepnij w kasetę ramy', at: L.battery, ok: true };
       case 'note': {
         const n = L.notes.find(q => q.id === this.noteAt)!;
         return { key: 'E', text: this.notesRead.has(n.id) ? 'przeczytaj jeszcze raz' : 'przeczytaj', at: n, ok: true };
@@ -183,7 +193,7 @@ export class Hall {
       this.insertT += dt;
       this.facing = Math.atan2(layout.battery.y - this.pos.y, layout.battery.x - this.pos.x);
       if (this.insertT >= INSERT_TIME) {
-        this.insertT = 0; this.powered = true; this.events.push('insert');
+        this.insertT = 0; this.powered = true; this.tether = null; this.events.push('insert');
       }
       return;
     }
@@ -204,14 +214,19 @@ export class Hall {
     const dir = m > 1 ? scale(inp.move, 1 / m) : inp.move;
     this.facing = Math.atan2(dir.y, dir.x);
     let sp = this.speed() * (this.powered && inp.run ? RUN_MULT : 1);
+    // the cable pulls back near its end
+    if (this.tether && this.tetherLength() > TETHER_WARN) sp *= 0.6;
     // reserve mode: motion comes in weak jerks
     if (!this.powered) sp *= 0.7 + 0.3 * Math.abs(Math.sin(this.t * 5.5));
     const step = scale(dir, sp * dt);
     const before = { ...this.pos };
     const tx = { x: this.pos.x + step.x, y: this.pos.y };
-    if (!this.world.circleBlocked(tx, PLAYER_R) && this.inside(tx)) this.pos = tx;
+    if (!this.world.circleBlocked(tx, PLAYER_R) && this.inside(tx) && this.tetherOk(tx)) this.pos = tx;
     const ty = { x: this.pos.x, y: this.pos.y + step.y };
-    if (!this.world.circleBlocked(ty, PLAYER_R) && this.inside(ty)) this.pos = ty;
+    if (!this.world.circleBlocked(ty, PLAYER_R) && this.inside(ty) && this.tetherOk(ty)) this.pos = ty;
+    this.tether?.moveEnd(this.world, this.pos);
+    if (this.tether && this.tetherLength() > TETHER_MAX - 0.15 && this.t - (this.message?.t ?? -99) > 6)
+      this.say('Kabel diagnostyczny nie puści dalej. Ciało jest na smyczy komory.');
     const d = dist(before, this.pos);
     this.walked += d;
     if (!this.powered) this.drain(d * RESERVE_PER_M);
@@ -223,6 +238,17 @@ export class Hall {
   private inside(p: V2): boolean {
     if (p.x > HALL_W - PLAYER_R && this.doorOpen >= 1 && p.y > 4.6 && p.y < 6.4) return true;
     return p.x >= PLAYER_R && p.y >= PLAYER_R && p.x <= HALL_W - PLAYER_R && p.y <= HALL_H - PLAYER_R;
+  }
+
+  tetherLength(): number { return this.tether ? this.tether.length() : 0; }
+
+  /** Would moving the body to p keep the diagnostic cable within reach? */
+  private tetherOk(p: V2): boolean {
+    if (!this.tether) return true;
+    const c = this.tether.clone();
+    c.moveEnd(this.world, p);
+    const l = c.length();
+    return l <= TETHER_MAX || l < this.tether.length();
   }
 
   private drain(pct: number) { this.reserve = Math.max(RESERVE_MIN, this.reserve - pct); }
