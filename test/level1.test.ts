@@ -82,3 +82,36 @@ describe('level 1 "Rozruch"', () => {
     expect(Math.hypot(g.pos.x - 17, g.pos.y - 24.5)).toBeGreaterThan(1.6);
   });
 });
+
+describe('wind', () => {
+  it('drifts within sane bounds and gusts come and go', async () => {
+    const { Wind } = await import('../src/sim/wind');
+    const w = new Wind(3);
+    let minS = Infinity, maxS = 0, gusts = 0, prevGust = 0;
+    const d0 = w.dir;
+    let maxTurn = 0;
+    for (let t = 0; t < 600; t += 0.1) {
+      w.update(0.1);
+      minS = Math.min(minS, w.strength); maxS = Math.max(maxS, w.strength);
+      if (w.gust > 0.3 && prevGust <= 0.3) gusts++;
+      prevGust = w.gust;
+      maxTurn = Math.max(maxTurn, Math.abs(w.dir - d0));
+    }
+    expect(minS).toBeGreaterThan(0.4);
+    expect(maxS).toBeLessThan(25);
+    expect(gusts).toBeGreaterThan(5);
+    expect(maxTurn).toBeGreaterThan(0.3);
+  });
+});
+
+describe('Wolt facing', () => {
+  it('faces the walking direction even when the cursor is behind him', () => {
+    const g = new Game(level1());
+    g.pos = { x: 30, y: 40 };
+    for (let i = 0; i < 30; i++) g.update(DT, { ...idle(), move: { x: 1, y: 0 }, aim: { x: 20, y: 40 } });
+    expect(Math.cos(g.facing)).toBeGreaterThan(0.99);
+    // standing still, he turns to the cursor
+    g.update(DT, { ...idle(), aim: { x: 20, y: 40 } });
+    expect(Math.cos(g.facing)).toBeLessThan(-0.99);
+  });
+});

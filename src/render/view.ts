@@ -210,8 +210,11 @@ export class View {
     w.legs[1].position.y = 0.21 + (g.moving ? Math.max(0, -Math.sin(this.walkPhase)) * 0.08 : 0);
     w.reel.rotation.z += g.moving && g.held ? dt * 8 : 0;
 
-    // yacht turbines always spin
-    for (const [i, r] of this.yacht.turbines.entries()) r.rotation.z += dt * (2.2 + i * 0.4);
+    // wind: sail, turbines
+    const wind = g.wind;
+    const str = wind.strength;
+    this.yacht.sail.update(dt, t, wind.dir - this.yacht.group.rotation.y, str);
+    for (const [i, r] of this.yacht.turbines.entries()) r.rotation.z += dt * (0.3 + str * 0.45 + i * 0.2);
 
     // yacht battery, port, fabricator
     const pct = g.batteryPct();
@@ -250,8 +253,9 @@ export class View {
     // drifting ash
     const dp = this.dust.geometry.attributes.position as THREE.BufferAttribute;
     for (let i = 0; i < dp.count; i++) {
-      let x = dp.getX(i) + dt * (0.9 + (i % 7) * 0.12), y = dp.getY(i) - dt * 0.12, z = dp.getZ(i) + Math.sin(t + i) * dt * 0.1;
-      if (x > 30) x -= 60; if (y < 0) y += 8;
+      const sp = (0.3 + str * 0.25) * (0.8 + (i % 7) * 0.06);
+      let x = dp.getX(i) + Math.cos(wind.dir) * sp * dt, y = dp.getY(i) - dt * 0.12, z = dp.getZ(i) + Math.sin(wind.dir) * sp * dt + Math.sin(t + i) * dt * 0.1;
+      if (x > 30) x -= 60; if (x < -30) x += 60; if (z > 25) z -= 50; if (z < -25) z += 50; if (y < 0) y += 8;
       dp.setXYZ(i, x, y, z);
     }
     dp.needsUpdate = true;

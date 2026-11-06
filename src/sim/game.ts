@@ -3,6 +3,7 @@ import { World, Obstacle, Material } from './world';
 import { Cable } from './cable';
 import { LevelDef, PortDef, StationPoint } from './level';
 import { PowerNode, solveNetworks, NetworkState } from './power';
+import { Wind } from './wind';
 
 export const CABLE_MAX = 20;      // m per segment
 export const CABLE_WARN = 18;     // m, orange + slowdown
@@ -66,6 +67,7 @@ export class Game {
   removed: Obstacle[] = [];
   networks = new Map<string, NetworkState>();
   readonly nodes: PowerNode[];
+  readonly wind = new Wind(7);
 
   constructor(readonly level: LevelDef) {
     this.world = new World(level.width, level.height, level.obstacles);
@@ -191,12 +193,14 @@ export class Game {
   // ---------- simulation
   update(dt: number, inp: Input) {
     this.time += dt;
+    this.wind.update(dt);
     if (this.phase === 'play') {
-      if (inp.aim) {
-        const d = sub(inp.aim, this.pos);
-        if (len(d) > 0.05) this.facing = Math.atan2(d.y, d.x);
-      }
       this.movePlayer(dt, inp);
+      // walking: face where you go; standing still: turn towards the cursor (the lamp follows it)
+      if (!this.moving && inp.aim) {
+        const d = sub(inp.aim, this.pos);
+        if (len(d) > 0.6) this.facing = Math.atan2(d.y, d.x);
+      }
       if (inp.interact) this.interact();
       this.updateSalvage(dt, inp);
       this.updateCraft(dt);
@@ -216,7 +220,7 @@ export class Game {
     this.moving = m > 0.01;
     if (!this.moving) return;
     const dir = m > 1 ? scale(inp.move, 1 / m) : inp.move;
-    if (!inp.aim) this.facing = Math.atan2(dir.y, dir.x);
+    this.facing = Math.atan2(dir.y, dir.x);
     let speed = WALK_SPEED * (inp.run ? RUN_MULT : 1);
     if (this.held && this.heldLength() >= CABLE_WARN) speed *= TENSION_SLOW;
     const step = scale(dir, speed * dt);

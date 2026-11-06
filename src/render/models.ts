@@ -1,6 +1,7 @@
 import * as THREE from 'three';
 import { PAL } from './palette';
 import { Obstacle } from '../sim/world';
+import { Sail } from './sail';
 
 let seed = 11;
 export const rnd = () => ((seed = (seed * 16807) % 2147483647) / 2147483647);
@@ -95,7 +96,7 @@ export function obstacleMesh(o: Obstacle): THREE.Object3D {
   return g;
 }
 
-export interface YachtModel { group: THREE.Group; turbines: THREE.Object3D[]; port: THREE.Mesh; battery: THREE.Mesh; fabLight: THREE.Mesh; wheels: THREE.Mesh[]; sail: THREE.Mesh }
+export interface YachtModel { group: THREE.Group; turbines: THREE.Object3D[]; port: THREE.Mesh; battery: THREE.Mesh; fabLight: THREE.Mesh; wheels: THREE.Mesh[]; sail: Sail }
 
 export function yachtModel(r: { x: number; y: number; w: number; h: number }, portLocal: THREE.Vector3): YachtModel {
   const g = new THREE.Group();
@@ -128,9 +129,9 @@ export function yachtModel(r: { x: number; y: number; w: number; h: number }, po
   for (let i = 0; i < 3; i++) g.add(box(0.85, 0.85, 0.85, mat(0x5a4a3a), -1.2 + i * 0.95, 2.05, 2.0));
   // mast + sail
   g.add(mesh(new THREE.CylinderGeometry(0.1, 0.14, 10, 8), steel, 1.2, 6.6, 0));
-  const s = new THREE.Shape(); s.moveTo(0, 0); s.lineTo(0, 8.4); s.lineTo(5, 0.2); s.lineTo(0, 0);
-  const sail = mesh(new THREE.ShapeGeometry(s), new THREE.MeshStandardMaterial({ color: 0xd9d4c7, side: THREE.DoubleSide, roughness: 1 }), 1.25, 2.1, 0);
-  sail.rotation.y = -0.5; g.add(sail);
+  const sail = new Sail(5, 8.4);
+  sail.group.position.set(1.2, 2.15, 0);
+  g.add(sail.group);
   // turbines
   const turbines: THREE.Object3D[] = [];
   for (const [x, z, h] of [[4, -1.6, 3.8], [-0.8, -2.0, 3.2]]) {
