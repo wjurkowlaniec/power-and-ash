@@ -10,28 +10,29 @@ Oznaczenia: **[ustalone]** to decyzja Wojtka, **[propozycja]** to mój pomysł d
 2. [Ton i styl](#ton-i-styl)
 3. [Historia świata](#historia-świata)
 4. [Bateria Q-1](#bateria-q-1)
-5. [Notatki i archiwum](#notatki-i-archiwum)
-6. [Wolt](#wolt)
-7. [Rozwój: obliczenia w tle](#rozwój-obliczenia-w-tle)
-8. [Żaglowóz](#żaglowóz)
-9. [Ludzie i bunkry](#ludzie-i-bunkry)
-10. [Czas: doba, pory roku, hibernacja](#czas-doba-pory-roku-hibernacja)
-11. [Bazy](#bazy)
-12. [Zagrożenia](#zagrożenia)
-13. [Mapa świata i obszary](#mapa-świata-i-obszary)
-14. [Łuk fabularny](#łuk-fabularny)
-15. [Gra po fabule](#gra-po-fabule)
-16. [Otwarte pytania](#otwarte-pytania)
+5. [Ciała i transfer](#ciała-i-transfer)
+6. [Notatki i archiwum](#notatki-i-archiwum)
+7. [Wolt](#wolt)
+8. [Rozwój: obliczenia w tle](#rozwój-obliczenia-w-tle)
+9. [Żaglowóz](#żaglowóz)
+10. [Ludzie i bunkry](#ludzie-i-bunkry)
+11. [Czas: doba, pory roku, hibernacja](#czas-doba-pory-roku-hibernacja)
+12. [Bazy](#bazy)
+13. [Zagrożenia](#zagrożenia)
+14. [Mapa świata i obszary](#mapa-świata-i-obszary)
+15. [Łuk fabularny](#łuk-fabularny)
+16. [Gra po fabule](#gra-po-fabule)
+17. [Otwarte pytania](#otwarte-pytania)
 
 ## W jednym akapicie
 
-Wolt to automat badawczy z wyzerowaną pamięcią. Budzi się w stacji pomiarowej jako jedyna rzecz w okolicy, która się ruszyła, i zabiera ze sobą baterię: kwantowy prototyp z misji, w której brał udział. Bateria podtrzymuje go przy życiu, a przeskalowana mogłaby dać światu nieograniczoną, czystą energię. Ludzie przetrwali w bunkrach i brakuje im prądu. Wolt przez wiele lat, z hibernacjami na zimę, odkrywa, czym jest bateria, uczy się ludzi, adaptuje stare bazy i odbudowuje sieć energii. Gra nie kończy się wraz z fabułą. **[ustalone]**
+Wolt to kwantowa bateria, prototyp z misji badawczej, która myśli i steruje ciałami maszyn. Budzi się w stacji pomiarowej jako jedyna rzecz w okolicy, która się ruszyła, przejmuje pusty automat serwisowy na jednym kole i od tej pory zawsze jest w jego ramie. Ciało rozbudowuje, a później steruje zdalnie innymi maszynami i przenosi się do innych ciał. Bateria, a przeskalowana mogłaby dać światu nieograniczoną, czystą energię. Ludzie przetrwali w bunkrach i brakuje im prądu. Wolt przez wiele lat, z hibernacjami na zimę, odkrywa, czym jest, czyli czym jest bateria, uczy się ludzi, adaptuje stare bazy i odbudowuje sieć energii. Gra nie kończy się wraz z fabułą. **[ustalone]**
 
 ## Ton i styl
 
 - **Samotność i cisza jak w Inside.** Historia opowiadana otoczeniem, prawie bez tekstu. Żadnych dialogów w dymkach na początku gry. **[ustalone]**
 - **Przyszłość, ale europejska.** Krajobraz i przyroda środkowej Europy: łąki, olszyny, mokradła, zbiorniki zaporowe, łagodne wzgórza, a dalej góry. Architektura nie amerykańska, ale też bez kiczu PRL-u czy PGR-ów: ma być czuć Europę w kształcie terenu, materiałach i proporcjach. **[ustalone]**
-- **Paleta:** wyblakła, popielna. Kolor zarezerwowany dla ważnych rzeczy: zielone serce baterii, sodowa lampa Wolta, miedziany kabel, przekaźniki, światła bunkrów.
+- **Paleta:** wyblakła, popielna. Kolor zarezerwowany dla ważnych rzeczy: blade okienko i dioda kasety baterii, sodowa lampa Wolta, miedziany kabel, przekaźniki, światła bunkrów.
 - **Dźwięk:** ambient otoczenia (wiatr, woda, metal, owady, odległe brzęczenie linii). Bateria ma własny, niski puls, który jest emocjonalnym „głosem” gry.
 - **Popiół** pokrywa świat cienką warstwą jak szary szron. Wiosną przebija się przez niego zieleń, latem robi się kurz, jesienią mokra breja, zimą miesza się ze śniegiem.
 
@@ -54,21 +55,58 @@ Konsekwencja dla gry: ludzie, którzy pamiętają Popiół, mają dobry powód, 
 
 ## Bateria Q-1
 
-- **Serce Wolta i oś fabuły.** Wolt to w praktyce bateria z ciałem. **[ustalone]**
+- **Serce i umysł Wolta, oś fabuły.** Bateria jest inteligencją i to ona steruje. Ciało jest narzędziem (patrz [Ciała i transfer](#ciała-i-transfer)). **[ustalone]**
 - **Przedmiot bazowy, który rośnie:** z czasem odblokowuje kolejne umiejętności, niekoniecznie w kolejności fabularnej. **[ustalone]**
-- **Wyjęcie baterii:** czasem trzeba ją oddać do analizy. Wolt działa wtedy na rezerwie, w trybie czarno-białym jak na samym początku, i walczy o przetrwanie. **[ustalone]**
-- **Śmierć:** ciało pada, a bateria powoli odbudowuje minimalne ciało, którym da się poczłapać. Karą jest stracony czas. **[ustalone]**
+- **Bateria zawsze jest w Tobie.** Nie oddaje się jej do analizy. Analiza odbywa się przez wpięcie całego Wolta w jednostkę analityczną: przez ten czas ciało stoi unieruchomione w kołysce, a gracz może tylko zdalnie sterować tym, co ma pod kablem. Momenty przetrwania biorą się teraz z ciała zostawionego bez opieki. **[ustalone, zastępuje „wyjęcie baterii”]**
+- **Śmierć:** ciało pada, a bateria przetrwa w swojej kasecie. Powoli stawia ramę bazową w trybie awaryjnym (gołe koło monocyklu), którą da się doturlać do bazy. Albo przejmuje najbliższą maszynę pod kablem. Karą jest stracony czas. **[ustalone]**
 
 Umiejętności baterii (kolejność orientacyjna):
 
 | Umiejętność | Co daje | Status |
 |---|---|---|
 | **Echo** | kierunkowy puls w stronę innych prototypów i obiektów misji, kompas fabularny | ustalone |
-| **Rezerwa** | po wyjęciu baterii Wolt działa jeszcze kilka minut, później dłużej | propozycja |
+| **Zasięg** | dłuższe i stabilniejsze zdalne sterowanie, najpierw po kablu, potem radiowo | propozycja |
 | **Impuls EMP** | rozprasza mikroboty i zakłóca obce maszyny, kosztuje dużo energii | ustalone (później) |
 | **Rezonans** | ładuje urządzenia w pobliżu bez kabla, na krótki dystans | propozycja |
-| **Pamięć miejsc** | punkty, w których bateria może odbudować ciało po śmierci (zamiast w bazie) | propozycja |
+| **Pamięć miejsc** | zapasowe ciała w bazach, do których bateria wraca po śmierci | propozycja |
 | **Dobieranie** | bateria powoli sama się ładuje z otoczenia, ale przy tym coś „wysysa” (rośliny więdną, mikroboty uciekają). Echo katastrofy Q-2. | propozycja |
+
+## Ciała i transfer
+
+**[ustalone kierunkowo, 2026-11-06]** To bateria jest inteligencją i to ona naprawdę steruje. Ciało jest narzędziem. Bateria **zawsze jest w Tobie**, nie oddajesz jej nikomu, ale możesz **zdalnie sterować innymi maszynami** i z czasem **przenosić się do innych ciał**. Ciało ma wspólną ramę bazową, którą się rozbudowuje: najpierw monocykl, potem Latarnik i dalej.
+
+### Rama bazowa i etapy ciała **[propozycja]**
+
+Każde ciało Wolta to **rama bazowa** (kaseta na baterię, złącze magistrali, gniazda modułów) i moduły, które się do niej dokłada. Rozbudowa idzie jak przy żaglowozie: z części znalezionych w świecie, krok po kroku, ręcznie.
+
+| Etap | Ciało | Co umożliwia |
+|---|---|---|
+| 1 | **Monocykl**: rama na jednym kole z żyroskopem, krótkie ramię chwytne, lampa | start: szybki na twardym, bezradny na schodach, piasku i błocie, mało miejsca na ładunek |
+| 2 | Monocykl z dodatkami: drugie ramię, nawijak kabla, mały bagażnik | kabel, rozbiórka złomu, noszenie części |
+| 3 | **Latarnik**: wózek na kołach z lampą na wysięgniku, większy akumulator i więcej gniazd | dłuższa praca poza bazą, światło na mikroboty, praca w ciemnych miejscach |
+| 4+ | warianty pod teren: płozy, gąsienice, krocząca rama na stoki, pływaki | bramy metroidvanii (piasek, mokradła, góry, woda) |
+
+Wymiana modułów odbywa się w bazie albo przy żaglowozie. Zestaw modułów to w praktyce **ekwipunek i klasa naraz**: pod Szklany Zalew bierzesz chłodzenie i płozy, w góry grzałki i kroczącą ramę.
+
+### Zdalne sterowanie **[propozycja]**
+
+Bateria może przejąć sterowanie inną maszyną: po kablu (od początku), a później radiowo, gdy ma antenę i zna protokół tej maszyny.
+
+- **Co można przejąć:** dźwig w porcie, drona pomiarowego, pompę, suwnicę w hali, stary automat strażniczy, wózek kopalniany, a później sam żaglowóz.
+- **Koszt i ryzyko:** gdy sterujesz czymś zdalnie, Twoje ciało stoi bez ruchu tam, gdzie je zostawiłeś. Marznie, moknie, a mikroboty mogą podgryzać jego akumulator. To zastępuje dawne „wyjęcie baterii” jako moment napięcia: zawsze ryzykujesz ciało, które zostawiłeś.
+- **Zasięg:** po kablu tyle, ile kabla, a przez radio tyle, ile sięga antena. Kable i anteny, czyli sieć, stają się więc też siecią sterowania.
+- **Protokoły:** zanim przejmiesz nowy typ maszyny, system uczący się musi go przeanalizować (obliczenia w tle). Notatki techników z instrukcjami przyspieszają analizę.
+- **Zastosowania:** zagadki (dźwig podnosi kontener, a Wolt stoi przy porcie), zwiad dronem przed burzą, praca w dwóch miejscach naraz, obrona bazy. To też naturalna furtka do automatyzacji w przyszłości: maszyna zostawiona w bazie z prostym zadaniem.
+
+### Transfer **[propozycja]**
+
+Późniejszy etap: bateria fizycznie przenosi się do innego ciała. Kasetę przekłada się do innej ramy, np. do mocnego ciała górskiego, a stare zostaje w bazie jako zapasowe. Na początku transfer wymaga pomocy (dźwigu, drugiej maszyny sterowanej zdalnie), później ciało potrafi samo wysunąć kasetę i wpiąć się w nową ramę.
+
+### Co z tego wynika dla fabuły **[propozycja]**
+
+- Notatki z testu 4411 sugerują, że ogniwo „uczy się” i że zespół nie był pewien, kto kim steruje: automat ogniwem czy ogniwo automatem.
+- Zwrot: **Wolt to bateria**, a nie robot. Imię „Wolt” dostał automat serwisowy, ale prawdziwa ciągłość to ogniwo, które przechodziło przez kolejne ciała.
+- Ludzie, którzy to zrozumieją, zaczną traktować Wolta inaczej: jako kogoś, a nie coś. Albo jako zagrożenie, bo potrafi przejąć każdą maszynę.
 
 ## Notatki i archiwum
 
@@ -141,11 +179,11 @@ Parametry Wolta **[propozycja]**:
 | Wilgotność | mgła, woda, rosa, deszcz: iskrzenie, szarpane ruchy, w końcu zwarcie | grzanie, osuszacz, powłoka |
 | Zużycie ciała | stawy, serwa, oko | wymiana części, smar |
 
-Ulepszenia Wolta to zamienne moduły: izolacja, radiator, osuszacz, mocniejsza lampa, dłuższy kabel własny, nawijak o większej pojemności, czujniki (wilgotność gruntu, prąd w ziemi, ślady mikrobotów).
+Ulepszenia Wolta to zamienne moduły na ramie bazowej (patrz [Ciała i transfer](#ciała-i-transfer)): izolacja, radiator, osuszacz, mocniejsza lampa, dłuższy kabel własny, nawijak o większej pojemności, czujniki (wilgotność gruntu, prąd w ziemi, ślady mikrobotów).
 
 ## Rozwój: obliczenia w tle
 
-**[ustalone kierunkowo]** Rozwój nie jest drzewkiem, które klika się za punkty, i nie jest przypięty sztywno do fabuły. Na pokładzie Wolta (a później w bazach) działa **uczący się system**, który przy każdej interakcji z światem zbiera dane i powoli z nich wyciąga wnioski. Im więcej prądu, tym szybciej myśli.
+**[ustalone kierunkowo]** Rozwój nie jest drzewkiem, które klika się za punkty, i nie jest przypięty sztywno do fabuły. Tym **uczącym się systemem** jest sama bateria (a później wspierają ją jednostki w bazach). To ona, który przy każdej interakcji z światem zbiera dane i powoli z nich wyciąga wnioski. Im więcej prądu, tym szybciej myśli.
 
 **[propozycja] Jak to działa:**
 
@@ -157,7 +195,7 @@ Ulepszenia Wolta to zamienne moduły: izolacja, radiator, osuszacz, mocniejsza l
   2. **Jednostka analityczna** w bazie (np. stara szafa serwerowa z wieży radiolinii): liczy, gdy Wolta nie ma, ale potrzebuje stałego zasilania i chłodzenia.
   3. **Sieć baz:** połączone anteną bazy liczą razem. Daleka baza z wiatrakiem może całą zimę przerabiać dane, gdy Wolt śpi.
 - **Hibernacja i nauka.** Długi sen z dobrze zasiloną bazą to dużo obliczeń. To jeden z powodów, dla których warto spać dłużej.
-- **Analiza baterii** to największe zadanie obliczeniowe w grze, rozbite na etapy. Każdy etap to fragment prawdy o Q-1 i nowa umiejętność. Do niektórych etapów trzeba baterię wyjąć i włożyć do jednostki analitycznej, co spina się z momentami przetrwania na rezerwie.
+- **Analiza baterii** to największe zadanie obliczeniowe w grze, rozbite na etapy. Każdy etap to fragment prawdy o Q-1 i nowa umiejętność. Do niektórych etapów trzeba wpiąć całego Wolta w jednostkę analityczną, a ciało stoi wtedy unieruchomione.
 
 **Przykład:** Wolt rozbiera stary falownik z wiatraka. Wpis: „nowa próbka: falownik, nieznany standard”. W nocy, gdy turbina daje nadwyżkę, system liczy przez dwie doby gry. Rano: „zrozumiano standard złącza wiatraka, dostępny przepis: przejściówka”. Gracz nie musiał nic klikać, ale gdyby turbina stała, czekałby dłużej.
 
@@ -397,6 +435,8 @@ Decyzja na końcu nie zamyka gry, tylko zmienia świat dalej.
 - Czy Popiół jako skutek katastrofy Q-2 jest OK? To mocno ustawia ton i stosunek ludzi do baterii.
 - Kto budzi Wolta i dlaczego teraz.
 - Ile umiejętności baterii i w jakiej kolejności.
+- Ile ciał i modułów, i które maszyny da się przejąć zdalnie.
+- Czy transfer do innego ciała jest od połowy gry, czy dopiero późno.
 - Ile notatek na obszar i jak bardzo mają prowadzić za rękę.
 - Kolejne obszary poza czterema ustalonymi.
 - Rytm psucia się żaglowozu i sprzętu.
