@@ -9,47 +9,8 @@
 </head>
 <body>
 <div id="app"></div>
-<div id="vignette"></div>
-<div id="hud">
-  <div class="panel tl" id="vitals">
-    <div class="row lbl"><span>WOLT · BATERIA</span><span id="enNum"></span></div><div class="bar"><i id="en"></i></div>
-    <div class="dim" id="enRate"></div>
-    <div class="lbl" style="margin-top:8px">KADŁUB</div><div class="bar"><i id="hp" style="width:100%"></i></div>
-  </div>
-  <div class="panel tr" id="clock"><span>13:40</span><span class="dim">wiatr ← 6 m/s</span></div>
-  <div class="panel goals" id="goals"></div>
-  <div class="panel inv" id="inv"></div>
-  <div class="bl" id="hotbar"></div>
-  <div class="panel br" id="cablePanel"></div>
-  <div class="panel br2" id="netPanel" hidden></div>
-  <div class="tip" id="tip" hidden></div>
-  <div class="toasts" id="toasts"></div>
-  <div class="hover" id="hover" hidden></div>
-  <div class="ctx" id="ctx" hidden></div>
-  <div class="help" id="help">
-    <b>LPM</b> idź / użyj (przytrzymaj: prowadź) · <b>PPM</b> menu · <b>WASD</b> ruch · <b>Shift</b> bieg · <b>E</b> użyj · <b>Q</b> zwiń · <b>L</b> światło · <b>kółko</b> zoom · <b>M</b> dźwięk · <b>H</b> pomoc
-  </div>
-</div>
-<div id="start">
-  <div class="card">
-    <h1>Popiół i Prąd</h1>
-    <p class="lbl">Poziom 1 · Rozruch</p>
-    <p>Bateria żaglowozu jest pusta. Stara Stacja 2 za ścianą kontenerów wciąż ma sprawne panele. Rozbierz złom, wytwórz w fabrykatorze 20 m kabla, połącz stację z żaglowozem, poczekaj na ładowanie i odjedź.</p>
-    <p>Kabel owija się o przeszkody i liczy się długość trasy, a nie odległość w linii prostej.</p>
-    <p>Wolt ma własną małą baterię: ruch, bieg, światło i rozbieranie ją zużywają, a postój powoli ładuje. Przy porcie Stacji 2 ładuje się szybko.</p>
-    <p class="keys"><b>LPM</b> idź / użyj &nbsp; <b>PPM</b> menu &nbsp; <b>WASD</b> ruch &nbsp; <b>E</b> użyj &nbsp; <b>Q</b> zwiń &nbsp; <b>L</b> światło &nbsp; <b>kółko</b> zoom</p>
-    <button id="go" type="button">Zacznij (z dźwiękiem)</button>
-    <p class="small">prototyp · logika w czystym TS, render Three.js</p>
-  </div>
-</div>
-<div id="end" hidden>
-  <div class="card">
-    <p class="lbl">Poziom 1 · Rozruch</p>
-    <h1>Żaglowóz w drodze</h1>
-    <p id="endStats"></p>
-    <button id="again" type="button">Zagraj jeszcze raz</button>
-  </div>
-</div>
-<script type="module" src="/src/main.ts"></script>
+<div id="hud"><div class="skip" id="skip">przytrzymaj spację, by pominąć</div></div>
+<div id="wake" class="loading"><p id="wakeText">…</p></div>
+<script type="module" src="/src/game/main.ts"></script>
 </body>
 </html>

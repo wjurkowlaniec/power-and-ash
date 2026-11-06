@@ -3,7 +3,11 @@
 Top-down gra survivalowa w przeglądarce. Automat serwisowy Wolt ciągnie kable przez pustynię popiołu,
 żeby z lądowego jachtu Żaglowozu ponownie zasilić stare stacje przesyłowe.
 
-**Zagraj:** https://wjurkowlaniec.github.io/power-and-ash/
+**Gra:** https://wjurkowlaniec.github.io/power-and-ash/ (fabuła od początku, sceny z [docs/POCZATEK.md](docs/POCZATEK.md))
+
+**Tech demo:** https://wjurkowlaniec.github.io/power-and-ash/demo/ (poziom „Rozruch”, poligon do testowania mechanik)
+
+Gra i demo są w jednym repo i dzielą kod silnika (`src/sim`, `src/render`, `src/audio`). Gra ma swoje wejście `index.html` → `src/game/main.ts`, demo `demo/index.html` → `src/main.ts`. W grze `?scene=hall` przeskakuje do wybranej sceny (do testów), a przytrzymana spacja pomija Scenę 0.
 
 - [Plan implementacji i kamienie milowe](docs/PLAN.md)
 - [Dokument projektowy](docs/design.html) (research gatunku, koncepcja, zasady kabli, wizualizacje)
