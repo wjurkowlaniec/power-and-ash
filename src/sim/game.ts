@@ -3,6 +3,7 @@ import { World, Obstacle, Material } from './world';
 import { Cable } from './cable';
 import { LevelDef, PortDef, StationPoint } from './level';
 import { PowerNode, solveNetworks, NetworkState } from './power';
+import { Wind } from './wind';
 
 export const CABLE_MAX = 20;      // m per segment
 export const CABLE_WARN = 18;     // m, orange + slowdown
@@ -66,6 +67,7 @@ export class Game {
   removed: Obstacle[] = [];
   networks = new Map<string, NetworkState>();
   readonly nodes: PowerNode[];
+  readonly wind = new Wind(7);
 
   constructor(readonly level: LevelDef) {
     this.world = new World(level.width, level.height, level.obstacles);
@@ -191,6 +193,7 @@ export class Game {
   // ---------- simulation
   update(dt: number, inp: Input) {
     this.time += dt;
+    this.wind.update(dt);
     if (this.phase === 'play') {
       if (inp.aim) {
         const d = sub(inp.aim, this.pos);

@@ -57,6 +57,7 @@ hotbar.innerHTML = ['chwytak', 'rozbier.', 'kabel', 'kołek', 'lampa', 'extender
 let lastToastCount = 0;
 
 function hud() {
+  $('clock').innerHTML = `<span>13:40</span><span class="dim">wiatr ${game.wind.arrow()} ${game.wind.strength.toFixed(0)} m/s${game.wind.gust > 0.4 ? ' · podmuch' : ''}</span>`;
   const st = game.cableState();
   const l = game.heldLength();
   const max = game.segmentMax();
@@ -144,6 +145,7 @@ function loop(now: number) {
     const stPos = game.ports.find(p => p.id === 'station')!.pos;
     sound.update(dt, {
       humNear: Math.max(0.05, 1 - dist(game.pos, stPos) / 14),
+      wind: game.wind.strength / 12,
       tension: st === 'limit' && moved === false && (mx || my) ? 1 : st === 'tense' ? 0.25 : 0,
     });
   }

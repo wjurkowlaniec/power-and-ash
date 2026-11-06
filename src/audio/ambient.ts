@@ -13,7 +13,7 @@ export class Sound {
   private humGain!: GainNode;
   private tensionGain!: GainNode;
   private nextCreak = 4;
-  private gust = 0;
+  private gust = 0.4;
   private gustTarget = 0.4;
   muted = false;
 
@@ -75,14 +75,14 @@ export class Sound {
     if (this.ctx) this.master.gain.setTargetAtTime(this.muted ? 0 : 0.8, this.ctx.currentTime, 0.1);
   }
 
-  update(dt: number, s: { humNear: number; tension: number }) {
+  update(dt: number, s: { humNear: number; tension: number; wind: number }) {
     const ctx = this.ctx; if (!ctx) return;
     const t = ctx.currentTime;
-    // gusts
-    if (Math.abs(this.gust - this.gustTarget) < 0.02) this.gustTarget = 0.15 + Math.random() * Math.random() * 0.9;
-    this.gust += (this.gustTarget - this.gust) * Math.min(1, dt * 0.35);
-    this.windGain.gain.setTargetAtTime(0.06 + this.gust * 0.22, t, 0.3);
-    this.windFilter.frequency.setTargetAtTime(260 + this.gust * 520, t, 0.5);
+    // wind strength from the simulation (0 calm .. ~1.5 strong gust), plus a little of our own wobble
+    if (Math.abs(this.gust - this.gustTarget) < 0.02) this.gustTarget = s.wind * (0.85 + Math.random() * 0.3);
+    this.gust += (this.gustTarget - this.gust) * Math.min(1, dt * 0.8);
+    this.windGain.gain.setTargetAtTime(0.04 + this.gust * 0.2, t, 0.3);
+    this.windFilter.frequency.setTargetAtTime(220 + this.gust * 480, t, 0.5);
     this.humGain.gain.setTargetAtTime(0.03 * s.humNear, t, 0.4);
     this.tensionGain.gain.setTargetAtTime(0.25 * s.tension, t, 0.15);
 
