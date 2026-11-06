@@ -5,6 +5,7 @@ import { LevelDef, PortDef, StationPoint } from './level';
 import { PowerNode, solveNetworks, NetworkState } from './power';
 import { Wind } from './wind';
 import { findPath } from './path';
+import { Load, LOADS, towStep, hitchOf, TOW_RANGE } from './tow';
 
 export const CABLE_MAX = 20;      // m per segment
 export const CABLE_WARN = 18;     // m, orange + slowdown
@@ -37,6 +38,8 @@ export const REST_DELAY = 1.0;    // s of standing before the trickle starts
 export const PORT_CHARGE_RANGE = 2.2;
 export const EMPTY_SPEED = 0.4;   // speed multiplier on an empty battery
 export const LOW_ENERGY = 15;
+/** Free loads Wolt bumps into (towed ones follow on the rope instead). */
+const LOAD_BUMP = 0.9;
 
 export interface Input {
   move: V2;          // desired direction in world space, length ≤ 1
@@ -52,7 +55,7 @@ export const idle = (): Input => ({ move: { x: 0, y: 0 }, run: false, interact: 
 export interface PlacedCable { cable: Cable; from: string; to: string | null }
 export interface Hint { text: string; key: string; at: V2; height: number; ok: boolean }
 export type CableState = 'none' | 'held' | 'tense' | 'limit';
-export type GameEvent = 'grab' | 'plug' | 'unplug' | 'reel' | 'deny' | 'salvage' | 'craft' | 'charged' | 'depart' | 'win' | 'light';
+export type GameEvent = 'hook' | 'unhook' | 'grab' | 'plug' | 'unplug' | 'reel' | 'deny' | 'salvage' | 'craft' | 'charged' | 'depart' | 'win' | 'light';
 export type Phase = 'play' | 'departing' | 'done';
 
 /** Something the player can point at with the mouse. */
@@ -61,8 +64,9 @@ export type Target =
   | { kind: 'scrap'; o: Obstacle }
   | { kind: 'port'; id: string }
   | { kind: 'point'; id: StationPoint['id'] }
+  | { kind: 'load'; id: string }
   | { kind: 'self' };
-export type ActionId = 'walk' | 'salvage' | 'grab' | 'plug' | 'unplug' | 'reel' | 'craft' | 'craftAll' | 'depart' | 'light';
+export type ActionId = 'tow' | 'untow' | 'walk' | 'salvage' | 'grab' | 'plug' | 'unplug' | 'reel' | 'craft' | 'craftAll' | 'depart' | 'light';
 export interface Action { id: ActionId; label: string; ok: boolean; why?: string }
 interface Order { target: Target; action: ActionId; path: V2[]; last: V2 | null; stuck: number; working: boolean }
 
@@ -102,6 +106,14 @@ export class Game {
   stillT = 0;
   order: Order | null = null;
   craftQueue = 0;
+  /** Loose things on the ground Wolt can tow (a tyre, a sled of bricks). */
+  loads: Load[];
+  /** The load on Wolt's hitch, if any. */
+  tow: Load | null = null;
+  towTaut = false;
+  /** Wolt drives but stays put: the cable is at its limit or the towed load snagged. */
+  strain = false;
+  private snagWarned = false;
   private lowWarned = false;
 
   constructor(readonly level: LevelDef) {
@@ -110,6 +122,7 @@ export class Game {
     this.points = level.points;
     this.pos = { ...level.playerStart };
     this.reelOwned = level.startReel;
+    this.loads = (level.loads ?? []).map((l, i) => ({ id: `${l.kind}-${i}`, kind: l.kind, pos: { ...l.pos }, angle: l.angle ?? 0 }));
     this.nodes = [
       { id: 'station', produce: level.stationOutput, demand: 0 },
       { id: 'yacht', produce: 0, demand: 0 },
@@ -161,6 +174,12 @@ export class Game {
   nearestPoint(): StationPoint | null {
     let best: StationPoint | null = null, bd = INTERACT_RANGE;
     for (const p of this.points) { const d = dist(p.pos, this.pos); if (d < bd) { bd = d; best = p; } }
+    return best;
+  }
+
+  nearestLoad(): Load | null {
+    let best: Load | null = null, bd = TOW_RANGE;
+    for (const l of this.loads) { if (l === this.tow) continue; const d = dist(l.pos, this.pos) - LOADS[l.kind].radius; if (d < bd) { bd = d; best = l; } }
     return best;
   }
 
@@ -231,6 +250,9 @@ export class Game {
       const what = s.kind === 'barrel' ? 'beczkę' : 'złom';
       return { key: 'E', text: this.salvage ? 'rozbieranie…' : `przytrzymaj, by rozebrać ${what}`, at, height: 0.8, ok: true };
     }
+    const l = this.nearestLoad();
+    if (l && !this.tow) return { key: 'E', text: `doczep ${LOADS[l.kind].name}`, at: l.pos, height: 0.7, ok: true };
+    if (this.tow && !this.moving) return { key: 'E', text: `odczep ${LOADS[this.tow.kind].name}`, at: this.tow.pos, height: 0.7, ok: true };
     return null;
   }
 
@@ -243,6 +265,7 @@ export class Game {
     for (const port of this.ports) if (dist(port.pos, p) < 0.8) return { kind: 'port', id: port.id };
     for (const pt of this.points) if (dist(pt.pos, p) < 0.9) return { kind: 'point', id: pt.id };
     for (const o of this.scrapLeft()) if (World.distToRect(p, o) < 0.25) return { kind: 'scrap', o };
+    for (const l of this.loads) if (dist(l.pos, p) < LOADS[l.kind].radius + 0.1) return { kind: 'load', id: l.id };
     return { kind: 'ground', at: p };
   }
 
@@ -250,7 +273,16 @@ export class Game {
   actionsFor(t: Target): Action[] {
     switch (t.kind) {
       case 'ground': return [{ id: 'walk', label: 'Idź tutaj', ok: true }];
-      case 'self': return [{ id: 'light', label: this.light ? 'Wyłącz światło' : 'Włącz światło', ok: true }];
+      case 'self': {
+        const list: Action[] = [{ id: 'light', label: this.light ? 'Wyłącz światło' : 'Włącz światło', ok: true }];
+        if (this.tow) list.push({ id: 'untow', label: `Odczep ${LOADS[this.tow.kind].name}`, ok: true });
+        return list;
+      }
+      case 'load': {
+        const l = this.loads.find(x => x.id === t.id)!;
+        if (l === this.tow) return [{ id: 'untow', label: `Odczep ${LOADS[l.kind].name}`, ok: true }];
+        return [{ id: 'tow', label: `Doczep ${LOADS[l.kind].name}`, ok: !this.tow, why: this.tow ? 'hak jest zajęty' : undefined }];
+      }
       case 'scrap': {
         if (!this.world.obstacles.includes(t.o)) return [];
         const what = t.o.kind === 'barrel' ? 'beczkę' : 'złom';
@@ -299,6 +331,7 @@ export class Game {
       case 'scrap': return { x: t.o.x + t.o.w / 2, y: t.o.y + t.o.h / 2 };
       case 'port': return this.ports.find(p => p.id === t.id)!.pos;
       case 'point': return this.points.find(p => p.id === t.id)!.pos;
+      case 'load': return this.loads.find(l => l.id === t.id)!.pos;
       case 'self': return this.pos;
     }
   }
@@ -309,6 +342,7 @@ export class Game {
       case 'ground': return dist(this.pos, t.at) - 0.15;
       case 'scrap': return World.distToRect(this.pos, t.o) - SALVAGE_RANGE;
       case 'port': case 'point': return dist(this.pos, this.goalOf(t)) - (INTERACT_RANGE - 0.3);
+      case 'load': { const l = this.loads.find(x => x.id === t.id)!; return l === this.tow ? 0 : dist(this.pos, l.pos) - LOADS[l.kind].radius - (TOW_RANGE - 0.3); }
       case 'self': return 0;
     }
   }
@@ -353,6 +387,8 @@ export class Game {
     if (act && !act.ok) { if (act.why) this.toast(cap(act.why) + '.'); this.events.push('deny'); return; }
     switch (a) {
       case 'light': this.toggleLight(); return;
+      case 'tow': if (t.kind === 'load') this.hook(this.loads.find(l => l.id === t.id)!); return;
+      case 'untow': this.unhook(); return;
       case 'craft': this.craft(1); return;
       case 'craftAll': this.craft(99); return;
       case 'depart': this.depart(); return;
@@ -360,6 +396,23 @@ export class Game {
       case 'reel': if (t.kind === 'port') { const c = this.held ?? this.cables.find(c => c.from === t.id || c.to === t.id); if (c) this.reelIn(c); } return;
       default: return;
     }
+  }
+
+  private hook(l: Load) {
+    if (this.tow) { this.events.push('deny'); return; }
+    this.tow = l;
+    this.towTaut = false;
+    this.snagWarned = false;
+    this.toast(`Doczepiono ${LOADS[l.kind].name}. Ciągnie się za Woltem i spowalnia go.`);
+    this.events.push('hook');
+  }
+
+  private unhook() {
+    if (!this.tow) return;
+    this.toast(`Odczepiono ${LOADS[this.tow.kind].name}.`);
+    this.tow = null;
+    this.towTaut = false;
+    this.events.push('unhook');
   }
 
   toggleLight() {
@@ -402,25 +455,56 @@ export class Game {
   private movePlayer(dt: number, inp: Input) {
     const m = len(inp.move);
     this.moving = m > 0.01;
+    this.strain = false;
     this.running = this.moving && inp.run && !this.empty();
-    if (!this.moving) return;
+    if (!this.moving) { this.stepTow(this.pos, false); return; }
     const dir = m > 1 ? scale(inp.move, 1 / m) : inp.move;
     this.facing = Math.atan2(dir.y, dir.x);
     let speed = WALK_SPEED * (this.running ? RUN_MULT : 1);
     if (this.empty()) speed *= EMPTY_SPEED;
     if (this.held && this.heldLength() >= CABLE_WARN) speed *= TENSION_SLOW;
+    if (this.tow) speed *= 1 - LOADS[this.tow.kind].drag;
     const step = scale(dir, speed * dt);
 
     // collide per axis so Wolt slides along walls
     let cand = { ...this.pos };
     const tx = { x: cand.x + step.x, y: cand.y };
-    if (!this.world.circleBlocked(tx, PLAYER_RADIUS)) cand = tx;
+    if (!this.bumps(tx)) cand = tx;
     const ty = { x: cand.x, y: cand.y + step.y };
-    if (!this.world.circleBlocked(ty, PLAYER_RADIUS)) cand = ty;
+    if (!this.bumps(ty)) cand = ty;
 
     if (this.held) cand = this.constrainByCable(cand);
+    if (this.tow && !this.stepTow(cand, true)) cand = this.pos;
     this.moving = dist(cand, this.pos) > 1e-5;
+    this.strain = !this.moving;
     this.pos = cand;
+  }
+
+  /** Walls, rocks, and loads that are not on the hitch. */
+  private bumps(p: V2): boolean {
+    if (this.world.circleBlocked(p, PLAYER_RADIUS)) return true;
+    for (const l of this.loads) {
+      if (l === this.tow) continue;
+      const r = LOADS[l.kind].radius * LOAD_BUMP + PLAYER_RADIUS;
+      if (dist(p, l.pos) < r && dist(p, l.pos) < dist(this.pos, l.pos)) return true;
+    }
+    return false;
+  }
+
+  /** Drag the towed load after the hitch at `at`. False if it snagged and holds Wolt back. */
+  private stepTow(at: V2, driving: boolean): boolean {
+    const l = this.tow;
+    if (!l) return true;
+    const s = towStep(this.world, l, hitchOf(at, this.facing));
+    if (s.blocked && driving) {
+      this.towTaut = true;
+      if (!this.snagWarned) { this.snagWarned = true; this.toast(`${cap(LOADS[l.kind].name)} zaczepiła się o przeszkodę. Objedź ją albo odczep (E).`); this.events.push('deny'); }
+      return false;
+    }
+    l.pos = s.pos; l.angle = s.angle;
+    this.towTaut = s.taut;
+    if (!s.blocked) this.snagWarned = false;
+    return true;
   }
 
   private updateEnergy(dt: number, inp: Input) {
@@ -429,6 +513,7 @@ export class Game {
     let rate = -DRAIN.base;
     if (this.moving) rate -= this.running ? DRAIN.run : DRAIN.walk;
     if (this.salvage) rate -= DRAIN.salvage;
+    if (this.tow && this.moving) rate -= LOADS[this.tow.kind].drain;
     if (this.light) rate -= DRAIN.light;
     this.energySource = null;
     if (this.stillT >= REST_DELAY) {
@@ -473,7 +558,10 @@ export class Game {
       return;
     }
     const p = this.nearestPort();
-    if (p) this.portAction(p);
+    if (p) { this.portAction(p); return; }
+    const l = this.nearestLoad();
+    if (l && !this.tow) { this.hook(l); return; }
+    if (this.tow && !(this.nearestScrap() && !this.held)) this.unhook();
   }
 
   private craft(n: number) {

@@ -1,5 +1,6 @@
 import { Obstacle } from './world';
 import { V2 } from './vec';
+import { LoadKind } from './tow';
 
 export interface PortDef {
   id: string;
@@ -25,6 +26,8 @@ export interface LevelDef {
   station: { x: number; y: number; w: number; h: number };
   stationOutput: number; // W the old station still produces
   yachtBattery: number;  // Wh to charge before leaving
+  /** Loose things Wolt can tow. */
+  loads?: { kind: LoadKind; pos: V2; angle?: number }[];
 }
 
 /**
@@ -86,5 +89,9 @@ export function level1(): LevelDef {
     name: 'Poziom 1 · Rozruch', width: 64, height: 48, obstacles: o, ports, points,
     playerStart: { x: 9.5, y: 18.6 }, startReel: 0, yacht, station,
     stationOutput: 600, yachtBattery: 2000,
+    loads: [
+      { kind: 'tyre', pos: { x: 12.6, y: 16.4 } },
+      { kind: 'bricks', pos: { x: 5.6, y: 16.2 }, angle: 0.4 },
+    ],
   };
 }
