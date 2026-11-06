@@ -1,6 +1,6 @@
 import { V2 } from './vec';
 
-export type ObstacleKind = 'rock' | 'scrap' | 'crate' | 'container' | 'yacht' | 'station' | 'pylon' | 'barrel';
+export type ObstacleKind = 'rock' | 'scrap' | 'crate' | 'container' | 'yacht' | 'station' | 'pylon' | 'barrel' | 'tree';
 
 /** Axis-aligned block in tile units: covers [x, x+w) × [y, y+h). */
 export interface Obstacle {

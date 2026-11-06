@@ -2,6 +2,7 @@ import * as THREE from 'three';
 import { PAL } from './palette';
 import { Obstacle } from '../sim/world';
 import { Sail } from './sail';
+import { Models, fit } from './assets';
 
 let seed = 11;
 export const rnd = () => ((seed = (seed * 16807) % 2147483647) / 2147483647);
@@ -40,10 +41,14 @@ function rockGeo(w: number, h: number, d: number) {
   return g;
 }
 
-export function obstacleMesh(o: Obstacle): THREE.Object3D {
+export function obstacleMesh(o: Obstacle, models?: Models): THREE.Object3D {
   const g = new THREE.Group();
   const cx = o.x + o.w / 2, cz = o.y + o.h / 2;
   g.position.set(cx, 0, cz);
+  if (models && models.size) {
+    const m = modelFor(o, models);
+    if (m) { g.add(m); return g; }
+  }
   switch (o.kind) {
     case 'rock': {
       const h = 0.6 + rnd() * 0.9;
@@ -94,6 +99,41 @@ export function obstacleMesh(o: Obstacle): THREE.Object3D {
     default: break; // yacht and station are built separately
   }
   return g;
+}
+
+/** Stock models for obstacles; the visual stays inside the rectangle the cable wraps around. */
+function modelFor(o: Obstacle, models: Models): THREE.Object3D | null {
+  const rot = rnd() * Math.PI * 2;
+  switch (o.kind) {
+    case 'rock': {
+      const r = fit(models, `Rock_Medium_${1 + Math.floor(rnd() * 3)}`, o.w * 1.1, o.h * 1.1, undefined, Math.round(rnd() * 4) * Math.PI / 2);
+      return r;
+    }
+    case 'scrap': {
+      const g = new THREE.Group();
+      const big = o.w * o.h >= 2;
+      g.add(fit(models, big ? 'Parts_Pile_Large' : 'Parts_Pile_Small', o.w * 0.95, o.h * 0.95, undefined, rnd() < 0.5 ? 0 : Math.PI));
+      const extra: string[] = [];
+      if (o.loot?.copper) extra.push('Copper_Nuggets');
+      if (o.loot?.iron) extra.push('Iron_Nuggets');
+      if (o.loot?.plastic) extra.push('Textiles_Stack_Small');
+      if (o.loot?.glass) extra.push('Stone_Chunks_Small');
+      extra.forEach((n, i) => {
+        const e = fit(models, n, 0.5, 0.5, undefined, rnd() * 6);
+        const a = (i / Math.max(1, extra.length)) * Math.PI * 2 + rnd();
+        e.position.set(Math.cos(a) * (o.w / 2 - 0.25), 0, Math.sin(a) * (o.h / 2 - 0.25));
+        g.add(e);
+      });
+      return g;
+    }
+    case 'barrel': return fit(models, rnd() < 0.5 ? 'Fuel_A_Barrel_Dirty' : 'Fuel_B_Barrel_Dirty', 0.85, 0.85, undefined, rot);
+    case 'crate': return fit(models, 'Prop_Crate3', 0.9, 0.9, undefined, Math.round(rnd() * 4) * Math.PI / 2 + (rnd() - 0.5) * 0.3);
+    case 'tree': {
+      const t = fit(models, `DeadTree_${1 + Math.floor(rnd() * 5)}`, 5, 5, 6 + rnd() * 4, rot);
+      return t;
+    }
+    default: return null;
+  }
 }
 
 export interface YachtModel { group: THREE.Group; turbines: THREE.Object3D[]; port: THREE.Mesh; battery: THREE.Mesh; fabLight: THREE.Mesh; wheels: THREE.Mesh[]; sail: Sail }

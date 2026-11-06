@@ -3,6 +3,7 @@ import { PAL } from './palette';
 import { mat, mesh, obstacleMesh, yachtModel, stationModel, woltModel, rnd, YachtModel, StationModel, WoltModel } from './models';
 import { Game, CABLE_WARN } from '../sim/game';
 import { Obstacle } from '../sim/world';
+import { Models, fit, place } from './assets';
 import { V2 } from '../sim/vec';
 
 const GROUND_Y = 0;
@@ -34,7 +35,7 @@ export class View {
   private obstacleMeshes = new Map<Obstacle, THREE.Object3D>();
   private departStart: THREE.Vector3 | null = null;
 
-  constructor(private game: Game, container: HTMLElement) {
+  constructor(private game: Game, container: HTMLElement, private models: Models = new Map()) {
     const r = new THREE.WebGLRenderer({ antialias: true });
     r.setPixelRatio(Math.min(devicePixelRatio, 2));
     r.shadowMap.enabled = true; r.shadowMap.type = THREE.PCFSoftShadowMap;
@@ -58,7 +59,7 @@ export class View {
 
     const lv = game.level;
     for (const o of game.world.obstacles) if (o.kind !== 'yacht' && o.kind !== 'station') {
-      const m = obstacleMesh(o); s.add(m); this.obstacleMeshes.set(o, m);
+      const m = obstacleMesh(o, models); s.add(m); this.obstacleMeshes.set(o, m);
     }
     const yp = lv.ports.find(p => p.id === 'yacht')!, sp = lv.ports.find(p => p.id === 'station')!;
     this.yacht = yachtModel(lv.yacht, new THREE.Vector3(yp.pos.x - (lv.yacht.x + lv.yacht.w / 2), yp.height, yp.pos.y - (lv.yacht.y + lv.yacht.h / 2)));
@@ -66,6 +67,7 @@ export class View {
     this.station = stationModel(lv.station, new THREE.Vector3(sp.pos.x - (lv.station.x + lv.station.w / 2), sp.height, sp.pos.y - (lv.station.y + lv.station.h / 2)));
     s.add(this.station.group);
     this.wolt = woltModel(); s.add(this.wolt.group);
+    if (models.size) this.buildDecor();
 
     const ringMat = new THREE.MeshBasicMaterial({ color: PAL.warn, transparent: true, opacity: 0.55, side: THREE.DoubleSide, depthWrite: false, fog: false });
     this.ring = new THREE.Mesh(new THREE.RingGeometry(0.985, 1, 128), ringMat);
@@ -111,6 +113,61 @@ export class View {
     const ground = mesh(g, m, 0, 0, 0, false);
     this.scene.add(ground);
     return ground;
+  }
+
+  /** Non-blocking set dressing: pebbles, dry grass, ruins half-buried beyond the map edge. */
+  private buildDecor() {
+    const g = this.game, m = this.models, s = this.scene;
+    const { width: W, height: H } = g.level;
+    const free = (x: number, y: number, r = 0.6) => {
+      for (let j = Math.floor(y - r); j <= Math.floor(y + r); j++)
+        for (let i = Math.floor(x - r); i <= Math.floor(x + r); i++) if (g.world.isBlocked(i, j)) return false;
+      const near = [...g.ports.map(p => p.pos), ...g.points.map(p => p.pos)];
+      return near.every(p => Math.hypot(p.x - x, p.y - y) > 2);
+    };
+    const scatter = (names: string[], n: number, scale: [number, number], r: number) => {
+      for (let k = 0, tries = 0; k < n && tries < n * 20; tries++) {
+        const x = 1 + rnd() * (W - 2), y = 1 + rnd() * (H - 2);
+        if (!free(x, y, r)) continue;
+        const o = place(m, names[Math.floor(rnd() * names.length)], scale[0] + rnd() * (scale[1] - scale[0]), rnd() * 6.28);
+        o.position.set(x, 0, y);
+        s.add(o); k++;
+      }
+    };
+    scatter(['Pebble_Square_1', 'Pebble_Square_3', 'Pebble_Square_5', 'Pebble_Round_2', 'Pebble_Round_4'], 55, [0.5, 1.3], 0.4);
+    scatter(['Grass_Wispy_Short', 'Grass_Wispy_Tall'], 70, [0.35, 0.7], 0.5);
+    scatter(['Stone_Chunks_Small', 'Parts_Cog', 'Wood_Planks_Stack_Small'], 12, [0.6, 1], 0.6);
+
+    // dead trees and buildings outside the play area, fading into the fog
+    const ring = (names: string[], n: number, minOut: number, maxOut: number, fn: (o: THREE.Object3D) => void, sides = 4) => {
+      for (let k = 0; k < n; k++) {
+        const side = Math.floor(rnd() * sides), t = rnd(), out = minOut + rnd() * (maxOut - minOut);
+        const x = side === 0 ? -out : side === 1 ? W + out : t * W;
+        const z = side === 2 ? -out : side === 3 ? H + out : t * H;
+        const o = place(m, names[Math.floor(rnd() * names.length)], 1, rnd() * 6.28);
+        o.position.set(x, 0, z); fn(o); s.add(o);
+      }
+    };
+    ring(['DeadTree_1', 'DeadTree_2', 'DeadTree_3', 'DeadTree_4', 'DeadTree_5'], 30, 2, 14, o => o.scale.setScalar(0.5 + rnd() * 0.4));
+    ring(['Building_Small_1', 'Building_Medium_2_001', 'Building_Large_2'], 7, 24, 40, o => {
+      o.position.y = -6 - rnd() * 8;          // half buried in ash
+      o.rotation.z = (rnd() - 0.5) * 0.25;    // leaning
+      o.rotation.x = (rnd() - 0.5) * 0.15;
+    }, 3); // not south: the tilted camera would lift them over the map
+
+    // station dressing
+    const st = g.level.station;
+    const add = (o: THREE.Object3D, x: number, z: number) => { o.position.set(x, 0.5, z); s.add(o); };
+    add(fit(m, 'Prop_Chest', 1.3, 0.65, undefined, Math.PI / 2), st.x + st.w - 1.2, st.y + st.h - 0.8);
+    add(fit(m, 'Prop_Computer', 0.6, 0.5, 1.3, Math.PI / 2), st.x + 0.6, st.y + st.h - 2.4);
+    for (const [dx, dz] of [[-0.6, -0.6], [st.w + 0.6, -0.6], [st.w + 0.6, st.h + 0.6], [-0.6, st.h + 0.6]]) {
+      const b = place(m, 'Prop_Bollard', 1.2); b.position.set(st.x + dx, 0, st.y + dz); s.add(b);
+    }
+    const ac = place(m, 'Prop_ACUnit', 1.4, Math.PI); ac.position.set(st.x + 1.2, 0.5, st.y + 0.5); s.add(ac);
+    // yacht deck: a pallet and barrels
+    const y = this.yacht.group;
+    const pal = fit(m, 'Pallet_Wood_Covered_B', 1.3, 1.3); pal.position.set(2.8, 1.62, 1.6); y.add(pal);
+    const bar = fit(m, 'Fuel_C_Barrels', 1.1, 1.1); bar.position.set(-5.2, 1.62, -1.9); y.add(bar);
   }
 
   private buildGrid() {
