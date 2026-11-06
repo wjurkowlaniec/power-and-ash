@@ -6,13 +6,13 @@ import { Ctx, Scene } from '../scene';
  * dot appears (the only colour), then video static: Wolt switches his eyes on at 4% reserve.
  * No captions, no logo.
  */
-export const DARKNESS_LEN = 52; // s
+export const DARKNESS_LEN = 20; // s
 
 export class Darkness implements Scene {
   readonly id = 'darkness';
   next: string | null = null;
   private t = 0;
-  private nextPulse = 7;
+  private nextPulse = 0.8;
   private beat = 0;      // 1 right after a pulse, decays
   private eyesOn = false;
   private readout!: HTMLDivElement;
@@ -32,24 +32,24 @@ export class Darkness implements Scene {
     const t = this.t;
     // hold Space to skip (testing, and for players who have seen it)
     this.skipHold = c.input.keys.has('Space') ? this.skipHold + dt : 0;
-    if (this.skipHold > 0.8 && !this.eyesOn) { this.t = Math.max(t, 44); this.nextPulse = 0; }
+    if (this.skipHold > 0.8 && !this.eyesOn) { this.t = Math.max(t, 16); this.nextPulse = 0; }
 
     // the pulse: faint and slow, then stronger and closer together
-    const k = Math.min(1, Math.max(0, (t - 6) / 34));
+    const k = Math.min(1, Math.max(0, (t - 1) / 13));
     this.nextPulse -= dt;
     if (this.nextPulse <= 0 && t < DARKNESS_LEN - 2) {
       c.sound.pulse(0.25 + k * 0.75);
       this.beat = 1;
-      this.nextPulse = 3.4 - k * 1.7;
+      this.nextPulse = 2.4 - k * 1.0;
     }
     this.beat = Math.max(0, this.beat - dt * 1.4);
 
-    // the dot appears from ~18 s, glows with each beat
-    const dk = Math.min(1, Math.max(0, (t - 18) / 22));
+    // the dot appears from ~2.5 s, glows with each beat
+    const dk = Math.min(1, Math.max(0, (t - 2.5) / 10));
     c.fx.dot = { a: dk * (0.25 + this.beat * 0.75), r: 1.5 + dk * 3 + this.beat * 2 * dk };
 
     // eyes on: static, then the reserve readout
-    if (!this.eyesOn && t >= 44) {
+    if (!this.eyesOn && t >= 16) {
       this.eyesOn = true;
       c.sound.staticBurst(0.9, 0.14);
       c.fx.static = 1.4;
@@ -61,7 +61,7 @@ export class Darkness implements Scene {
       c.fx.lines = 0.6;
       // the readout flickers
       this.readout.style.opacity = String(0.55 + Math.random() * 0.35);
-      c.fx.dot.a *= Math.max(0, 1 - (t - 44) / 4);
+      c.fx.dot.a *= Math.max(0, 1 - (t - 16) / 3);
     }
     if (t >= DARKNESS_LEN) this.next = 'hall';
   }

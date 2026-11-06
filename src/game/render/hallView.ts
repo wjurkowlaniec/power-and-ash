@@ -69,7 +69,7 @@ export class HallView {
     const d = this.buildDoor(); this.door = d.door; this.doorLight = d.light;
     this.buildPuddle();
 
-    this.pipe = mesh(new THREE.CylinderGeometry(0.05, 0.05, 1.3, 10), mat(0x5a4a3e, { r: 0.6, m: 0.5 }));
+    this.pipe = mesh(new THREE.CylinderGeometry(0.05, 0.05, 1.3, 10), new THREE.MeshStandardMaterial({ color: 0x5a4a3e, roughness: 0.6, metalness: 0.5, emissive: 0xd8dccf, emissiveIntensity: 0 }));
     this.pipe.rotation.z = Math.PI / 2; this.pipe.rotation.y = 0.4;
     s.add(this.pipe);
 
@@ -377,6 +377,8 @@ export class HallView {
     this.beamMat.opacity = 0.07 + Math.sin(t * 0.3) * 0.015;
 
     // pipe: on the floor, in Wolt's hand, or wedged in the lever
+    // after a bare-handed try at the lever, the pipe glints now and then to show where help lies
+    (this.pipe.material as THREE.MeshStandardMaterial).emissiveIntensity = h.pipeDown && h.leverTried ? Math.max(0, Math.sin(t * 2.2)) ** 6 * 0.9 : 0;
     if (h.pipeDown) { this.pipe.visible = true; this.pipe.position.set(h.pipeDown.x, 0.05, h.pipeDown.y); this.pipe.rotation.set(0, 0.4, Math.PI / 2); }
     else if (h.hasPipe) {
       this.pipe.visible = true;

@@ -29,6 +29,6 @@ canvas { display: block; }
 .htip .k { display: inline-block; min-width: 16px; text-align: center; margin-right: 7px; border: 1px solid #ffffff55; border-radius: 2px; font-size: 10px; padding: 0 3px; }
 .htip .prog { height: 2px; background: #ffffff22; margin-top: 4px; }
 .htip .prog i { display: block; height: 100%; background: var(--q); }
-.hmsg { position: absolute; left: 50%; bottom: calc(64px + env(safe-area-inset-bottom, 0px)); transform: translateX(-50%); font-size: 12px; color: var(--dim); text-align: center; padding: 0 16px; }
+.hmsg { position: absolute; left: 50%; bottom: calc(64px + env(safe-area-inset-bottom, 0px)); transform: translateX(-50%); font-size: 12px; color: var(--ink); text-align: center; padding: 6px 12px; background: #0a0b0bcc; border: 1px solid #ffffff1a; border-radius: 3px; max-width: calc(100vw - 32px); box-sizing: border-box; }
 .hkeys { position: absolute; left: 50%; bottom: calc(22px + env(safe-area-inset-bottom, 0px)); transform: translateX(-50%); font-size: 11px; color: var(--dim); transition: opacity 1s; white-space: nowrap; }
 .hkeys b { color: var(--ink); font-weight: 500; }

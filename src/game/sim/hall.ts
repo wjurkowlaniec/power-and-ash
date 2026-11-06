@@ -13,13 +13,13 @@ import { World, Obstacle } from '../../sim/world';
 export const HALL_W = 16;
 export const HALL_H = 11;
 export const PLAYER_R = 0.3;
-export const USE_RANGE = 1.25;
+export const USE_RANGE = 1.5;
 
 export const RESERVE_START = 4;     // % at wake-up
 export const RESERVE_MIN = 0.6;     // % floor: he never dies here, just crawls
 export const RESERVE_PER_M = 0.075; // % per metre walked
 export const RESERVE_STRAIN = 0.12; // % for trying the lever bare-handed
-export const SPEED_RESERVE = 1.25;  // m/s
+export const SPEED_RESERVE = 1.6;  // m/s
 export const SPEED_POWERED = 2.6;   // m/s
 export const RUN_MULT = 1.6;
 export const PRY_TIME = 1.6;        // s holding E with the pipe
@@ -92,12 +92,12 @@ export class Hall {
   private stepAcc = 0;
   private denyT = 0;
   message: { text: string; t: number } | null = null;
+  /** Tried the lever bare-handed: the pipe starts to glint. */
+  leverTried = false;
 
   speed(): number {
-    if (this.powered) return SPEED_POWERED;
-    // weaker as the reserve runs out
-    const k = Math.max(0.35, Math.min(1, (this.reserve - RESERVE_MIN) / (RESERVE_START - RESERVE_MIN) + 0.35));
-    return SPEED_RESERVE * k;
+    // reserve mode is slow but steady: the falling percentage is the pressure, not a crawl
+    return this.powered ? SPEED_POWERED : SPEED_RESERVE;
   }
 
   /** 0..1 how "reserve mode" the view should look (grain, grey, stutter). */
@@ -125,7 +125,7 @@ export class Hall {
     const n = this.nearest();
     const L = layout;
     switch (n) {
-      case 'pipe': return { key: 'E', text: 'podnieś rurę', at: this.pipeDown!, ok: true };
+      case 'pipe': return { key: 'E', text: 'podnieś rurę (do podważenia dźwigni)', at: this.pipeDown!, ok: true };
       case 'lever':
         return this.hasPipe
           ? { key: 'E', text: 'przytrzymaj: podważ dźwignię rurą', at: L.lever, ok: true, progress: this.pry / PRY_TIME }
@@ -143,7 +143,7 @@ export class Hall {
   update(dt: number, inp: HallInput) {
     this.t += dt;
     if (this.powered) this.poweredT += dt;
-    if (this.message && this.t - this.message.t > 3.2) this.message = null;
+    if (this.message && this.t - this.message.t > 5) this.message = null;
     this.denyT = Math.max(0, this.denyT - dt);
 
     // standing up: the first input wakes him
@@ -188,7 +188,7 @@ export class Hall {
     this.facing = Math.atan2(dir.y, dir.x);
     let sp = this.speed() * (this.powered && inp.run ? RUN_MULT : 1);
     // reserve mode: motion comes in weak jerks
-    if (!this.powered) sp *= 0.45 + 0.55 * Math.abs(Math.sin(this.t * 5.5));
+    if (!this.powered) sp *= 0.7 + 0.3 * Math.abs(Math.sin(this.t * 5.5));
     const step = scale(dir, sp * dt);
     const before = { ...this.pos };
     const tx = { x: this.pos.x + step.x, y: this.pos.y };
@@ -216,7 +216,7 @@ export class Hall {
     if (!n) return;
     switch (n) {
       case 'pipe':
-        if (inp.usePressed) { this.hasPipe = true; this.pipeDown = null; this.events.push('pickup'); }
+        if (inp.usePressed) { this.hasPipe = true; this.pipeDown = null; this.events.push('pickup'); this.say('Rura. Może podważy dźwignię komory.'); }
         break;
       case 'lever':
         if (this.hasPipe) {
@@ -232,7 +232,8 @@ export class Hall {
           this.denyT = 1.2;
           this.drain(RESERVE_STRAIN);
           this.events.push('strain');
-          this.say('Dźwignia ani drgnie. Za mało siły.');
+          this.say('Dźwignia ani drgnie. Za mało siły, potrzeba czegoś do podważenia.');
+          this.leverTried = true;
         }
         break;
       case 'battery':
