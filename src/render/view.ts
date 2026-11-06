@@ -310,7 +310,7 @@ export class View {
     this.sun.position.copy(this.camTarget).add(new THREE.Vector3(-22, 40, 14));
     this.sun.target.position.copy(this.camTarget);
 
-    this.updateWolt(dt, t);
+    this.updateWolt(dt, t, aim);
     this.updateLoads(dt);
 
     // the sail goes see-through when it stands between the camera and Wolt
@@ -375,7 +375,7 @@ export class View {
   }
 
   /** Wolt the monocycle: motion → balance, wheel, reel, cable guide, arm, lamp. */
-  private updateWolt(dt: number, t: number) {
+  private updateWolt(dt: number, t: number, aim: V2 | null) {
     const g = this.game, w = this.wolt;
     w.group.position.set(g.pos.x, 0, g.pos.y);
     const targetRot = Math.PI / 2 - g.facing;
@@ -430,6 +430,7 @@ export class View {
       dt, time: t, speed: this.speed, yawRate: this.yawRate, accel: this.accel,
       strain: g.strain, cableTo, tension, pullFrom, reelSpin: this.reelSpin, arm,
       energy: g.energyPct(), lamp: lampOn,
+      lookAt: aim && !g.order ? new THREE.Vector3(aim.x, 0, aim.y) : null,
     });
   }
 
