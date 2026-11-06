@@ -73,6 +73,12 @@ export class HallView {
     this.pipe.rotation.z = Math.PI / 2; this.pipe.rotation.y = 0.4;
     s.add(this.pipe);
 
+    // notes: pale sheets of paper on the floor
+    for (const n of layout.notes) {
+      const sheet = mesh(new THREE.PlaneGeometry(0.28, 0.38).rotateX(-Math.PI / 2), new THREE.MeshStandardMaterial({ color: 0xd9d6cc, roughness: 0.9, emissive: 0xd9d6cc, emissiveIntensity: 0.12 }), n.x, 0.012, n.y, false);
+      sheet.rotation.y = n.x * 1.7;
+      s.add(sheet);
+    }
     this.wolt = woltModel();
     this.wolt.spot.intensity = 0;
     (this.wolt.head.material as THREE.MeshStandardMaterial).emissiveIntensity = 0.15;

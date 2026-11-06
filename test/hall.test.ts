@@ -78,3 +78,22 @@ describe('Scene 1: Hala pomiarowa', () => {
     expect(h.doorOpen).toBe(0);
   });
 });
+
+describe('notes in the hall', () => {
+  it('standing on a note and pressing E reads it; movement waits until it is put down', () => {
+    const h = new Hall();
+    h.update(0.03, inp({ usePressed: true })); idle(h, 3);
+    const n = layout.notes[0];
+    expect(walkTo(h, n)).toBe(true);
+    expect(h.nearest()).toBe('note');
+    press(h);
+    expect(h.reading).toBe(n.id);
+    const p = { ...h.pos };
+    h.update(0.5, inp({ move: { x: 1, y: 0 } }));
+    expect(h.pos).toEqual(p);
+    h.closeNote();
+    h.update(0.5, inp({ move: { x: 1, y: 0 } }));
+    expect(h.pos.x).toBeGreaterThan(p.x);
+    expect(h.notesRead.has(n.id)).toBe(true);
+  });
+});

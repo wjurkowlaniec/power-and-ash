@@ -1,6 +1,7 @@
 import { Ctx, Scene } from '../scene';
 import { Hall, BATTERY_POWER } from '../sim/hall';
 import { HallView } from '../render/hallView';
+import { NOTES, journal } from '../notes';
 
 const LOG = '…TEST 4411…\n…STABILNY…\nNIE ODŁĄCZAĆ OD…';
 
@@ -19,6 +20,8 @@ export class HallScene implements Scene {
   private nextPulse = 0.5;
   private logT = -1;
   private fadeIn = 1;
+  private justOpened = false;
+  private journalOpen = false;
 
   enter(c: Ctx) {
     this.view = new HallView(this.hall, c.app, c.models);
@@ -32,7 +35,8 @@ export class HallScene implements Scene {
       <div class="vitals" id="hVitals" hidden></div>
       <div class="htip" id="hTip" hidden></div>
       <div class="hmsg" id="hMsg" hidden></div>
-      <div class="hkeys" id="hKeys"><b>WASD</b> ruch · <b>E</b> użyj</div>`;
+      <div class="note" id="hNote" hidden></div>
+      <div class="hkeys" id="hKeys"><b>WASD</b> ruch · <b>E</b> użyj · <b>J</b> archiwum</div>`;
     c.hud.appendChild(this.el);
   }
 
@@ -44,7 +48,19 @@ export class HallScene implements Scene {
   }
 
   update(dt: number, c: Ctx) {
-    const h = this.hall, k = c.input.keys;
+    const h = this.hall, k = c.input.keys, pr = c.input.pressed;
+    // reading a note: E, Esc or Space puts it down; J opens the journal
+    if (h.reading && ['KeyE', 'Escape', 'Space'].some(x => pr.has(x)) && !this.justOpened) { h.closeNote(); pr.delete('KeyE'); }
+    this.justOpened = false;
+    if (pr.has('KeyJ')) {
+      if (this.journalOpen || h.reading) { this.journalOpen = false; h.closeNote(); }
+      else if (journal.list().length) this.journalOpen = true;
+    }
+    if (this.journalOpen) {
+      if (pr.has('Escape')) this.journalOpen = false;
+      const list = journal.list();
+      for (let i = 0; i < Math.min(9, list.length); i++) if (pr.has('Digit' + (i + 1))) { this.journalOpen = false; h.reading = list[i].id; }
+    }
     const mx = (k.has('KeyD') || k.has('ArrowRight') ? 1 : 0) - (k.has('KeyA') || k.has('ArrowLeft') ? 1 : 0);
     const my = (k.has('KeyS') || k.has('ArrowDown') ? 1 : 0) - (k.has('KeyW') || k.has('ArrowUp') ? 1 : 0);
     h.update(dt, {
@@ -97,6 +113,7 @@ export class HallScene implements Scene {
       case 'log': this.logT = 0; s.blip(0.8); setTimeout(() => s.blip(0.6), 180); break;
       case 'door': s.creak(1); s.clank(0.6, 0.12); break;
       case 'exit': this.next = 'station'; break;
+      case 'note': journal.add(this.hall.reading!); this.justOpened = true; s.blip(1.3); break;
     }
   }
 
@@ -126,6 +143,16 @@ export class HallScene implements Scene {
     const msg = $('hMsg');
     msg.hidden = !h.message;
     if (h.message) msg.textContent = h.message.text;
+    const note = $('hNote');
+    if (h.reading) {
+      const n = NOTES[h.reading];
+      note.hidden = false;
+      note.innerHTML = `<div class="lbl">${n.kind}</div><h2>${n.title}</h2><div class="body">${n.body.split('\n\n').map(p => `<p>${p}</p>`).join('')}</div><div class="small">E · odłóż &nbsp; J · archiwum</div>`;
+    } else if (this.journalOpen) {
+      note.hidden = false;
+      note.innerHTML = `<div class="lbl">archiwum</div><h2>Notatki w pamięci Wolta</h2>` +
+        journal.list().map((n, i) => `<p><b>${i + 1}</b> &nbsp;${n.title}</p>`).join('') + `<div class="small">cyfra · czytaj &nbsp; J · zamknij</div>`;
+    } else note.hidden = true;
     $('hKeys').style.opacity = h.awake ? '0' : String(Math.min(0.6, h.t / 3));
   }
 }

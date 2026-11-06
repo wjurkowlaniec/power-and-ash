@@ -28,8 +28,8 @@ export const WAKE_TIME = 2.2;       // s of standing up from the cradle
 export const BATTERY_CHARGE = 58;   // % in the Q-1 when found
 export const BATTERY_POWER = 200;   // W it can give at once
 
-export type HallPoint = 'pipe' | 'lever' | 'battery' | 'door';
-export type HallEvent = 'stand' | 'step' | 'strain' | 'pickup' | 'pry' | 'open' | 'take' | 'insert' | 'log' | 'door' | 'exit' | 'deny';
+export type HallPoint = 'pipe' | 'lever' | 'battery' | 'door' | 'note';
+export type HallEvent = 'stand' | 'step' | 'strain' | 'pickup' | 'pry' | 'open' | 'take' | 'insert' | 'log' | 'door' | 'exit' | 'deny' | 'note';
 
 export interface HallInput { move: V2; run: boolean; use: boolean; usePressed: boolean }
 export interface HallHint { key: string; text: string; at: V2; ok: boolean; progress?: number }
@@ -44,6 +44,8 @@ export const layout = {
   batteryUse: { x: 10.5, y: 6.75 },
   battery: { x: 10.5, y: 4.5 },
   door: { x: 15.35, y: 5.5 },
+  /** Notes lying around: a clipboard by the cradle, the test 4411 printout by the test stand. */
+  notes: [{ id: 'protokol', x: 4.4, y: 3.7 }, { id: 'raport4411', x: 13.2, y: 2.5 }],
   puddle: { x: 7, y: 8.2 },
   window: { x: 5, w: 4 },
 };
@@ -94,6 +96,9 @@ export class Hall {
   message: { text: string; t: number } | null = null;
   /** Tried the lever bare-handed: the pipe starts to glint. */
   leverTried = false;
+  /** Note being read (the game waits), or null. */
+  reading: string | null = null;
+  notesRead = new Set<string>();
 
   speed(): number {
     // reserve mode is slow but steady: the falling percentage is the pressure, not a crawl
@@ -103,6 +108,9 @@ export class Hall {
   /** 0..1 how "reserve mode" the view should look (grain, grey, stutter). */
   reserveLook(): number { return this.powered ? Math.max(0, 1 - this.poweredT / 4) : 1; }
 
+  /** Id of the note `nearest()` returned. */
+  noteAt: string | null = null;
+
   nearest(): HallPoint | null {
     const L = layout;
     const cands: [HallPoint, V2, boolean][] = [
@@ -111,6 +119,8 @@ export class Hall {
       ['battery', L.batteryUse, this.chamberOpen >= 1 && !this.powered && this.insertT === 0],
       ['door', L.door, this.doorOpen < 1],
     ];
+    // a note wins when you stand right on it
+    for (const n of L.notes) if (dist(n, this.pos) < 0.9) { this.noteAt = n.id; return 'note'; }
     let best: HallPoint | null = null, bd = USE_RANGE;
     for (const [id, p, on] of cands) {
       if (!on) continue;
@@ -121,7 +131,7 @@ export class Hall {
   }
 
   hint(): HallHint | null {
-    if (!this.awake || this.insertT > 0 || this.exited) return null;
+    if (!this.awake || this.insertT > 0 || this.exited || this.reading) return null;
     const n = this.nearest();
     const L = layout;
     switch (n) {
@@ -131,12 +141,18 @@ export class Hall {
           ? { key: 'E', text: 'przytrzymaj: podważ dźwignię rurą', at: L.lever, ok: true, progress: this.pry / PRY_TIME }
           : { key: 'E', text: 'dźwignia awaryjna', at: L.lever, ok: true };
       case 'battery': return { key: 'E', text: 'weź baterię', at: L.battery, ok: true };
+      case 'note': {
+        const n = L.notes.find(q => q.id === this.noteAt)!;
+        return { key: 'E', text: this.notesRead.has(n.id) ? 'przeczytaj jeszcze raz' : 'przeczytaj', at: n, ok: true };
+      }
       case 'door': return this.powered
         ? { key: 'E', text: 'pchnij drzwi', at: L.door, ok: true }
         : { key: 'E', text: 'ciężkie drzwi', at: L.door, ok: true };
     }
     return null;
   }
+
+  closeNote() { this.reading = null; }
 
   private say(text: string) { this.message = { text, t: this.t }; }
 
@@ -173,6 +189,7 @@ export class Hall {
     }
     if (this.powered && !this.logShown && this.poweredT > 3) { this.logShown = true; this.events.push('log'); }
 
+    if (this.reading) { this.moving = false; return; }
     this.move(dt, inp);
     this.use(dt, inp);
 
@@ -235,6 +252,9 @@ export class Hall {
           this.say('Dźwignia ani drgnie. Za mało siły, potrzeba czegoś do podważenia.');
           this.leverTried = true;
         }
+        break;
+      case 'note':
+        if (inp.usePressed) { this.reading = this.noteAt; this.notesRead.add(this.noteAt!); this.events.push('note'); }
         break;
       case 'battery':
         if (inp.usePressed) { this.insertT = 0.001; this.events.push('take'); }
