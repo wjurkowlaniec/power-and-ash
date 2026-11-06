@@ -103,3 +103,15 @@ describe('wind', () => {
     expect(maxTurn).toBeGreaterThan(0.3);
   });
 });
+
+describe('Wolt facing', () => {
+  it('faces the walking direction even when the cursor is behind him', () => {
+    const g = new Game(level1());
+    g.pos = { x: 30, y: 40 };
+    for (let i = 0; i < 30; i++) g.update(DT, { ...idle(), move: { x: 1, y: 0 }, aim: { x: 20, y: 40 } });
+    expect(Math.cos(g.facing)).toBeGreaterThan(0.99);
+    // standing still, he turns to the cursor
+    g.update(DT, { ...idle(), aim: { x: 20, y: 40 } });
+    expect(Math.cos(g.facing)).toBeLessThan(-0.99);
+  });
+});
