@@ -2,6 +2,7 @@ import { Ctx, Scene } from '../scene';
 import { Hall, BATTERY_POWER } from '../sim/hall';
 import { HallView } from '../render/hallView';
 import { NOTES, journal } from '../notes';
+import { story } from '../state';
 
 const LOG = '…TEST 4411…\n…STABILNY…\nNIE ODŁĄCZAĆ OD…';
 
@@ -103,7 +104,7 @@ export class HallScene implements Scene {
     const s = c.sound;
     switch (e) {
       case 'stand': s.servo(1, 0.8); s.staticBurst(0.25, 0.05); break;
-      case 'step': if (Math.random() < 0.4) s.step(true); if (!this.hall.powered && Math.random() < 0.5) s.servo(0.6, 0.9 + Math.random() * 0.2); break;
+      case 'step': s.wheelCreak(this.hall.powered ? 0.5 : 1); if (!this.hall.powered && Math.random() < 0.3) s.servo(0.5, 0.9 + Math.random() * 0.2); break;
       case 'strain': s.servo(1.2, 0.6); break;
       case 'pickup': s.clank(1.6, 0.06); break;
       case 'pry': s.clank(0.8, 0.16); break;
@@ -112,7 +113,7 @@ export class HallScene implements Scene {
       case 'insert': s.clank(2.2, 0.05); s.swell(); c.fx.static = 0.8; break;
       case 'log': this.logT = 0; s.blip(0.8); setTimeout(() => s.blip(0.6), 180); break;
       case 'door': s.creak(1); s.clank(0.6, 0.12); break;
-      case 'exit': this.next = 'station'; break;
+      case 'exit': story.battery = this.hall.battery; this.next = 'station'; break;
       case 'note': journal.add(this.hall.reading!); this.justOpened = true; s.blip(1.3); break;
     }
   }

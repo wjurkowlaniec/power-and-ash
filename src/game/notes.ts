@@ -24,6 +24,28 @@ Od 03:12 ogniwo oddaje więcej energii, niż przyjęło w cyklu ładowania. Nadw
 
 Zalecenie: NIE ODŁĄCZAĆ OD AUTOMATU SERWISOWEGO. Ogniwo stabilizuje się wyłącznie pod obciążeniem.`,
   },
+  kartkaTechnika: {
+    id: 'kartkaTechnika', kind: 'instrukcja', title: 'Kartka na drzwiach warsztatu',
+    body: `Zamek padł znowu. Jak nie ma prądu, wepnij się w port po lewej, wystarczy chwila.
+
+I NIE ZOSTAWIAJ TURBINY Z TYM ŁOŻYSKIEM. Nowe łożysko i smar są w magazynie, druga półka. Łożysko waży swoje, do masztu weź starą oponę i ciągnij jak sanki.
+
+— T.`,
+  },
+  notatkaKierowniczki: {
+    id: 'notatkaKierowniczki', kind: 'notatka służbowa', title: 'Notatka służbowa · przeniesienie Q-1',
+    body: `Do: dyrekcja Programu Zorza
+Od: kierowniczka stacji Olszanka
+Temat: przeniesienie Q-1 do laboratorium
+
+Odmawiam. Q-1 jest stabilne tylko u nas, z naszym automatem. Jeśli ktoś chce budować Q-2 na danych z czterech miesięcy, niech podpisze to sam.`,
+  },
+  mapaSieci: {
+    id: 'mapaSieci', kind: 'instrukcja', title: 'Mapa na ścianie dyżurki',
+    body: `Mapa doliny i gór. Markerem zakreślono siedem punktów i połączono je linią: Sieć Siedmiu Stacji. Olszanka jest pierwsza od zachodu.
+
+Jeden punkt w górach, z dala od linii, ktoś przekreślił kilka razy, aż przebił papier.`,
+  },
 };
 
 const KEY = 'pip.notes';

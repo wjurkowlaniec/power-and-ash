@@ -1,6 +1,6 @@
 import * as THREE from 'three';
 import { mat, mesh, box } from '../../render/models';
-import { bodyModel, BodyModel, WHEEL_R } from './body';
+import { woltMonoModel, WoltMono, WoltAnimator, ArmPose } from '../../render/wolt';
 import { Models, fit } from '../../render/assets';
 import { V2 } from '../../sim/vec';
 import { Hall, HALL_W, HALL_H, layout, PRY_TIME, INSERT_TIME, WAKE_TIME } from '../sim/hall';
@@ -20,11 +20,19 @@ export class HallView {
   readonly scene = new THREE.Scene();
   readonly camera = new THREE.OrthographicCamera(-1, 1, 1, -1, 0.1, 200);
   readonly post: Post;
-  private wolt: BodyModel;
+  private wolt: WoltMono;
+  private anim: WoltAnimator;
+  private glow = new THREE.PointLight(0xe8e2d4, 0, 3.5, 1.5);
+  private prevPos: THREE.Vector3 | null = null;
+  private prevYaw = 0;
+  private spd = 0;
+  private acc = 0;
+  private yawRate = 0;
+  private reelSpin = 0;
+  private prevTether = 0;
   private tetherMesh: THREE.Mesh | null = null;
   private tetherKey = '';
   private droppedTether = false;
-  private lean = 0;
   private camTarget = new THREE.Vector3();
   private battery: THREE.Group;
   private batteryMat: THREE.MeshStandardMaterial;
@@ -82,7 +90,12 @@ export class HallView {
       sheet.rotation.y = n.x * 1.7;
       s.add(sheet);
     }
-    this.wolt = bodyModel(Q_GREEN);
+    this.wolt = woltMonoModel();
+    this.anim = new WoltAnimator(this.wolt);
+    // the cell window stays dark until the battery is in; then it shows the Q-1 green
+    const cm = (this.wolt.cell.material as THREE.MeshStandardMaterial).clone();
+    cm.emissive.setHex(Q_GREEN); cm.color.setHex(0x0c140f); this.wolt.cell.material = cm;
+    this.glow.position.set(0, 0.5, 0.4); this.wolt.body.add(this.glow);
     s.add(this.wolt.group);
 
     this.dust = this.buildDust(); s.add(this.dust);
@@ -351,12 +364,14 @@ export class HallView {
       }
       return;
     }
+    const ex = this.wolt.cableExit.getWorldPosition(new THREE.Vector3());
+    pts[pts.length - 1] = { x: ex.x, y: ex.z };
     const key = pts.map(p => p.x.toFixed(2) + ',' + p.y.toFixed(2)).join(';');
     if (key !== this.tetherKey) {
       this.tetherKey = key;
       const v: THREE.Vector3[] = [];
       for (let i = 0; i < pts.length; i++) {
-        const y = i === 0 ? 0.3 : i === pts.length - 1 ? WHEEL_R + 0.5 : 0.04;
+        const y = i === 0 ? 0.3 : i === pts.length - 1 ? this.wolt.cableExit.getWorldPosition(new THREE.Vector3()).y : 0.04;
         v.push(new THREE.Vector3(pts[i].x, y, pts[i].y));
         if (i < pts.length - 1) {
           const a = pts[i], b = pts[i + 1];
@@ -412,7 +427,7 @@ export class HallView {
     this.batteryMat.emissiveIntensity = glow;
     this.qLight.intensity = h.powered ? 0.5 : 2.5 + pulse * 8;
     this.chamberEdges.emissiveIntensity = h.powered ? 0.04 : 0.12 + pulse * 0.25;
-    (this.wolt.cassette.material as THREE.MeshStandardMaterial).emissiveIntensity = h.powered ? 0.9 + pulse * 0.6 : inHand ? glow : 0;
+    void inHand;
     this.frontGlass.position.y = 1.55 + h.chamberOpen * 2.35;
     this.leverArm.rotation.z = h.leverDown ? -1.9 : 0.25 - Math.min(1, h.pry / PRY_TIME) * 0.6 + (h.pry > 0 ? Math.sin(t * 40) * 0.03 : 0);
     this.door.rotation.y = -h.doorOpen * 1.4;
@@ -425,43 +440,65 @@ export class HallView {
     if (h.pipeDown) { this.pipe.visible = true; this.pipe.position.set(h.pipeDown.x, 0.05, h.pipeDown.y); this.pipe.rotation.set(0, 0.4, Math.PI / 2); }
     else if (h.hasPipe) {
       this.pipe.visible = true;
+      // carried in the gripper, sticking forward over the nose
       const f = h.facing, side = { x: -Math.sin(f), y: Math.cos(f) };
-      this.pipe.position.set(h.pos.x + Math.cos(f) * 0.25 + side.x * 0.42, 0.62, h.pos.y + Math.sin(f) * 0.25 + side.y * 0.42);
-      this.pipe.rotation.set(0, -f, 1.25);
+      this.pipe.position.set(h.pos.x + Math.cos(f) * 0.45 - side.x * 0.1, 0.95, h.pos.y + Math.sin(f) * 0.45 - side.y * 0.1);
+      this.pipe.rotation.set(0, -f, Math.PI / 2 - 0.15);
     } else if (h.leverDown) {
       this.pipe.visible = true; this.pipe.position.set(L.lever.x - 0.35, 0.05, L.lever.y + 0.5); this.pipe.rotation.set(0, 1.1, Math.PI / 2);
     }
 
-    // the body: in the cradle, rolling off it, balancing on its wheel
+    // the body (shared monocycle model): turns only towards where it rolls
     const target = Math.PI / 2 - h.facing;
     let dr = target - w.group.rotation.y; dr = Math.atan2(Math.sin(dr), Math.cos(dr));
-    w.group.rotation.y += dr * Math.min(1, dt * (h.powered ? 10 : 4));
+    w.group.rotation.y += dr * Math.min(1, dt * (h.powered ? 9 : 4));
     const k = THREE.MathUtils.smoothstep(h.wake, 0, 1);
     const rest = { x: L.cradle.x + 1.2, y: 0.3, z: L.cradle.y + 1.5 };
-    const speed = h.moving ? h.speed() : 0;
-    this.lean += ((h.moving ? 0.16 : 0) - this.lean) * Math.min(1, dt * 5);
-    // on reserve the body keeps catching its balance; with the battery it is steady
-    const wob = h.powered ? 0.015 : 0.07;
-    let wobZ = Math.sin(t * 2.3) * wob + Math.sin(t * 5.1) * wob * 0.4;
+    if (!h.awake) w.group.position.set(THREE.MathUtils.lerp(rest.x, h.pos.x, k), THREE.MathUtils.lerp(rest.y, 0, Math.min(1, k * 1.6)), THREE.MathUtils.lerp(rest.z, h.pos.y, k));
+    else w.group.position.set(h.pos.x, 0, h.pos.y);
+    w.group.updateMatrixWorld(true);
+    const p = w.group.position;
+    if (!this.prevPos) { this.prevPos = p.clone(); this.prevYaw = w.group.rotation.y; }
+    const sd = dt > 0 ? p.distanceTo(this.prevPos) / dt : 0;
+    const ns = this.spd + (sd - this.spd) * Math.min(1, dt * 10);
+    this.acc += ((dt > 0 ? (ns - this.spd) / dt : 0) - this.acc) * Math.min(1, dt * 6);
+    this.spd = ns;
+    let dy = w.group.rotation.y - this.prevYaw; dy = Math.atan2(Math.sin(dy), Math.cos(dy));
+    this.yawRate += ((dt > 0 ? dy / dt : 0) - this.yawRate) * Math.min(1, dt * 8);
+    this.prevPos.copy(p); this.prevYaw = w.group.rotation.y;
+
+    // the diagnostic cable pulls the body back towards the chamber near its end
+    const tl = h.tetherLength();
+    const reelWant = dt > 0 && h.tether ? ((tl - this.prevTether) / dt) / 0.11 : 0;
+    this.reelSpin += (reelWant - this.reelSpin) * Math.min(1, dt * 12);
+    this.prevTether = tl;
+    let tension = 0, pullFrom: THREE.Vector3 | null = null, cableTo: THREE.Vector3 | null = null;
+    if (h.tether) {
+      const last = h.tether.last;
+      cableTo = new THREE.Vector3(last.x, 0, last.y);
+      tension = Math.max(0, (tl - 6.5) / 2.5);
+      if (tension > 0) pullFrom = new THREE.Vector3(last.x - h.pos.x, 0, last.y - h.pos.y).normalize();
+    }
+    const arm: ArmPose = h.pry > 0 ? 'work' : h.insertT > 0 || h.hasPipe ? 'reach' : h.reading ? 'reach' : 'rest';
+    const pk = Math.min(1, h.poweredT / 3);
+    this.anim.update({
+      dt, time: t, speed: this.spd, yawRate: this.yawRate, accel: this.acc,
+      strain: !!h.tether && tl > 8.85 && h.moving === false && this.spd < 0.05 && tension > 0.9,
+      cableTo, tension, pullFrom, reelSpin: this.reelSpin, arm,
+      // reserve: the body's own 4% (shaky, dim); with the battery: Q-1 charge
+      energy: h.powered ? h.battery / 100 : h.reserve / 100, lamp: h.powered ? pk : 0,
+      lookAt: (() => { const n = h.hint(); return n && h.awake ? new THREE.Vector3(n.at.x, 0, n.at.y) : null; })(),
+    });
     if (!h.awake) {
-      w.group.position.set(THREE.MathUtils.lerp(rest.x, h.pos.x, k), THREE.MathUtils.lerp(rest.y, 0, Math.min(1, k * 1.6)), THREE.MathUtils.lerp(rest.z, h.pos.y, k));
       // slumped back in the cradle, then the jolt of rolling off
       w.balance.rotation.x = (1 - k) * -0.5 + (h.wake > 0 && h.wake < 0.6 ? Math.sin(t * 24) * 0.05 : 0);
-      wobZ = h.wake > 0 ? Math.sin(k * 9) * 0.25 * (1 - k) : 0;
-    } else {
-      w.group.position.set(h.pos.x, 0, h.pos.y);
-      w.balance.rotation.x = this.lean + (h.powered ? 0 : 0.06);
+      w.balance.rotation.z = h.wake > 0 ? Math.sin(k * 9) * 0.25 * (1 - k) : 0;
     }
-    w.balance.rotation.z = wobZ;
-    w.wheel.rotation.x += speed * dt / WHEEL_R;
-    w.arms[0].rotation.x = h.hasPipe ? -1.1 : Math.sin(t * 1.3) * 0.05;
-    w.arms[1].rotation.x = h.insertT > 0 ? -1.3 : Math.sin(t * 1.1 + 1) * 0.05;
-    // the camera eye: weak flicker on reserve, steady once the battery is in; the lamp comes on with it
-    const eye = w.eye.material as THREE.MeshStandardMaterial;
-    const pk = Math.min(1, h.poweredT / 3);
-    eye.emissiveIntensity = h.powered ? 0.6 + pk * 1.6 : (h.wake > 0 || h.t > 1 ? 0.3 + Math.random() * 0.2 : 0.05);
+    // indoors the lamp needs more punch than outside; the cell window shows the battery once it is in
     w.spot.intensity = h.powered ? pk * 22 : 0;
-    w.glow.intensity = h.powered ? 2 : (h.t > 1 ? 5 + Math.random() * 1.2 : 0);
+    (w.cell.material as THREE.MeshStandardMaterial).emissiveIntensity = h.powered ? 0.9 + pulse * 0.6 : 0;
+    (w.head.material as THREE.MeshStandardMaterial).emissiveIntensity = h.powered ? 0.4 + pk * 1.6 : (h.t > 1 ? 0.3 + Math.random() * 0.2 : 0.05);
+    this.glow.intensity = h.powered ? 2 : (h.t > 1 ? 5 + Math.random() * 1.2 : 0);
     this.updateTether(pulse);
 
     // light comes up slightly once he can see properly
