@@ -22,6 +22,10 @@ Top-down gra survivalowa w przeglądarce. Automat serwisowy Wolt ciągnie kable 
 | M | dźwięk wł./wył. |
 | H | pomoc |
 
+## Grafika i licencje
+
+Modele są od [Quaterniusa](https://quaternius.com) i [Kaya Lousberga](https://www.kaylousberg.com), wszystkie na licencji CC0. Szczegóły w [CREDITS.md](CREDITS.md).
+
 ## Rozwój
 
 ```bash

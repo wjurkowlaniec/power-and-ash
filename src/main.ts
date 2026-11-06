@@ -4,9 +4,21 @@ import { level1 } from './sim/level';
 import { View } from './render/view';
 import { Sound } from './audio/ambient';
 import { dist } from './sim/vec';
+import { loadModels, Models } from './render/assets';
 
+const goBtn = document.getElementById('go') as HTMLButtonElement;
+goBtn.disabled = true;
+goBtn.textContent = 'Ładowanie modeli…';
+let models: Models = new Map();
+try {
+  models = await loadModels((d, t) => { goBtn.textContent = `Ładowanie modeli… ${d}/${t}`; });
+} catch (e) {
+  console.warn('models failed, using simple shapes', e);
+}
+goBtn.disabled = false;
+goBtn.textContent = 'Zacznij (z dźwiękiem)';
 let game = new Game(level1());
-let view = new View(game, document.getElementById('app')!);
+let view = new View(game, document.getElementById('app')!, models);
 const sound = new Sound();
 // handy for debugging in the console
 (window as unknown as { game: Game }).game = game;
@@ -45,7 +57,7 @@ $('again').addEventListener('click', () => {
   // rebuild the level from scratch
   const app = $('app'); app.innerHTML = '';
   game = new Game(level1());
-  view = new View(game, app);
+  view = new View(game, app, models);
   (window as unknown as { game: Game }).game = game;
   $('end').hidden = true; running = true; lastToastCount = -1;
 });

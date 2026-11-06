@@ -64,6 +64,14 @@ export function level1(): LevelDef {
     { kind: 'crate', x: 6, y: 27, w: 1, h: 1 },
     { kind: 'crate', x: 7, y: 27, w: 1, h: 1 },
     { kind: 'pylon', x: 30, y: 6, w: 2, h: 2 },
+    // dead trees (the trunk blocks one tile)
+    { kind: 'tree', x: 10, y: 41, w: 1, h: 1 },
+    { kind: 'tree', x: 47, y: 7, w: 1, h: 1 },
+    { kind: 'tree', x: 57, y: 37, w: 1, h: 1 },
+    { kind: 'tree', x: 4, y: 9, w: 1, h: 1 },
+    { kind: 'tree', x: 35, y: 43, w: 1, h: 1 },
+    { kind: 'tree', x: 60, y: 16, w: 1, h: 1 },
+    { kind: 'tree', x: 21, y: 4, w: 1, h: 1 },
     { kind: 'pylon', x: 54, y: 24, w: 2, h: 2 },
   ];
   const ports: PortDef[] = [
