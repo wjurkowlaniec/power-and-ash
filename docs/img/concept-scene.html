@@ -1,0 +1,239 @@
+<!doctype html>
+<html><head><meta charset="utf-8">
+<style>
+html,body{margin:0;height:100%;overflow:hidden;background:#000;font-family:"IBM Plex Mono",ui-monospace,monospace}
+canvas{display:block}
+.hud{position:absolute;color:#e9ece9;font-size:13px;text-shadow:0 1px 2px #0008}
+.box{background:#11161ccc;border:1px solid #ffffff22;border-radius:6px;padding:10px 12px}
+.bar{height:9px;width:160px;background:#ffffff1a;margin:4px 0 8px}
+.bar>i{display:block;height:100%}
+.slot{display:inline-flex;align-items:center;justify-content:center;width:70px;height:46px;border:1px solid #ffffff33;border-radius:4px;margin-right:4px;background:#000a;font-size:11px}
+.slot.on{border-color:#f08c35;color:#f08c35}
+.tip{background:#11161ce6;border:1px solid #f08c35;border-radius:4px;padding:4px 8px;font-size:12px}
+.k{display:inline-block;border:1px solid #ffffff66;border-radius:3px;padding:0 5px;margin-right:4px}
+</style>
+<script type="importmap">{"imports":{"three":"./node_modules/three/build/three.module.js"}}</script>
+</head><body>
+<div id="hud"></div>
+<script type="module">
+import * as THREE from 'three';
+const mode = (location.hash||'#day').slice(1);
+const W=innerWidth,H=innerHeight;
+const renderer=new THREE.WebGLRenderer({antialias:true,preserveDrawingBuffer:true});
+renderer.setSize(W,H);renderer.setPixelRatio(1);
+renderer.shadowMap.enabled=true;renderer.shadowMap.type=THREE.PCFSoftShadowMap;
+renderer.toneMapping=THREE.ACESFilmicToneMapping;
+document.body.appendChild(renderer.domElement);
+const scene=new THREE.Scene();
+
+const P={
+ day:{sky:0xc9c3b6,fog:[0xc9c3b6,60,140],sun:0xfff1dc,sunI:2.6,hemi:[0xe8e2d4,0x6b6157,1.1],sunPos:[30,50,20],exp:1.0,lamps:0.4},
+ dusk:{sky:0x6d5a52,fog:[0x7a5d4c,50,120],sun:0xff9a55,sunI:2.2,hemi:[0x8a7a8c,0x3a2e28,0.6],sunPos:[-40,14,-10],exp:1.05,lamps:2.5},
+ night:{sky:0x0e1420,fog:[0x101828,70,150],sun:0x8aa0d8,sunI:0.6,hemi:[0x46557a,0x15181f,0.75],sunPos:[-20,40,30],exp:1.6,lamps:8},
+ storm:{sky:0x9a8468,fog:[0x9a8468,62,105],sun:0xd8b48a,sunI:0.9,hemi:[0xb09a7c,0x4a3d30,0.9],sunPos:[10,40,10],exp:1.0,lamps:3},
+ overlay:{sky:0x0d1216,fog:[0x0d1216,60,140],sun:0xbfcbd6,sunI:0.9,hemi:[0x6d7a86,0x1a1f24,0.7],sunPos:[30,50,20],exp:1.0,lamps:0.6},
+}[mode]||null;
+scene.background=new THREE.Color(P.sky);
+scene.fog=new THREE.Fog(P.fog[0],P.fog[1],P.fog[2]);
+renderer.toneMappingExposure=P.exp;
+scene.add(new THREE.HemisphereLight(...P.hemi));
+const sun=new THREE.DirectionalLight(P.sun,P.sunI);sun.position.set(...P.sunPos);sun.castShadow=true;
+sun.shadow.mapSize.set(2048,2048);Object.assign(sun.shadow.camera,{left:-45,right:45,top:45,bottom:-45,near:1,far:150});sun.shadow.bias=-0.0005;
+scene.add(sun);
+
+// deterministic random
+let seed=7;const rnd=()=>((seed=(seed*16807)%2147483647)/2147483647);
+const M=(c,o={})=>new THREE.MeshStandardMaterial({color:c,roughness:o.r??0.85,metalness:o.m??0.1,flatShading:o.flat??false,emissive:o.e??0x000000,emissiveIntensity:o.ei??1,transparent:o.t!=null,opacity:o.t??1});
+const mk=(g,m,x=0,y=0,z=0,sh=true)=>{const o=new THREE.Mesh(g,m);o.position.set(x,y,z);o.castShadow=sh;o.receiveShadow=true;return o};
+const box=(w,h,d,m,x,y,z)=>mk(new THREE.BoxGeometry(w,h,d),m,x,y,z);
+
+// ---- ground: ash dunes
+const ashCol = mode==='overlay'?0x2a3036:0x9a9184;
+const gGeo=new THREE.PlaneGeometry(220,220,110,110);gGeo.rotateX(-Math.PI/2);
+const pos=gGeo.attributes.position;
+const dune=(x,z)=>Math.sin(x*0.08+z*0.03)*0.9+Math.sin(x*0.021-z*0.05)*1.6+Math.sin(z*0.13)*0.25;
+const flatR=(x,z)=>{const d=Math.hypot(x-2,z-2);return THREE.MathUtils.smoothstep(d,18,34)};
+for(let i=0;i<pos.count;i++){const x=pos.getX(i),z=pos.getZ(i);pos.setY(i,dune(x,z)*flatR(x,z)-0.02);}
+gGeo.computeVertexNormals();
+const ground=mk(gGeo,M(ashCol,{flat:true,r:1}),0,0,0,false);scene.add(ground);
+const hAt=(x,z)=>dune(x,z)*flatR(x,z);
+// grid
+const grid=new THREE.GridHelper(48,48,mode==='overlay'?0x4b6070:0x8a8073,mode==='overlay'?0x34424e:0x958b7d);
+grid.position.set(2,0.02,2);grid.material.transparent=true;grid.material.opacity=mode==='overlay'?0.7:0.35;scene.add(grid);
+
+// ---- old pylons stubs & rocks
+const rust=M(0x6e4a36,{r:0.9,m:0.3}), steel=M(0x59626a,{r:0.6,m:0.6}), dark=M(0x2b2f33,{r:0.7,m:0.4});
+for(let i=0;i<22;i++){const a=rnd()*6.28,r=26+rnd()*40,x=Math.cos(a)*r,z=Math.sin(a)*r;
+ const s=0.8+rnd()*2.5;const rock=mk(new THREE.DodecahedronGeometry(s,0),M(0x7b7268,{flat:true}),x,hAt(x,z)+s*0.3,z);rock.rotation.set(rnd(),rnd(),rnd());scene.add(rock);}
+function brokenPylon(x,z,h,tilt){const g=new THREE.Group();
+ for(const [dx,dz] of [[-1,-1],[1,-1],[1,1],[-1,1]]){const leg=box(0.18,h,0.18,rust,dx*0.9,h/2,dz*0.9);g.add(leg);}
+ for(let y=1;y<h;y+=1.6){g.add(box(2,0.12,0.12,rust,0,y,-0.9));g.add(box(2,0.12,0.12,rust,0,y,0.9));g.add(box(0.12,0.12,2,rust,-0.9,y,0));g.add(box(0.12,0.12,2,rust,0.9,y,0));}
+ g.position.set(x,hAt(x,z)-0.6,z);g.rotation.z=tilt;g.rotation.y=rnd();scene.add(g);}
+brokenPylon(-26,-18,6,0.35);brokenPylon(34,-24,9,-0.2);brokenPylon(-30,26,5,0.5);
+
+// ---- LAND YACHT (Żaglowóz) centred at (-10, 4)
+const yacht=new THREE.Group();yacht.position.set(-11,0,5);yacht.rotation.y=0.12;scene.add(yacht);
+const hullM=M(0x5d6870,{r:0.55,m:0.5}),deckM=M(0x8d8577,{r:0.9}),paint=M(0xc9622a,{r:0.6});
+yacht.add(box(12,0.9,6,hullM,0,1.1,0));
+yacht.add(box(12.2,0.25,6.2,paint,0,0.7,0));
+const prow=mk(new THREE.CylinderGeometry(3,3,0.9,3,1),hullM,6.6,1.1,0);prow.rotation.y=Math.PI/2;prow.scale.set(1,1,0.55);yacht.add(prow);
+yacht.add(box(11.6,0.08,5.6,deckM,0,1.6,0));
+for(const [x,z] of [[-4.4,-3.2],[4.4,-3.2],[-4.4,3.2],[4.4,3.2]]){const w=mk(new THREE.CylinderGeometry(0.9,0.9,0.6,18),dark,x,0.9,z);w.rotation.x=Math.PI/2;yacht.add(w);}
+// deck modules on 1m grid
+const recM=M(0xbfb8a8,{r:0.7}),batM=M(0x2f8fb8,{r:0.4,m:0.3,e:0x2f8fb8,ei:mode==='night'?0.35:0.08});
+yacht.add(box(2,1.6,2,recM,-4.5,2.45,-1.5));yacht.add(box(1.6,0.2,1.6,dark,-4.5,3.3,-1.5));
+yacht.add(box(1,1.2,2,batM,-2.6,2.25,-1.5));
+yacht.add(box(3,1.1,2,M(0xd9d2c3),-4,2.2,1.6)); // fabricator
+yacht.add(box(0.8,0.3,0.8,M(0x222222,{e:0xf08c35,ei:0.9}),-4,2.9,1.6));
+// crates
+for(let i=0;i<3;i++)yacht.add(box(0.9,0.9,0.9,M(0x8a6d4a),-1.6+i*1.0,2.1,2.3));
+// mast + sail
+yacht.add(mk(new THREE.CylinderGeometry(0.12,0.16,11,8),steel,1.5,7,0));
+const sailShape=new THREE.Shape();sailShape.moveTo(0,0);sailShape.lineTo(0,9);sailShape.lineTo(5.5,0.2);sailShape.lineTo(0,0);
+const sail=mk(new THREE.ShapeGeometry(sailShape),new THREE.MeshStandardMaterial({color:0xe8e0cf,side:THREE.DoubleSide,roughness:0.9}),1.55,2.2,0);
+sail.rotation.y=-0.55;yacht.add(sail);
+{const boom=mk(new THREE.CylinderGeometry(0.06,0.06,5.8,6),steel,4.3,2.3,0);boom.rotation.z=Math.PI/2;boom.rotation.y=0.55;yacht.add(boom);}
+// turbine on deck
+function turbine(parent,x,z,h,ang){const g=new THREE.Group();g.add(mk(new THREE.CylinderGeometry(0.08,0.14,h,8),steel,0,h/2,0));
+ const hub=mk(new THREE.SphereGeometry(0.22,10,8),steel,0,h,0.15);g.add(hub);
+ for(let i=0;i<3;i++){const b=box(0.18,1.9,0.05,M(0xe7e2d8),0,0,0);b.geometry.translate(0,0.95,0);b.position.set(0,h,0.25);b.rotation.z=ang+i*2.094;g.add(b);}
+ g.position.set(x,0,z);parent.add(g);return g;}
+turbine(yacht,4.5,-1.8,4.2,0.3).position.y=1.6;
+turbine(yacht,-0.5,-2.2,3.6,1.2).position.y=1.6;
+// solar on deck
+const solM=M(0x1d3c5a,{r:0.25,m:0.6,e:0x0e2238,ei:0.2});
+for(let i=0;i<2;i++){const s=box(1.8,0.06,1.1,solM,2.7,2.4,1.6-i*0);s.position.x=2.6+i*1.9;s.rotation.z=0.25;yacht.add(s);yacht.add(box(0.06,0.7,0.06,steel,2.6+i*1.9,2,1.6));}
+// deck port
+const portM=M(0x222222,{e:0xf08c35,ei:1.4});
+yacht.add(box(0.5,0.5,0.5,portM,5.6,1.85,2.6));
+// lamps around yacht
+const lamps=[];
+function lamp(x,z,y=0){const g=new THREE.Group();g.add(mk(new THREE.CylinderGeometry(0.05,0.07,2.2,6),steel,0,1.1,0));
+ g.add(mk(new THREE.SphereGeometry(0.22,10,8),M(0xffd9a0,{e:0xffa040,ei:P.lamps>1?3:0.6}),0,2.25,0,false));
+ const L=new THREE.PointLight(0xffa24a,P.lamps,14,1.6);L.position.set(0,2.3,0);g.add(L);
+ g.position.set(x,y,z);scene.add(g);lamps.push(g);}
+lamp(-18,0.5);lamp(-3,10);lamp(-19,10);
+
+// ---- STATION (relay tower) at (16,-6)
+const st=new THREE.Group();st.position.set(17,0,-7);scene.add(st);
+st.add(box(7,0.5,7,M(0x8e8a82,{r:1}),0,0.25,0));
+const TH=11;
+for(const [dx,dz] of [[-1,-1],[1,-1],[1,1],[-1,1]]){const leg=mk(new THREE.CylinderGeometry(0.12,0.16,TH,6),steel,dx*1.6,TH/2,dz*1.6);leg.rotation.set(dz*0.08,0,-dx*0.08);st.add(leg);}
+for(let y=1.6;y<TH;y+=1.8){const s=1.6-y*0.07;for(const r of [0,Math.PI/2,Math.PI,Math.PI*1.5]){const b=box(s*2,0.08,0.08,steel,Math.sin(r)*s,y,Math.cos(r)*s);b.rotation.y=r;st.add(b);}}
+st.add(box(1.6,1.2,1.6,M(0xd8d2c6),0,TH+0.6,0));
+const relayOn=mode==='overlay'||mode==='dusk';
+const relay=mk(new THREE.SphereGeometry(0.35,14,10),M(0x000000,{e:relayOn?0x55e07a:0xe04a35,ei:3}),0,TH+1.5,0,false);st.add(relay);
+const rl=new THREE.PointLight(relayOn?0x55e07a:0xe04a35,3,12,1.5);rl.position.set(0,TH+1.6,0);st.add(rl);
+st.add(box(0.5,0.5,0.5,portM,-3,0.75,3));
+// stairs to deck/pomost
+for(let i=0;i<6;i++)st.add(box(1.2,0.2,0.6,M(0x7e7a72),2.6,0.5+i*0.45,2.8-i*0.55));
+st.add(box(4,0.15,2,M(0x6f6b64),1,3.1,-1.6));
+// station solar panels (one dusty)
+const dusty=M(0x6c675d,{r:1});
+for(let i=0;i<3;i++){const s=box(2.2,0.08,1.3,i==2?dusty:solM,5.4,1.2,-3+i*1.6);s.rotation.z=-0.3;st.add(s);st.add(box(0.08,0.9,0.08,steel,5.4,0.6,-3+i*1.6));}
+
+// ---- scrap field
+const scrapMs=[M(0x6f665c),M(0x8c5a3a,{m:0.4}),M(0x55606a,{m:0.5}),M(0xb06a3a,{m:0.6,r:0.4}),M(0x3b4148)];
+const scrap=[];
+for(let i=0;i<34;i++){const x=6+rnd()*12-6+4,z=10+rnd()*10;const s=0.3+rnd()*1.1;
+ const b=box(s*(0.6+rnd()),s*(0.3+rnd()*0.6),s*(0.6+rnd()),scrapMs[i%5],x,s*0.25,z);b.rotation.set(rnd()*0.5,rnd()*3,rnd()*0.5);scene.add(b);scrap.push(b);}
+// barrels
+for(let i=0;i<4;i++){const b=mk(new THREE.CylinderGeometry(0.4,0.4,1,12),M(i%2?0x8a3a2a:0x3f5a3a,{m:0.3}),11+i*0.9,0.5,18-i*0.4);if(i==3){b.rotation.z=Math.PI/2;b.position.y=0.4}scene.add(b);}
+
+// ---- CABLE system
+const copper=M(0xc0703a,{r:0.35,m:0.7});
+function cable(points,thick=0.09,sag=0.25){ // points on ground; build curve with small sag & ground follow
+ const pts=[];
+ for(let i=0;i<points.length-1;i++){const a=points[i],b=points[i+1];const n=Math.max(4,Math.round(a.distanceTo(b)*2));
+  for(let k=0;k<n;k++){const t=k/n;const p=a.clone().lerp(b,t);const lift=(a.y+b.y)>0.6? Math.sin(t*Math.PI)*-sag*(a.distanceTo(b)/6) : 0;p.y=p.y+lift;
+   if(p.y<hAt(p.x,p.z)+0.06)p.y=hAt(p.x,p.z)+0.06;p.x+=Math.sin(k*1.7+i)*0.04;p.z+=Math.cos(k*1.3+i)*0.04;pts.push(p);} }
+ pts.push(points[points.length-1]);
+ const curve=new THREE.CatmullRomCurve3(pts);const tube=mk(new THREE.TubeGeometry(curve,pts.length*3,thick,6,false),copper,0,0,0);scene.add(tube);return curve;}
+function stake(x,z){const s=mk(new THREE.CylinderGeometry(0.08,0.04,0.6,6),steel,x,0.25,z);scene.add(s);scene.add(mk(new THREE.SphereGeometry(0.1,6,6),M(0xf08c35,{e:0xf08c35,ei:0.6}),x,0.58,z,false));}
+const V=(x,z,y)=>new THREE.Vector3(x,y??hAt(x,z)+0.06,z);
+// world coords of yacht port
+const yp=new THREE.Vector3(5.6,1.85,2.6).applyMatrix4(yacht.matrixWorld.compose(yacht.position,yacht.quaternion,yacht.scale));
+const extPos=new THREE.Vector3(3,0,10);
+const c1=cable([yp,V(yp.x+0.6,yp.z+0.4,0.6),V(-1.5,10),V(extPos.x-0.4,extPos.z)]);
+stake(-1.5,10);
+// extender
+const ext=new THREE.Group();ext.add(box(0.9,0.5,0.9,M(0x4a5258,{m:0.6,r:0.4}),0,0.25,0));ext.add(mk(new THREE.SphereGeometry(0.09,8,8),M(0,{e:0x55e07a,ei:3}),0,0.55,0,false));ext.position.copy(extPos);scene.add(ext);
+// cable to station via stakes (orthogonal-ish)
+const c2=cable([V(extPos.x+0.4,extPos.z),V(9,10),V(9,0),V(14,-3.6)].concat(mode==='overlay'||mode==='dusk'?[V(14,-4)]:[]));
+stake(9,10);stake(9,0);
+// Wolt + carried cable (day / night / storm) ; in dusk/overlay cable completed to station port
+const sp=new THREE.Vector3(-3,0.75,3).add(st.position);
+let wolt=new THREE.Group();
+const body=M(0x2e3640,{r:0.5,m:0.5}),acc=M(0xf08c35,{r:0.5});
+wolt.add(box(0.9,0.9,0.7,body,0,0.85,0));
+wolt.add(box(0.95,0.2,0.75,acc,0,1.15,0));
+wolt.add(mk(new THREE.SphereGeometry(0.33,14,10),M(0xffe2b0,{e:0xffa040,ei:2.2}),0,1.6,0.05,false));
+const reel=mk(new THREE.TorusGeometry(0.32,0.12,8,16),copper,0,1.0,-0.48);wolt.add(reel);
+for(const s of [-0.3,0.3]){wolt.add(box(0.25,0.4,0.35,dark,s,0.2,0));}
+wolt.add(box(0.15,0.5,0.15,body,0.55,0.85,0.25));wolt.add(box(0.15,0.5,0.15,body,-0.55,0.85,0.25));
+const spot=new THREE.SpotLight(0xffb060,mode==='night'?14:6,18,0.55,0.6,1.2);spot.position.set(0,1.7,0.2);spot.castShadow=true;
+const tgt=new THREE.Object3D();tgt.position.set(0,0,6);wolt.add(tgt);spot.target=tgt;wolt.add(spot);
+wolt.scale.setScalar(1.5);scene.add(wolt);
+let woltPos;
+if(mode==='dusk'||mode==='overlay'){woltPos=new THREE.Vector3(6,0,-3);wolt.rotation.y=0.9;}
+else{woltPos=new THREE.Vector3(12.2,0,-2.6);wolt.rotation.y=2.3;}
+wolt.position.copy(woltPos);wolt.position.y=hAt(woltPos.x,woltPos.z);
+// held cable segment from last point to Wolt hand
+if(!(mode==='dusk'||mode==='overlay')){
+ cable([V(14,-3.6),V(13.4,-3.2,0.6),new THREE.Vector3(woltPos.x+0.3,1.0,woltPos.z-0.2)],0.08,0.0);
+ // range ring around last stake (9,0) radius ~ (20m scaled 10 units)
+ if(mode!=='storm'){const ring=new THREE.Mesh(new THREE.RingGeometry(9.8,10.0,96),new THREE.MeshBasicMaterial({color:0xf08c35,transparent:true,opacity:0.8,side:THREE.DoubleSide}));ring.rotation.x=-Math.PI/2;ring.position.set(9,0.08,0);scene.add(ring);
+ const hl=new THREE.Mesh(new THREE.RingGeometry(0.45,0.6,32),new THREE.MeshBasicMaterial({color:0x55e07a,side:THREE.DoubleSide}));hl.rotation.x=-Math.PI/2;hl.position.set(sp.x,0.1,sp.z);scene.add(hl);}
+}else{
+ cable([V(14,-4),V(sp.x,sp.z+0.2),new THREE.Vector3(sp.x,sp.y,sp.z)],0.09,0.0);
+}
+// energy pulses along cables
+const pulses=[];
+function addPulses(curve,n,col){for(let i=0;i<n;i++){const p=curve.getPointAt((i+0.3)/n);const m=mk(new THREE.SphereGeometry(mode==='overlay'?0.2:0.13,8,8),new THREE.MeshBasicMaterial({color:col}),p.x,p.y+0.05,p.z,false);scene.add(m);}}
+if(mode!=='storm'){addPulses(c1,7,0x6fd0ff);addPulses(c2,mode==='overlay'||mode==='dusk'?9:5,0x6fd0ff);}
+
+// enemies (rust-eaters) at night near cable
+if(mode==='night'){for(const [x,z] of [[0.5,10.3],[9.3,4.5],[8.6,6]]){const e=new THREE.Group();e.add(mk(new THREE.SphereGeometry(0.35,10,8),M(0x3a2a24,{m:0.4}),0,0.3,0));
+ for(const s of [-0.12,0.12])e.add(mk(new THREE.SphereGeometry(0.07,6,6),M(0,{e:0xff3b2a,ei:4}),s,0.45,0.3,false));
+ for(let l=0;l<3;l++)for(const s of [-1,1]){const leg=box(0.4,0.05,0.05,dark,s*0.35,0.12,-0.15+l*0.15);leg.rotation.z=s*0.4;e.add(leg);}
+ e.position.set(x,0,z);e.scale.setScalar(1.7);e.rotation.y=rnd()*6;scene.add(e);}
+ // stars
+ const sg=new THREE.BufferGeometry();const arr=[];for(let i=0;i<500;i++)arr.push((rnd()-0.5)*300,60+rnd()*40,(rnd()-0.5)*300);sg.setAttribute('position',new THREE.Float32BufferAttribute(arr,3));scene.add(new THREE.Points(sg,new THREE.PointsMaterial({color:0xffffff,size:0.6,fog:false})));
+}
+// storm dust particles
+if(mode==='storm'){const sg=new THREE.BufferGeometry();const arr=[];for(let i=0;i<5000;i++)arr.push((rnd()-0.5)*80,rnd()*12,(rnd()-0.5)*80);sg.setAttribute('position',new THREE.Float32BufferAttribute(arr,3));
+ scene.add(new THREE.Points(sg,new THREE.PointsMaterial({color:0xc8a87e,size:0.12,transparent:true,opacity:0.7})));
+ // drifts burying cable
+ for(const [x,z] of [[5,10],[9,5],[9,2]]){const d=mk(new THREE.SphereGeometry(1.2,10,6),M(0xa48c6c,{flat:true}),x,-0.6,z);d.scale.set(1.4,0.6,0.9);scene.add(d);}
+}
+// overlay: colour-coded network + glow tiles for consumers
+if(mode==='overlay'){
+ scene.traverse(o=>{if(o.isMesh&&o.material&&o.material!==copper&&!o.material.isMeshBasicMaterial&&o!==ground){o.material=o.material.clone();o.material.color.multiplyScalar(0.45);}});
+ copper.emissive=new THREE.Color(0x6fd0ff);copper.emissiveIntensity=0.9;copper.color.set(0x6fd0ff);
+ const tile=(x,z,w,d,col)=>{const m=new THREE.Mesh(new THREE.PlaneGeometry(w,d),new THREE.MeshBasicMaterial({color:col,transparent:true,opacity:0.35}));m.rotation.x=-Math.PI/2;m.position.set(x,0.12,z);scene.add(m);};
+ tile(-14.8,3.6,3,3,0x55e07a); tile(-14,7.5,4,3,0xf0b035); tile(17,-7,7,7,0x55e07a); tile(-6.3,2.5,2,3,0x6fd0ff);
+}
+
+// ---- camera: orthographic, tilted top-down
+const aspect=W/H;const vs=mode==='storm'?11:15;
+const cam=new THREE.OrthographicCamera(-vs*aspect,vs*aspect,vs,-vs,0.1,400);
+const target=new THREE.Vector3(mode==='storm'?6:5,0,mode==='storm'?2:-3);
+cam.position.copy(target).add(new THREE.Vector3(-30,62,52));cam.lookAt(target);
+renderer.render(scene,cam);
+
+// ---- HUD
+const hud=document.getElementById('hud');
+const en={day:62,dusk:48,night:31,storm:55,overlay:62}[mode];
+const time={day:'13:40',dusk:'19:05',night:'02:10',storm:'15:20',overlay:'13:40'}[mode];
+const wind={day:'← 6 m/s',dusk:'← 4 m/s',night:'↙ 3 m/s',storm:'← 21 m/s  BURZA',overlay:'← 6 m/s'}[mode];
+let h=`<div class="hud box" style="left:20px;top:20px">ENERGIA<div class="bar"><i style="width:${en}%;background:#2f8fb8"></i></div>KADŁUB<div class="bar"><i style="width:${mode==='night'?72:94}%;background:#3d8b4f"></i></div><span style="opacity:.7">${mode==='storm'?'solar 0 W · turbiny: hamulec':'−1 W/s · chodzenie'}</span></div>
+<div class="hud box" style="right:20px;top:20px;text-align:right">${time}<br><span style="opacity:.75">wiatr ${wind}</span></div>
+<div class="hud" style="left:20px;bottom:20px">${['chwytak','rozbier.','kabel','kołek','lampa','extender'].map((s,i)=>`<span class="slot ${i==2?'on':''}">${i+1} ${s}</span>`).join('')}</div>`;
+if(mode==='day'||mode==='night'){h+=`<div class="hud box" style="right:20px;bottom:20px">KABEL · odcinek <b style="color:#f08c35">14 / 20 m</b><br><span style="opacity:.75">zapas na nawijaku: 46 m</span></div>`;
+ const p=sp.clone();p.y=1.4;p.project(cam);h+=`<div class="hud tip" style="left:${(p.x+1)/2*W+18}px;top:${(1-p.y)/2*H-14}px"><span class="k">E</span>wepnij w port stacji</div>`;}
+if(mode==='night'){h+=`<div class="hud tip" style="left:${W*0.32}px;top:${H*0.22}px;border-color:#e04a35">⚠ rdzojady przy linii · przepustowość −25%</div>`;}
+if(mode==='overlay'||mode==='dusk'){h+=`<div class="hud box" style="right:20px;bottom:20px;min-width:230px">SIEĆ: Żaglowóz + Stacja 2<br>produkcja <b style="float:right">820 W</b><br>pobór <b style="float:right">${mode==='dusk'?'780':'660'} W</b><br>bilans <b style="float:right;color:#55e07a">+${mode==='dusk'?40:160} W</b><br>bateria <b style="float:right">3,8 / 6 kWh</b><br><span style="color:#55e07a">przekaźnik 400 / 400 W ✓</span></div>`;}
+if(mode==='storm'){h+=`<div class="hud tip" style="left:50%;top:22px;transform:translateX(-50%);border-color:#e0a535">Burza pyłowa · schowaj się · kable na ziemi zasypywane</div>`;}
+hud.innerHTML=h;
+window.__done=true;
+</script></body></html>

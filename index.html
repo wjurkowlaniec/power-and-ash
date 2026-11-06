@@ -1,0 +1,40 @@
+<!doctype html>
+<html lang="pl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Popiół i Prąd</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&display=swap">
+</head>
+<body>
+<div id="app"></div>
+<div id="vignette"></div>
+<div id="hud">
+  <div class="panel tl" id="vitals">
+    <div class="lbl">ENERGIA</div><div class="bar"><i id="en" style="width:82%"></i></div>
+    <div class="lbl">KADŁUB</div><div class="bar"><i id="hp" style="width:100%"></i></div>
+  </div>
+  <div class="panel tr" id="clock"><span>13:40</span><span class="dim">wiatr ← 6 m/s</span></div>
+  <div class="goal" id="goal"></div>
+  <div class="bl" id="hotbar"></div>
+  <div class="panel br" id="cablePanel"></div>
+  <div class="panel br2" id="netPanel" hidden></div>
+  <div class="tip" id="tip" hidden></div>
+  <div class="toasts" id="toasts"></div>
+  <div class="help" id="help">
+    <b>WASD</b> ruch · <b>Shift</b> bieg · <b>E</b> weź / wepnij kabel · <b>Q</b> (przytrzymaj) zwiń · <b>Alt</b> sieć · <b>M</b> dźwięk · <b>H</b> pomoc
+  </div>
+</div>
+<div id="start">
+  <div class="card">
+    <h1>Popiół i Prąd</h1>
+    <p>Wolt, automat serwisowy, ma przeciągnąć kabel z żaglowozu do Stacji 2. Kabel ma 20 metrów i owija się o przeszkody. Liczy się trasa, nie odległość.</p>
+    <p class="keys"><b>WASD</b> ruch &nbsp; <b>E</b> kabel &nbsp; <b>Q</b> zwiń &nbsp; <b>Alt</b> sieć</p>
+    <button id="go" type="button">Zacznij (z dźwiękiem)</button>
+    <p class="small">prototyp M2 · logika w czystym TS, render Three.js</p>
+  </div>
+</div>
+<script type="module" src="/src/main.ts"></script>
+</body>
+</html>
