@@ -1,86 +1,357 @@
 # Świat i fabuła
 
-Dokument roboczy. Spisuje to, co ustaliliśmy w rozmowie projektowej (listopad 2026). Mechaniki kabla i poziomu „Rozruch” są w [PLAN.md](PLAN.md).
+Dokument roboczy z rozmowy projektowej (listopad 2026). Szczegółowy przebieg pierwszych godzin gry jest w [POCZATEK.md](POCZATEK.md), a mechaniki kabla i obecny poziom testowy w [PLAN.md](PLAN.md).
+
+Oznaczenia: **[ustalone]** to decyzja Wojtka, **[propozycja]** to mój pomysł do akceptacji albo wyrzucenia.
+
+## Spis
+
+1. [W jednym akapicie](#w-jednym-akapicie)
+2. [Ton i styl](#ton-i-styl)
+3. [Historia świata](#historia-świata)
+4. [Bateria Q-1](#bateria-q-1)
+5. [Wolt](#wolt)
+6. [Rozwój: obliczenia w tle](#rozwój-obliczenia-w-tle)
+7. [Żaglowóz](#żaglowóz)
+8. [Ludzie i bunkry](#ludzie-i-bunkry)
+9. [Czas: doba, pory roku, hibernacja](#czas-doba-pory-roku-hibernacja)
+10. [Bazy](#bazy)
+11. [Zagrożenia](#zagrożenia)
+12. [Mapa świata i obszary](#mapa-świata-i-obszary)
+13. [Łuk fabularny](#łuk-fabularny)
+14. [Gra po fabule](#gra-po-fabule)
+15. [Otwarte pytania](#otwarte-pytania)
 
 ## W jednym akapicie
 
-Wolt to automat badawczy z wyzerowaną pamięcią. Budzi się w stacji pomiarowej jako jedyna rzecz w okolicy, która się ruszyła, i zabiera ze sobą baterię: kwantowy prototyp z misji, w której brał udział. Bateria podtrzymuje go przy życiu, a przeskalowana mogłaby dać światu nieograniczoną, czystą energię. Ludzie przetrwali w bunkrach i brakuje im prądu. Wolt przez wiele lat (z hibernacjami na zimę) odkrywa, czym jest bateria, uczy się ludzi i odbudowuje sieć energii. Gra się nie kończy, gdy fabuła się domknie.
+Wolt to automat badawczy z wyzerowaną pamięcią. Budzi się w stacji pomiarowej jako jedyna rzecz w okolicy, która się ruszyła, i zabiera ze sobą baterię: kwantowy prototyp z misji, w której brał udział. Bateria podtrzymuje go przy życiu, a przeskalowana mogłaby dać światu nieograniczoną, czystą energię. Ludzie przetrwali w bunkrach i brakuje im prądu. Wolt przez wiele lat, z hibernacjami na zimę, odkrywa, czym jest bateria, uczy się ludzi, adaptuje stare bazy i odbudowuje sieć energii. Gra nie kończy się wraz z fabułą. **[ustalone]**
 
 ## Ton i styl
 
-- Samotność i cisza jak w Inside. Historia z otoczenia, prawie bez tekstu.
-- Przyszłość, ale nie amerykańska. Krajobraz i przyroda środkowej Europy: łąki, olszyny, mokradła, łagodne wzgórza, a potem góry. Bez sztafażu PRL-u i PGR-ów. Ma być czuć Europę w kształcie terenu i architekturze, a nie w kiczu.
-- Kolor tylko tam, gdzie ważne: lampa Wolta, napięty kabel, przekaźniki, bateria.
+- **Samotność i cisza jak w Inside.** Historia opowiadana otoczeniem, prawie bez tekstu. Żadnych dialogów w dymkach na początku gry. **[ustalone]**
+- **Przyszłość, ale europejska.** Krajobraz i przyroda środkowej Europy: łąki, olszyny, mokradła, zbiorniki zaporowe, łagodne wzgórza, a dalej góry. Architektura nie amerykańska, ale też bez kiczu PRL-u czy PGR-ów: ma być czuć Europę w kształcie terenu, materiałach i proporcjach. **[ustalone]**
+- **Paleta:** wyblakła, popielna. Kolor zarezerwowany dla ważnych rzeczy: zielone serce baterii, sodowa lampa Wolta, miedziany kabel, przekaźniki, światła bunkrów.
+- **Dźwięk:** ambient otoczenia (wiatr, woda, metal, owady, odległe brzęczenie linii). Bateria ma własny, niski puls, który jest emocjonalnym „głosem” gry.
+- **Popiół** pokrywa świat cienką warstwą jak szary szron. Wiosną przebija się przez niego zieleń, latem robi się kurz, jesienią mokra breja, zimą miesza się ze śniegiem.
 
-## Bateria
+![Stacja Pomiarowa Olszanka o zmierzchu](img/koncepty/stacja.jpg)
 
-- Serce Wolta i oś fabuły. Wolt to w praktyce bateria z ciałem.
-- **Przedmiot bazowy, który rośnie:** z czasem odblokowuje umiejętności. Pierwsza to **echo**, czyli wyczuwanie innych prototypów i laboratoriów misji (kompas fabularny). Później **impuls EMP** odpędzający mikroboty. Kolejne do ustalenia.
-- **Wyjęcie baterii:** czasem trzeba ją oddać do analizy (ludziom albo urządzeniu w bazie). Wolt działa wtedy na rezerwie i walczy o przetrwanie: chłód, wilgoć, mikroboty ciągnące do ciepła.
-- **Śmierć:** ciało pada, ale bateria powoli odbudowuje minimalne ciało, którym da się poczłapać. Karą jest stracony czas, a czas ma znaczenie przez pory roku.
+## Historia świata
+
+**[propozycja]** Poniższa oś czasu jest szkieletem. Gracz poznaje ją we fragmentach, w dowolnej kolejności, i nigdy nie dostaje jej podanej wprost.
+
+| Okres | Co się stało |
+|---|---|
+| **Przed** | Europa żyje z rozproszonej, przeciążonej sieci. Kryzysy energetyczne są coraz częstsze. Powstaje **Program Zorza**, misja badawcza szukająca nowego źródła energii. |
+| **Zorza** | W laboratorium w górach (Cerkwiska) zespół buduje prototyp **Q-1**: baterię, która nie tylko magazynuje energię, ale powoli ją „dobiera” ze zjawisk kwantowych. Do obsługi stacji polowych misja tworzy automaty serwisowe. Wolt jest jednym z nich. Powstaje sieć polowych stacji pomiarowych (Sieć Siedmiu Stacji). |
+| **Próba** | Q-1 działa w małej skali. Ktoś (rząd? korporacja? sami naukowcy?) naciska, żeby od razu zbudować wersję przemysłową **Q-2**. |
+| **Popiół** | Uruchomienie Q-2 kończy się katastrofą. To, co miało dobierać energię, zaczyna ją wysysać z otoczenia: z sieci, z maszyn, z żywych rzeczy. Fala przechodzi przez kraj w jedną noc. Zostaje popiół i martwa elektronika. To jest prawdziwe źródło popiołu i najmocniejszy zwrot fabularny. |
+| **Zejście** | Ludzie uciekają pod ziemię: do schronów, kopalń, piwnic. Laboratorium jest zamknięte. Q-1, jedyny stabilny prototyp, zostaje w stacji polowej Olszanka z uśpionym automatem. |
+| **Teraz** | Wiele lat później. Coś (echo innego prototypu? sygnał z laboratorium? sam Q-1?) budzi Wolta. |
+
+Konsekwencja dla gry: ludzie, którzy pamiętają Popiół, mają dobry powód, żeby bać się baterii. Część chce ją zniszczyć, część mieć dla siebie. Wolt niesie w piersi rzecz, która może uratować świat albo powtórzyć katastrofę.
+
+## Bateria Q-1
+
+- **Serce Wolta i oś fabuły.** Wolt to w praktyce bateria z ciałem. **[ustalone]**
+- **Przedmiot bazowy, który rośnie:** z czasem odblokowuje kolejne umiejętności, niekoniecznie w kolejności fabularnej. **[ustalone]**
+- **Wyjęcie baterii:** czasem trzeba ją oddać do analizy. Wolt działa wtedy na rezerwie, w trybie czarno-białym jak na samym początku, i walczy o przetrwanie. **[ustalone]**
+- **Śmierć:** ciało pada, a bateria powoli odbudowuje minimalne ciało, którym da się poczłapać. Karą jest stracony czas. **[ustalone]**
+
+Umiejętności baterii (kolejność orientacyjna):
+
+| Umiejętność | Co daje | Status |
+|---|---|---|
+| **Echo** | kierunkowy puls w stronę innych prototypów i obiektów misji, kompas fabularny | ustalone |
+| **Rezerwa** | po wyjęciu baterii Wolt działa jeszcze kilka minut, później dłużej | propozycja |
+| **Impuls EMP** | rozprasza mikroboty i zakłóca obce maszyny, kosztuje dużo energii | ustalone (później) |
+| **Rezonans** | ładuje urządzenia w pobliżu bez kabla, na krótki dystans | propozycja |
+| **Pamięć miejsc** | punkty, w których bateria może odbudować ciało po śmierci (zamiast w bazie) | propozycja |
+| **Dobieranie** | bateria powoli sama się ładuje z otoczenia, ale przy tym coś „wysysa” (rośliny więdną, mikroboty uciekają). Echo katastrofy Q-2. | propozycja |
 
 ## Wolt
 
-- Dba o temperaturę i wilgotność: może się zgrzać, żeby wyschnąć, ale energia jest ograniczona.
-- Ulepsza siebie (izolacja, grzałki, osuszanie, nawijak, lampa).
-- Pętla rozgrywki zawsze wraca do bazy albo żaglowozu.
+- Dba o **temperaturę i wilgotność**: może się zgrzać, żeby wyschnąć, ale energia jest ograniczona. **[ustalone]**
+- Ulepsza siebie. **[ustalone]**
+- Pętla rozgrywki zawsze wraca do bazy albo żaglowozu. **[ustalone]**
+
+Parametry Wolta **[propozycja]**:
+
+| Parametr | Zagrożenie | Jak sobie radzić |
+|---|---|---|
+| Energia | wszystko ją zużywa: ruch, lampa, grzanie, zasilanie urządzeń z siebie | ładowanie w bazie, z paneli, ze stacji, z kabla |
+| Temperatura | przegrzanie w słońcu (Szklany Zalew, lato), wychłodzenie nocą i zimą | cień, chłodzenie, grzałki, izolacja |
+| Wilgotność | mgła, woda, rosa, deszcz: iskrzenie, szarpane ruchy, w końcu zwarcie | grzanie, osuszacz, powłoka |
+| Zużycie ciała | stawy, serwa, oko | wymiana części, smar |
+
+Ulepszenia Wolta to zamienne moduły: izolacja, radiator, osuszacz, mocniejsza lampa, dłuższy kabel własny, nawijak o większej pojemności, czujniki (wilgotność gruntu, prąd w ziemi, ślady mikrobotów).
+
+## Rozwój: obliczenia w tle
+
+**[ustalone kierunkowo]** Rozwój nie jest drzewkiem, które klika się za punkty, i nie jest przypięty sztywno do fabuły. Na pokładzie Wolta (a później w bazach) działa **uczący się system**, który przy każdej interakcji z światem zbiera dane i powoli z nich wyciąga wnioski. Im więcej prądu, tym szybciej myśli.
+
+**[propozycja] Jak to działa:**
+
+- **Obserwacje.** Każda interakcja zostawia ślad: rozebrany złom, nowe złącze, obcy sprzęt, słowo usłyszane od człowieka, nieznany owad, nowy typ terenu. W rogu ekranu pojawia się dyskretny wpis, np. „nowa próbka: izolator ceramiczny” albo „nieznany protokół: 2 z 5 sygnałów”. Bez fanfar.
+- **Obliczenia.** Obserwacje trafiają do kolejki. System przetwarza je w tle, ale **tylko gdy ma nadwyżkę energii**. Gdy Wolt ledwo zipie, nauka stoi. Gdy stoi przy wietrze i pełnych akumulatorach, przyspiesza. To spina rozwój z siecią: chcesz się uczyć szybciej, zbuduj więcej zasilania.
+- **Odkrycia.** Gdy obliczenia się kończą, system „rozumie” coś nowego: przepis w fabrykatorze, przejściówkę do obcego złącza, ulepszenie Wolta, nowe słowo, sposób na mikroboty. Kolejność wynika z tego, co gracz robił, więc każdy gra trochę inaczej.
+- **Moc obliczeniowa jako ulepszenie.** Na początku Wolt ma tylko podstawowy procesor: jedno zadanie naraz, wolno. Później:
+  1. **Koprocesor** z rozbiórki sprzętu w stacji: dwa zadania naraz.
+  2. **Jednostka analityczna** w bazie (np. stara szafa serwerowa z wieży radiolinii): liczy, gdy Wolta nie ma, ale potrzebuje stałego zasilania i chłodzenia.
+  3. **Sieć baz:** połączone anteną bazy liczą razem. Daleka baza z wiatrakiem może całą zimę przerabiać dane, gdy Wolt śpi.
+- **Hibernacja i nauka.** Długi sen z dobrze zasiloną bazą to dużo obliczeń. To jeden z powodów, dla których warto spać dłużej.
+- **Analiza baterii** to największe zadanie obliczeniowe w grze, rozbite na etapy. Każdy etap to fragment prawdy o Q-1 i nowa umiejętność. Do niektórych etapów trzeba baterię wyjąć i włożyć do jednostki analitycznej, co spina się z momentami przetrwania na rezerwie.
+
+**Przykład:** Wolt rozbiera stary falownik z wiatraka. Wpis: „nowa próbka: falownik, nieznany standard”. W nocy, gdy turbina daje nadwyżkę, system liczy przez dwie doby gry. Rano: „zrozumiano standard złącza wiatraka, dostępny przepis: przejściówka”. Gracz nie musiał nic klikać, ale gdyby turbina stała, czekałby dłużej.
 
 ## Żaglowóz
 
-- Budowany od zera przez całą grę, nie dostajesz go gotowego.
-- Etapy: najpierw pieszo, potem rama starego bojerka znaleziona przy stacji (sanki z małym żaglem z kawałka materiału), potem płozy albo koła, potem większy pojazd z ładownią, panelami i fabrykatorem.
-- **Maintenance:** żagiel się strzępi, łożyska się zapiaszczają i trzeba je wymieniać, bateria traci pojemność, kable kruszeją. Rytm do ustalenia w testach.
-- Na żaglu wymyślone, wyblakłe logo („Zefir”).
+- **Budowany od zera przez całą grę.** **[ustalone]**
+- **Maintenance:** żagiel się strzępi, łożyska się zapiaszczają, bateria traci pojemność, kable kruszeją. Rytm do ustalenia w testach. **[ustalone]**
 
-## Ludzie
+Etapy **[propozycja]**:
 
-- Żyją w bunkrach. Można z nimi wchodzić w interakcje i robić misje: zdobywanie i dowożenie rzeczy (klimat dostaw, samotne trasy).
-- Wolt na początku ich nie rozumie: mowa to szum, są tylko gesty. Ludzie są też na początku zagrożeniem.
-- **Słownik:** każdy kontakt i misja dodaje słowa, a napisy stopniowo się „odszumiają”. Wolt dosłownie uczy się ludzi.
-- Przez lata hibernacji w bunkrach zmieniają się pokolenia. Nowi znają Wolta tylko z opowieści.
+| Etap | Pojazd | Co umożliwia |
+|---|---|---|
+| 0 | pieszo, ładunek w rękach | okolice stacji |
+| 1 | **bojerek**: rama z trzema płozami, żagiel z powłoki balonu meteo, skrzynka 4 sloty | twardy grunt i popiół, szybkie przejazdy po dolinie |
+| 2 | **sanie żaglowe**: dłuższa rama, prawdziwe płótno (wyblakła reklama „Zefir” z Zatopionej Wsi), wymienne płozy albo koła, mała bateria | dłuższe trasy, nocowanie przy pojeździe, pierwszy panel |
+| 3 | **Żaglowóz**: kadłub z ładownią, fabrykator na pokładzie, turbina, panele, nawijak kabli | prawdziwa ruchoma baza, wyprawy na wiele dni |
+| 4 | Żaglowóz rozbudowany: napęd elektryczny na bezwietrzne odcinki, kotwica i wyciągarka, izolacja, grzałki, powłoka | góry, mokradła, zima |
 
-## Czas: pory roku i hibernacja
+![Bojerek z żaglem z balonu meteo](img/koncepty/bojerek.jpg)
 
-- Start jesienią, żeby przegrzewanie nie było problemem od razu.
-- Na początku Wolt nie przeżyje zimy, więc gra się wiosną i jesienią. Na zimę szuka zimowiska i hibernuje.
-- **Długość snu wybiera gracz:** „do wiosny” albo dłużej, np. aż baza skończy produkcję. Długi sen daje postęp produkcji, ale świat się w tym czasie sypie: kable kruszeją, bazy zarastają, ludzie się zmieniają.
-- Gra obejmuje wiele lat. Później, z lepszym sprzętem, da się przetrwać zimę i grać cały rok.
-- Pora dnia: dzień ładuje panele, ale grzeje. Noc: mróz, aktywne mikroboty, mocniejszy wiatr (do potwierdzenia).
+**Części zużywalne** **[propozycja]**:
+
+| Część | Co ją niszczy | Objaw | Naprawa |
+|---|---|---|---|
+| Żagiel | wiatr, słońce, mróz | strzępi się, traci ciąg | łatanie, nowe płótno |
+| Łożyska kół | piasek, popiół | piszczą, hamują, w końcu blokują koło | smar, wymiana |
+| Płozy | kamienie, asfalt | ścierają się, gorzej suną | szlifowanie, wymiana |
+| Bateria pojazdu | cykle ładowania, mróz | maleje pojemność | regeneracja, wymiana ogniw |
+| Kable | słońce, mróz, mikroboty | iskrzą, tracą przewodność, pękają | taśma, wymiana odcinka |
+| Liny i bloczki | wilgoć | trą, rwą się | wymiana |
+
+Pojazd ma **kartę stanu** (klawisz), na której widać zużycie każdej części jak na rysunku technicznym. Naprawy robi się ręcznie, przy pojeździe.
+
+## Ludzie i bunkry
+
+- Żyją w bunkrach. Można robić dla nich misje: zdobywanie i dowożenie rzeczy, samotne trasy. **[ustalone]**
+- Wolt na początku ich nie rozumie, a oni są dla niego zagrożeniem. **[ustalone]**
+- **Słownik:** każdy kontakt dodaje słowa, a napisy stopniowo się „odszumiają”. **[propozycja, przyjęta w rozmowie]**
+
+Jak działa słownik **[propozycja]**:
+
+- Mowa ludzi to szum z tonami. Napisy to trzęsące się znaki.
+- Słowa wpadają do słownika z kontekstu: człowiek pokazuje latarkę i mówi coś, a po wymianie to słowo staje się czytelne („światło”). Nauka idzie też przez obliczenia w tle.
+- Przy ok. 30% słownika rozumiesz proste prośby, przy 60% zwykłe rozmowy, przy 90% wspomnienia i plotki, a w nich wskazówki fabularne.
+- Każdy bunkier mówi trochę inaczej (gwara, żargon techników), więc słownik ma odmiany.
+
+Bunkry **[propozycja]**:
+
+| Bunkier | Gdzie | Kim są | Czego chcą | Stosunek do baterii |
+|---|---|---|---|---|
+| **Szkoła** | schron pod szkołą w Zatopionej Wsi | kilka rodzin, nauczycielka, dzieci; rybacy | światło, leki, części do pomp | ciekawość, dzieci widzą w Wolcie postać z bajek |
+| **Rozdzielnia** | podziemna stacja przy Lesie Słupów | dawni technicy sieci | części, miedź, ochrona przed mikrobotami | chcą ją rozebrać i skopiować |
+| **Klasztor** | piwnice przy cerkwiach w górach | strażnicy, którzy pilnują laboratorium | żeby nikt nie otworzył laboratorium | strach: pamiętają Popiół |
+| **Kopuła** | Szklarnia pod Kopułą przy Szklanym Zalewie | ogrodnicy, którzy jako jedyni uprawiają rośliny | ogromnej ilości prądu, żeby kopuła przetrwała zimę | nadzieja, cel Sieci Siedmiu Stacji |
+
+Typy misji **[propozycja]**: dostawa (przewieź coś przez trudny teren w określonym czasie), naprawa (przywróć prąd do pompy, wentylacji, światła), poszukiwanie (znajdź człowieka, sprzęt, nasiona), eskorta (przewieź człowieka żaglowozem, a on komentuje świat, co pomaga w słowniku), budowa linii (połącz bunkier z siecią).
+
+## Czas: doba, pory roku, hibernacja
+
+**[ustalone]** Start jesienią. Na początku Wolt nie przeżyje zimy, więc na zimę hibernuje, a **długość snu wybiera gracz**. Gra obejmuje wiele lat.
+
+Pora dnia **[propozycja]**:
+
+| | Dzień | Noc |
+|---|---|---|
+| Energia | słońce ładuje panele | tylko wiatr i akumulatory |
+| Temperatura | ciepło, latem przegrzanie | chłód, zimą mróz |
+| Wiatr | słabszy | mocniejszy, żaglowóz jedzie szybciej |
+| Widoczność | mgła rano | ciemno, lampa przyciąga mikroboty |
+| Zagrożenia | upał, ludzie w ruchu | mikroboty, wilgoć, zimno |
+
+Pory roku **[propozycja]**:
+
+| Pora | Charakter | Główne wyzwanie |
+|---|---|---|
+| Wiosna | roztopy, błoto, zieleń przez popiół, dużo wody | grząski teren, wilgoć, powodzie w Zatopionej Wsi |
+| Lato | długi dzień, upał, susza, burze z piorunami | przegrzanie, pożary, ale dużo słońca |
+| Jesień | mgły, deszcze, krótszy dzień | wilgoć, coraz mniej energii |
+| Zima | śnieg z popiołem, mróz, zamarznięte wody | na początku nie do przeżycia, później zamarznięty zalew to autostrada dla bojerka |
+
+Hibernacja **[propozycja]**:
+
+- Spać można tylko w zimowisku (osłonięte, suche miejsce z zasilaniem podtrzymującym).
+- Opcje: „do wiosny”, „rok”, „aż baza skończy zadanie”, „aż obliczenia się skończą”. Przy pierwszej zimie dostępne jest tylko „do wiosny”.
+- **Co się dzieje w czasie snu:** bazy produkują, obliczenia idą (jeśli jest prąd), kable i sprzęt się zużywają, mikroboty się rozmnażają, ludzie żyją swoim życiem.
+- **Po przebudzeniu:** krótka sekwencja „co się zmieniło”: zarośnięty kabel, nowy dom na palach, ktoś nowy na pomoście. W bunkrach mogą być nowi ludzie, którzy znają Wolta tylko z opowieści, a ktoś bliski mógł umrzeć.
+- Długi sen jest kuszący (produkcja, nauka), ale świat się w tym czasie sypie, a ludzie mogą potrzebować pomocy, której nie dostaną.
 
 ## Bazy
 
-- **Bez pełnego craftingu od zera.** Bazy to istniejące obiekty, które adaptujesz.
-- Bazy produkują rzeczy potrzebne do rozwoju, ale powoli, nawet przez rok. Trzeba je zasilać i doglądać.
-- Żeby wiedzieć, że w bazie coś się dzieje (alarm), trzeba zbudować antenę do łączności na większą odległość.
-- **Poznawanie cudzej technologii:** sprzęt z różnych baz nie jest kompatybilny. Trzeba spędzić czas na analizie protokołów, żeby go połączyć.
-- Typy obiektów do adaptacji (lista robocza): stacja transformatorowa, wieża radiolinii (antena), wiatrak (generator), zakład produkcyjny (np. mleczarnia), **szkoła ze schronem** (zimowisko, potwierdzone).
+**[ustalone]** Bez pełnego craftingu od zera. Bazy to istniejące obiekty, które adaptujesz. Produkują rzeczy potrzebne do rozwoju, ale powoli (nawet rok). Trzeba je zasilać i doglądać. Żeby dostać alarm na odległość, trzeba zbudować antenę. Sprzęt z różnych baz nie jest kompatybilny i trzeba analizować protokoły.
+
+Obiekty do adaptacji **[propozycja, szkoła ustalona]**:
+
+| Obiekt | Gdzie | Rola po adaptacji | Problem do rozwiązania |
+|---|---|---|---|
+| **Stacja Olszanka** | start | pierwsza baza, kołyska ładowania, fabrykator | zdegradowane akumulatory |
+| **Wiatrak** | wzgórze w dolinie | generator | obcy standard prądnicy (analiza protokołu) |
+| **Szkoła ze schronem** | Zatopiona Wieś | zimowisko, kontakt z ludźmi | wilgoć, pompy |
+| **Wieża radiolinii** | wzgórze nad Lasem Słupów | antena dalekiego zasięgu, jednostka analityczna | wysokość, burze, mikroboty |
+| **Stacja transformatorowa** | Las Słupów | węzeł sieci, łączenie baz | uszkodzone uzwojenia |
+| **Mała elektrownia wodna** | zapora zbiornika | duża, stała moc | zamulone turbiny, ludzie ze Szkoły z niej korzystają |
+| **Szklarnia pod Kopułą** | Szklany Zalew | wielki odbiorca, cel sieci | potrzebuje ogromnej mocy |
+| **Laboratorium Zorza** | Cerkwiska | analiza baterii, prawda o Q-1 | zamknięte, strzeżone, głęboko pod skałą |
+
+Zasady baz **[propozycja]**:
+
+- Każda baza ma **stan** (zasilanie, temperatura, zużycie) i **zadanie** (produkcja, obliczenia, ładowanie).
+- Bez anteny nie wiesz, co się dzieje w bazie, dopóki tam nie dojedziesz. Z anteną dostajesz alarm (mikroboty na kablu, awaria, mróz).
+- Adaptacja to głównie: oczyszczenie, naprawa, podłączenie do sieci kablem, przejściówki do obcych standardów.
 
 ## Zagrożenia
 
-- Głównie środowisko: upał, mróz, wilgoć, burze.
-- Inne roboty.
-- **Mikroboty, które podżerają prąd** i ciągną do kabli. Naturalny wróg sieci.
-- Wolt raczej odstrasza (światło, EMP, pułapki) niż walczy. Do potwierdzenia.
+**[ustalone]** Głównie środowisko, do tego inne roboty i mikroboty żywiące się prądem.
 
-## Świat: open world z bramami
+| Zagrożenie | Gdzie i kiedy | Działanie | Obrona |
+|---|---|---|---|
+| Upał | lato, Szklany Zalew | przegrzanie Wolta i baterii | cień, chłodzenie, jazda nocą |
+| Mróz | zima, noce, góry | wychłodzenie, kruche kable, słabsze akumulatory | grzałki, izolacja, zimowisko |
+| Wilgoć | mgła, woda, deszcz | iskrzenie, zwarcia, rdza | grzanie, osuszacz, powłoka |
+| Burze | lato | pioruny w maszty i kable | uziemienie, a później łapanie energii z piorunów |
+| Burza pyłowa | sucho, wietrznie | brak widoczności, ścieranie łożysk i płóz | schronienie, osłony |
+| **Mikroboty** | noc, przy kablach i źródłach prądu | podżerają energię, nadgryzają izolację, w roju mogą wyssać baterię | światło, EMP, pułapki z przynętą, izolacja |
+| Inne roboty | stare automaty misji i obce maszyny | niektóre bronią terenu, niektóre zbierają złom, niektóre da się przeprogramować | unikanie, EMP, analiza protokołu |
+| Ludzie | na początku | boją się, rzucają kamieniami, mogą ukraść część | cierpliwość, wymiana, słownik |
 
-Jeden ciągły świat. Obszary otwierają się dzięki ulepszeniom Wolta i żaglowozu (metroidvania).
+**Mikroboty** **[propozycja]** to cała mała ekologia. Za dnia śpią w gniazdach (stare transformatory, słupy). Nocą wylatują do najbliższego prądu i wyglądają jak świetliki. Pojedyncze są niegroźne, ale rój na kablu potrafi zjeść całą nadwyżkę bazy. Są zwabiane przez światło i ciepło. Później da się je wykorzystać: oswojone gniazdo, które „czyści” linię z obcych rojów, albo przynęta odciągająca je od bazy.
 
-| Obszar | Charakter | Brama (co trzeba mieć) |
-|---|---|---|
-| **Stacja pomiarowa** (start) | Stacja meteorologiczna z maszynerią misji: maszt pomiarowy, mała turbina, warsztat, szopa z ramą bojerka. Samouczek. | brak |
-| **Zatopiona Wieś** | Wieś zalana przez zbiornik zaporowy. Z wody wystaje wieża kościoła, domy na palach, kładki. Wilgoć i rdza. | osuszanie Wolta, powłoka kadłuba |
-| **Las Słupów** | Dawny pas linii wysokiego napięcia, zarośnięty gąszczem martwych słupów i zwisających drutów. Gniazda mikrobotów, dużo miedzi. | EMP albo światło, dłuższy kabel |
-| **Szklany Zalew** | Jezioro stopionego szkła, lustro dla słońca. Raj dla paneli, piekło dla temperatury. | chłodzenie, płozy |
-| **Cerkwiska** | Góry z drewnianymi cerkwiami, mróz, wiatr na grani. Laboratorium misji. | grzałki, kotwica i wyciągarka na stoki |
+**Walka** **[propozycja]:** Wolt nie ma broni. Odstrasza (światło, impuls EMP), zastawia pułapki, ucieka, przeprogramowuje. To pasuje do ciszy i tonu.
 
-Do dodania: kolejne obszary w tym samym duchu (nieoczywiste połączenia, europejski krajobraz) i mapa.
+## Mapa świata i obszary
+
+**[ustalone]** Jeden ciągły świat. Obszary otwierają się dzięki ulepszeniom Wolta i żaglowozu, a nie kluczom fabularnym. Zostają: Zatopiona Wieś, Las Słupów, Szklany Zalew, Cerkwiska.
+
+Szkic układu **[propozycja]**:
+
+```
+                     CERKWISKA (góry, laboratorium)
+                          ▲  stoki, mróz
+                          │
+   SZKLANY ZALEW ◄────── LAS SŁUPÓW ──────► (dalej: obszary do wymyślenia)
+   (kopuła, upał)    sypki   (rozdzielnia,     
+                     piasek   wieża radiolinii)
+                          ▲
+                          │  bród, mokradła
+          ZATOPIONA WIEŚ ◄┴► DOLINA OLSZANKI (start)
+          (szkoła, zapora)    (stacja, wiatrak, rozdzielnia polowa)
+```
+
+### Dolina Olszanki (start)
+
+- **Wygląd:** łąki, olszyny, rowy melioracyjne, polne drogi, rozpadające się wiaty przystanków. Popiół jak szron.
+- **Dźwięk:** wiatr w trawie, żaby nad rowami, skrzypienie masztu.
+- **Bazy:** Stacja Olszanka, wiatrak, rozdzielnia polowa (obecny poziom testowy „Rozruch”).
+- **Zasoby:** złom, miedź z płotów i skrzynek, plastik z pomiarówek, szkło.
+- **Zagrożenia:** pierwsze mikroboty, noce, wilgoć.
+- **Brama wyjścia:** bród i mokradła w stronę Zatopionej Wsi (potrzebne osuszanie), a sypki piasek na północ (potrzebne lepsze płozy).
+
+### Zatopiona Wieś
+
+![Zatopiona Wieś](img/koncepty/wies.jpg)
+
+- **Wygląd:** wieś zalana przez zbiornik zaporowy. Z wody wystaje wieża kościoła, dachy, korony drzew. Ludzie dobudowali domy na palach i kładki. Na brzegu zapora z martwą elektrownią wodną.
+- **Dźwięk:** chlupot, krople, dzwon na wieży poruszany wiatrem, głosy z daleka.
+- **Bazy:** szkoła ze schronem (zimowisko), elektrownia wodna na zaporze.
+- **Ludzie:** bunkier Szkoła, pierwszy kontakt.
+- **Zasoby:** płótno (reklama „Zefir” na starym magazynie), liny, części pomp.
+- **Zagrożenia:** wilgoć, rdza, wiosenne powodzie, głęboka woda (Wolt tonie).
+- **Brama wejścia:** osuszanie Wolta i powłoka. Później łódź albo pływaki do żaglowozu.
+- **Wiosną** woda się podnosi i część kładek znika. **Zimą** zalew zamarza i robi się z niego tor dla bojerka.
+
+### Las Słupów
+
+![Las Słupów nocą](img/koncepty/slupy.jpg)
+
+- **Wygląd:** dawny pas linii wysokiego napięcia, gdzie po katastrofie ktoś (albo coś) stawiał kolejne słupy, aż zrobił się gąszcz martwych kratownic i zwisających drutów. Krzaki i brzozy rosną między nimi.
+- **Dźwięk:** brzęczenie drutów na wietrze, trzaski, szczebiot mikrobotów nocą.
+- **Bazy:** stacja transformatorowa, wieża radiolinii na wzgórzu.
+- **Ludzie:** bunkier Rozdzielnia, technicy.
+- **Zasoby:** dużo miedzi, izolatory, transformatory.
+- **Zagrożenia:** gniazda mikrobotów, burze, splątane druty (kabel Wolta się zahacza).
+- **Brama wejścia:** światło albo EMP przeciw rojom i dłuższy kabel.
+
+### Szklany Zalew
+
+![Szklany Zalew z kopułą Szklarni](img/koncepty/zalew.jpg)
+
+- **Wygląd:** jezioro, które w noc Popiołu zamieniło się w taflę stopionego szkła. Lustro dla słońca, odłamki jak kry. W oddali kopuła Szklarni.
+- **Dźwięk:** prawie cisza, cykanie stygnącego szkła, wiatr bez przeszkód.
+- **Bazy:** Szklarnia pod Kopułą.
+- **Ludzie:** bunkier Kopuła, ogrodnicy.
+- **Zasoby:** szkło, panele słoneczne, nasiona.
+- **Zagrożenia:** upał i odbicia słońca (przegrzanie), ostre odłamki niszczące płozy, burze pyłowe na brzegach.
+- **Brama wejścia:** chłodzenie Wolta i płozy do szkła. Najlepsze miejsce na energię słoneczną w grze.
+
+### Cerkwiska
+
+![Cerkwiska](img/koncepty/cerkwiska.jpg)
+
+- **Wygląd:** góry, świerki, drewniane cerkwie z gontowymi daszkami, śnieg przez większość roku. W skale ukryte wejście do Laboratorium Zorza.
+- **Dźwięk:** wiatr na grani, skrzypienie drewna, cisza śniegu.
+- **Bazy:** Laboratorium Zorza.
+- **Ludzie:** bunkier Klasztor, strażnicy.
+- **Zasoby:** sprzęt misji, dokumentacja, części do baterii.
+- **Zagrożenia:** mróz, lawiny, strome stoki, strażnicy.
+- **Brama wejścia:** grzałki i izolacja, kotwica i wyciągarka na stoki, zaufanie strażników albo sposób na ich ominięcie.
+
+### Kolejne obszary **[do wymyślenia]**
+
+Kierunek: nieoczywiste połączenia i europejski krajobraz. Pomysły do rozmowy: zalane kopalnie z podziemnym jeziorem, wydmy nadmorskie z wrakami, torfowiska, miasto na stokach przecięte autostradą.
+
+## Łuk fabularny
+
+**[propozycja]** Fabuła jest otwarta, ale ma oś. Każdy rozdział to mniej więcej jeden rok gry.
+
+1. **Przebudzenie** (rok 1): stacja, bateria, bojerek, Echo, pierwszy człowiek, pierwsza zima. Szczegóły w [POCZATEK.md](POCZATEK.md).
+2. **Ludzie** (rok 2): bunkier Szkoła, słownik, elektrownia wodna. Ludzie po raz pierwszy wspominają „noc, gdy zgasło wszystko”. Pierwszy etap analizy baterii.
+3. **Sieć** (lata 3–5): Las Słupów, technicy, wieża radiolinii, łączenie baz anteną. Technicy chcą baterii. Zwrot: echo prowadzi do drugiego automatu misji, starszego i zepsutego, z fragmentami pamięci o Q-2.
+4. **Kopuła** (lata 5–8): Szklany Zalew, ogrodnicy, zasilenie Szklarni przez zimę. Pierwsza duża zmiana świata, którą Wolt sam spowodował.
+5. **Zorza** (później): Cerkwiska, strażnicy, laboratorium. Prawda o Popiele i decyzja: odtworzyć baterię w większej skali (ryzyko), oddać ją ludziom, czy zostawić w sobie i budować sieć powoli.
+
+Decyzja na końcu nie zamyka gry, tylko zmienia świat dalej.
+
+## Gra po fabule
+
+**[ustalone]** Gra ma być na długo, a nie na jedną misję.
+
+**[propozycja]** Po głównym wątku zostaje:
+
+- Rozbudowa Sieci Siedmiu Stacji do wszystkich bunkrów.
+- Kolejne lata i pokolenia ludzi, z misjami, które z tego wynikają.
+- Dalsze obszary i obliczenia (system uczy się do końca).
+- Automatyzacja, gdy wrócimy do tematu: na razie tylko ręczne podpinanie.
 
 ## Otwarte pytania
 
-- Kto i gdzie analizuje baterię: ludzie, laboratoria misji, czy obie opcje.
-- Kolejne funkcje baterii po echu i EMP.
-- Automatyzacja: na razie tylko ręczne podpinanie, decyzja później.
+- Czy Popiół jako skutek katastrofy Q-2 jest OK? To mocno ustawia ton i stosunek ludzi do baterii.
+- Kto budzi Wolta i dlaczego teraz.
+- Ile umiejętności baterii i w jakiej kolejności.
+- Kolejne obszary poza czterema ustalonymi.
 - Rytm psucia się żaglowozu i sprzętu.
-- Walka: tylko odstraszanie czy prosta walka.
-- Co jest na końcu wątku fabularnego i jak wygląda gra po nim.
+- Walka: tylko odstraszanie czy coś więcej.
+- Automatyzacja: kiedy i w jakiej formie.
+
+## Koncept arty
+
+Rendery są w `docs/img/koncepty/`, a źródło sceny w `docs/img/koncepty/scene.html` (Three.js, ujęcie wybiera się hashem, np. `#wies`). To szkice nastroju i kompozycji, nie docelowa grafika.
+
+| | |
+|---|---|
+| ![Hala](img/koncepty/hala.jpg) | ![Stacja](img/koncepty/stacja.jpg) |
+| ![Bojerek](img/koncepty/bojerek.jpg) | ![Wieś](img/koncepty/wies.jpg) |
+| ![Słupy](img/koncepty/slupy.jpg) | ![Zalew](img/koncepty/zalew.jpg) |
+| ![Cerkwiska](img/koncepty/cerkwiska.jpg) | |
