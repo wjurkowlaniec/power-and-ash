@@ -487,6 +487,7 @@ export class HallView {
       cableTo, tension, pullFrom, reelSpin: this.reelSpin, arm,
       // reserve: the body's own 4% (shaky, dim); with the battery: Q-1 charge
       energy: h.powered ? h.battery / 100 : h.reserve / 100, lamp: h.powered ? pk : 0,
+      lookAt: (() => { const n = h.hint(); return n && h.awake ? new THREE.Vector3(n.at.x, 0, n.at.y) : null; })(),
     });
     if (!h.awake) {
       // slumped back in the cradle, then the jolt of rolling off

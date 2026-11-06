@@ -5,6 +5,7 @@ import { Ctx, Scene } from './scene';
 import { Darkness } from './scenes/darkness';
 import { Todo } from './scenes/todo';
 import { HallScene } from './scenes/hall';
+import { StationScene } from './scenes/station';
 import { loadModels, Models } from '../render/assets';
 
 /**
@@ -39,7 +40,8 @@ const ctx: Ctx = { fx: new Fx(document.body), sound: new GameSound(), models, ap
 const scenes: Record<string, () => Scene> = {
   darkness: () => new Darkness(),
   hall: () => new HallScene(),
-  station: () => new Todo('station', 'Scena 2 · Martwa stacja'),
+  station: () => new StationScene(),
+  crane: () => new Todo('crane', 'Scena 2 · Suwnica w maszynowni'),
 };
 // ?scene=hall jumps straight to a scene (testing)
 const startId = new URLSearchParams(location.search).get('scene') ?? 'darkness';

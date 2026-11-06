@@ -2,6 +2,7 @@ import { Ctx, Scene } from '../scene';
 import { Hall, BATTERY_POWER } from '../sim/hall';
 import { HallView } from '../render/hallView';
 import { NOTES, journal } from '../notes';
+import { story } from '../state';
 
 const LOG = '…TEST 4411…\n…STABILNY…\nNIE ODŁĄCZAĆ OD…';
 
@@ -112,7 +113,7 @@ export class HallScene implements Scene {
       case 'insert': s.clank(2.2, 0.05); s.swell(); c.fx.static = 0.8; break;
       case 'log': this.logT = 0; s.blip(0.8); setTimeout(() => s.blip(0.6), 180); break;
       case 'door': s.creak(1); s.clank(0.6, 0.12); break;
-      case 'exit': this.next = 'station'; break;
+      case 'exit': story.battery = this.hall.battery; this.next = 'station'; break;
       case 'note': journal.add(this.hall.reading!); this.justOpened = true; s.blip(1.3); break;
     }
   }
