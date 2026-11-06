@@ -60,6 +60,7 @@ function targetName(t: Target): string {
     case 'scrap': return t.o.kind === 'barrel' ? 'beczka' : 'złom';
     case 'port': return game.ports.find(p => p.id === t.id)!.name;
     case 'point': return game.points.find(p => p.id === t.id)!.name;
+    case 'load': return game.loads.find(l => l.id === t.id)!.kind === 'tyre' ? 'opona' : 'sanki z cegłami';
   }
 }
 addEventListener('contextmenu', e => e.preventDefault());
@@ -233,9 +234,10 @@ function loop(now: number) {
     if (game.held && Math.floor(l * 2) !== Math.floor(lastLen * 2)) sound.cableTick();
     lastLen = l;
     if (game.salvage && Math.random() < dt * 9) sound.scrape();
+    if (game.tow && moved && game.towTaut && Math.random() < dt * 4) sound.scrape(); // the load scrapes over the ash
     if (game.craftT > 0 && Math.random() < dt * 14) sound.craftTick();
     for (const e of game.events) {
-      sound.play(e);
+      sound.play(e === 'hook' ? 'plug' : e === 'unhook' ? 'unplug' : e);
       if (e === 'win') showEnd();
     }
     game.events.length = 0;
