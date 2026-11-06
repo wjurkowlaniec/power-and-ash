@@ -8,13 +8,15 @@ Top-down gra survivalowa w przeglądarce. Automat serwisowy Wolt ciągnie kable 
 - [Plan implementacji i kamienie milowe](docs/PLAN.md)
 - [Dokument projektowy](docs/design.html) (research gatunku, koncepcja, zasady kabli, wizualizacje)
 
-## Sterowanie (M2)
+## Sterowanie
 
 | Klawisz | Akcja |
 |---|---|
 | WASD / strzałki | ruch |
 | Shift | bieg |
-| E | weź kabel z portu / wepnij / wypnij |
+| E | użyj: weź / wepnij / wypnij kabel, fabrykator, ster |
+| E lub LPM (przytrzymaj) | rozbierz złom |
+| kółko myszy, + / − | zoom |
 | Q (przytrzymaj) | zwiń kabel |
 | Alt | panel sieci |
 | M | dźwięk wł./wył. |

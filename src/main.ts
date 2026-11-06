@@ -1,12 +1,12 @@
 import './style.css';
-import { Game, CABLE_WARN, REEL_HOLD, BOOT_TIME } from './sim/game';
-import { mvpLevel } from './sim/level';
+import { Game, CABLE_WARN, REEL_HOLD, SALVAGE_TIME, CRAFT_TIME } from './sim/game';
+import { level1 } from './sim/level';
 import { View } from './render/view';
 import { Sound } from './audio/ambient';
 import { dist } from './sim/vec';
 
-const game = new Game(mvpLevel());
-const view = new View(game, document.getElementById('app')!);
+let game = new Game(level1());
+let view = new View(game, document.getElementById('app')!);
 const sound = new Sound();
 // handy for debugging in the console
 (window as unknown as { game: Game }).game = game;
@@ -16,6 +16,10 @@ const keys = new Set<string>();
 let interact = false;
 let overlay = false;
 let mouse: { x: number; y: number } | null = null;
+let lmb = false;
+addEventListener('pointerdown', e => { if (e.button === 0 && running) lmb = true; });
+addEventListener('pointerup', e => { if (e.button === 0) lmb = false; });
+addEventListener('wheel', e => { view.zoomBy(Math.exp(e.deltaY * 0.001)); e.preventDefault(); }, { passive: false });
 addEventListener('keydown', e => {
   if (e.code === 'AltLeft' || e.code === 'AltRight') { overlay = true; e.preventDefault(); }
   if (e.repeat) return;
@@ -23,18 +27,28 @@ addEventListener('keydown', e => {
   if (e.code === 'KeyE') interact = true;
   if (e.code === 'KeyM') sound.toggleMute();
   if (e.code === 'KeyH') { const h = $('help'); h.hidden = !h.hidden; }
+  if (e.code === 'Equal' || e.code === 'NumpadAdd') view.zoomBy(1 / 1.2);
+  if (e.code === 'Minus' || e.code === 'NumpadSubtract') view.zoomBy(1.2);
 });
 addEventListener('keyup', e => {
   keys.delete(e.code);
   if (e.code === 'AltLeft' || e.code === 'AltRight') overlay = false;
 });
-addEventListener('blur', () => { keys.clear(); overlay = false; });
+addEventListener('blur', () => { keys.clear(); overlay = false; lmb = false; });
 addEventListener('pointermove', e => { mouse = { x: e.clientX / innerWidth * 2 - 1, y: -(e.clientY / innerHeight) * 2 + 1 }; });
 
 const $ = (id: string) => document.getElementById(id)!;
 const startEl = $('start');
 let running = false;
 $('go').addEventListener('click', () => { startEl.hidden = true; running = true; sound.start(); });
+$('again').addEventListener('click', () => {
+  // rebuild the level from scratch
+  const app = $('app'); app.innerHTML = '';
+  game = new Game(level1());
+  view = new View(game, app);
+  (window as unknown as { game: Game }).game = game;
+  $('end').hidden = true; running = true; lastToastCount = -1;
+});
 
 // ---------- HUD
 const hotbar = $('hotbar');
@@ -57,39 +71,44 @@ function hud() {
        <div class="dim">zapas na nawijaku: ${game.reelLeft().toFixed(0)} m</div>
        ${reelPct > 0 ? `<div class="meter"><i style="width:${reelPct * 100}%"></i></div>` : ''}`;
 
-  const net = game.networks.get('station')!;
+  const net = game.networks.get('yacht')!;
   const connected = net.nodes.length > 1;
   const np = $('netPanel');
-  np.hidden = !(connected || overlay);
+  np.hidden = !(connected || overlay || game.battery > 0);
   if (!np.hidden) {
-    const n = connected ? net : game.networks.get('yacht')!;
-    np.innerHTML = `<div class="lbl">SIEĆ: ${connected ? 'Żaglowóz + Stacja 2' : 'Żaglowóz'}</div>
-      <div class="row"><span>produkcja</span><b>${n.production} W</b></div>
-      <div class="row"><span>pobór</span><b>${n.demand} W</b></div>
-      <div class="row"><span>bilans</span><b class="${n.balance >= 0 ? 'okc' : 'limit'}">${n.balance >= 0 ? '+' : ''}${n.balance} W</b></div>
-      ${connected ? `<div class="${game.stationOnline() ? 'okc' : 'tense'}">przekaźnik ${game.stationOnline() ? '400 / 400 W ✓' : `rozruch ${Math.round(game.stationBoot / BOOT_TIME * 100)}%`}</div>` : '<div class="dim">Stacja 2: brak zasilania</div>'}`;
+    np.innerHTML = `<div class="lbl">ŻAGLOWÓZ</div>
+      <div class="row"><span>bateria</span><b class="${game.batteryFull() ? 'okc' : ''}">${(game.battery / 1000).toFixed(2)} / ${(game.level.yachtBattery / 1000).toFixed(1)} kWh</b></div>
+      <div class="meter"><i style="width:${game.batteryPct() * 100}%;background:#6fc4e6"></i></div>
+      <div class="row"><span>zasilanie</span><b class="${connected ? 'okc' : 'dim'}">${connected ? `Stacja 2, ${net.production} W` : 'brak'}</b></div>`;
   }
 
-  const goal = $('goal');
-  const done = game.stationOnline();
-  goal.className = 'goal' + (done ? ' done' : '');
-  goal.textContent = done ? 'Stacja 2 zasilona ✓' : game.stationPowered() ? 'Przekaźnik się uruchamia…' : 'Cel: doprowadź prąd z żaglowozu do Stacji 2';
+  $('goals').innerHTML = `<div class="t">${game.level.name.toUpperCase()}</div>` +
+    game.objectives().map(o => `<div class="obj ${o.done ? 'done' : o.active ? 'active' : ''}">${o.text}</div>`).join('');
+  const inv = game.inv;
+  $('inv').innerHTML = `<span>miedź <b>${inv.copper}</b></span><span>plastik <b>${inv.plastic}</b></span><span>żelazo <b>${inv.iron}</b></span><span>szkło <b>${inv.glass}</b></span><span>kabel <b>${game.reelOwned} m</b></span>`;
 
   const h = game.hint();
   const tip = $('tip');
   if (h && running) {
-    const port = game.ports.find(p => p.pos === h.at)!;
-    const s = view.project(h.at, port.height + 0.6);
+    const s = view.project(h.at, h.height + 0.6);
     tip.hidden = false;
     tip.className = 'tip' + (h.ok ? '' : ' bad');
     tip.style.left = s.x + 'px'; tip.style.top = s.y + 'px';
-    tip.innerHTML = `<span class="k">${h.key}</span>${h.text}`;
+    const prog = game.salvage ? game.salvage.t / SALVAGE_TIME : game.craftT > 0 ? 1 - game.craftT / CRAFT_TIME : 0;
+    tip.innerHTML = `<span class="k">${h.key}</span>${h.text}` + (prog > 0 ? `<div class="prog"><i style="width:${prog * 100}%"></i></div>` : '');
   } else tip.hidden = true;
 
   if (game.toasts.length !== lastToastCount) {
     lastToastCount = game.toasts.length;
     $('toasts').innerHTML = game.toasts.map(t => `<div class="toast">${t.text}</div>`).join('');
   }
+}
+
+function showEnd() {
+  running = false;
+  const m = Math.floor(game.time / 60), sec = Math.floor(game.time % 60);
+  $('endStats').textContent = `Czas: ${m}:${String(sec).padStart(2, '0')}. Rozebrany złom: ${7 - game.scrapLeft().length} z 7. Kabel: ${game.reelOwned} m. Żaglowóz z pełną baterią jedzie dalej przez popiół.`;
+  $('end').hidden = false;
 }
 
 // ---------- loop
@@ -105,7 +124,7 @@ function loop(now: number) {
     const my = (keys.has('KeyS') || keys.has('ArrowDown') ? 1 : 0) - (keys.has('KeyW') || keys.has('ArrowUp') ? 1 : 0);
     const run = keys.has('ShiftLeft') || keys.has('ShiftRight');
     const prev = { ...game.pos };
-    game.update(dt, { move: { x: mx, y: my }, run, interact, reel: keys.has('KeyQ'), aim: aim && dist(aim, game.pos) < 12 ? aim : null });
+    game.update(dt, { move: { x: mx, y: my }, run, interact, use: keys.has('KeyE') || lmb, reel: keys.has('KeyQ'), aim: aim && dist(aim, game.pos) < 12 ? aim : null });
     interact = false;
 
     // sound hooks
@@ -114,12 +133,17 @@ function loop(now: number) {
     const l = game.heldLength();
     if (game.held && Math.floor(l * 2) !== Math.floor(lastLen * 2)) sound.cableTick();
     lastLen = l;
-    for (const e of game.events) sound[e]();
+    if (game.salvage && Math.random() < dt * 9) sound.scrape();
+    if (game.craftT > 0 && Math.random() < dt * 14) sound.craftTick();
+    for (const e of game.events) {
+      sound.play(e);
+      if (e === 'win') showEnd();
+    }
     game.events.length = 0;
     const st = game.cableState();
     const stPos = game.ports.find(p => p.id === 'station')!.pos;
     sound.update(dt, {
-      humNear: game.stationOnline() ? Math.max(0.15, 1 - dist(game.pos, stPos) / 18) : 0,
+      humNear: Math.max(0.05, 1 - dist(game.pos, stPos) / 14),
       tension: st === 'limit' && moved === false && (mx || my) ? 1 : st === 'tense' ? 0.25 : 0,
     });
   }

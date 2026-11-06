@@ -1,7 +1,8 @@
 import * as THREE from 'three';
 import { PAL } from './palette';
 import { mat, mesh, obstacleMesh, yachtModel, stationModel, woltModel, rnd, YachtModel, StationModel, WoltModel } from './models';
-import { Game, CABLE_WARN, BOOT_TIME } from '../sim/game';
+import { Game, CABLE_WARN } from '../sim/game';
+import { Obstacle } from '../sim/world';
 import { V2 } from '../sim/vec';
 
 const GROUND_Y = 0;
@@ -29,6 +30,9 @@ export class View {
   private raycaster = new THREE.Raycaster();
   private walkPhase = 0;
   private overlay = false;
+  private zoom = 1;
+  private obstacleMeshes = new Map<Obstacle, THREE.Object3D>();
+  private departStart: THREE.Vector3 | null = null;
 
   constructor(private game: Game, container: HTMLElement) {
     const r = new THREE.WebGLRenderer({ antialias: true });
@@ -53,7 +57,9 @@ export class View {
     this.buildGrid();
 
     const lv = game.level;
-    for (const o of lv.obstacles) if (o.kind !== 'yacht' && o.kind !== 'station') s.add(obstacleMesh(o));
+    for (const o of game.world.obstacles) if (o.kind !== 'yacht' && o.kind !== 'station') {
+      const m = obstacleMesh(o); s.add(m); this.obstacleMeshes.set(o, m);
+    }
     const yp = lv.ports.find(p => p.id === 'yacht')!, sp = lv.ports.find(p => p.id === 'station')!;
     this.yacht = yachtModel(lv.yacht, new THREE.Vector3(yp.pos.x - (lv.yacht.x + lv.yacht.w / 2), yp.height, yp.pos.y - (lv.yacht.y + lv.yacht.h / 2)));
     s.add(this.yacht.group);
@@ -89,10 +95,13 @@ export class View {
       const x = p.getX(i) + W / 2, z = p.getZ(i) + H / 2;
       const out = Math.max(0, -x, x - W, -z, z - H);
       const dune = Math.sin(x * 0.11 + z * 0.04) * 1.1 + Math.sin(x * 0.03 - z * 0.07) * 1.8 + Math.sin(z * 0.17) * 0.3;
-      const k = THREE.MathUtils.smoothstep(out, 0, 6);
+      // a flat trail leading west from the yacht, so it can leave the map
+      const ys = this.game.level.yacht;
+      const trail = x < ys.x + ys.w ? 1 - THREE.MathUtils.smoothstep(Math.abs(z - (ys.y + ys.h / 2)), ys.h / 2 + 1, ys.h / 2 + 5) : 0;
+      const k = THREE.MathUtils.smoothstep(out, 0, 6) * (1 - trail);
       p.setX(i, x); p.setZ(i, z);
       p.setY(i, GROUND_Y - 0.01 + k * (1.2 + dune + out * 0.18));
-      const ripple = 0.5 + 0.5 * Math.sin(x * 1.3 + Math.sin(z * 0.6) * 2);
+      const ripple = 0.5 + 0.5 * Math.sin(x * 0.21 + Math.sin(z * 0.17) * 1.5) * Math.sin(z * 0.23 + x * 0.05);
       tmp.copy(c1).lerp(c2, 0.25 * ripple + k * 0.25);
       colors.push(tmp.r, tmp.g, tmp.b);
     }
@@ -127,12 +136,18 @@ export class View {
     this.viewSize = Math.max(9, Math.min(13, 11 * (900 / Math.max(h, 500)) ** 0.2));
     const a = w / h;
     // keep the 20 m reach ring on screen on narrow phones
-    const vs = a < 1 ? this.viewSize / a * 0.95 : this.viewSize;
+    const vs = (a < 1 ? this.viewSize / a * 0.95 : this.viewSize) * this.zoom;
     Object.assign(this.camera, { left: -vs * a, right: vs * a, top: vs, bottom: -vs });
     this.camera.updateProjectionMatrix();
   }
 
   setOverlay(on: boolean) { this.overlay = on; }
+
+  /** Multiply the visible area (wheel / + -). 0.45 = close-up, 2.2 = wide. */
+  zoomBy(f: number) {
+    this.zoom = THREE.MathUtils.clamp(this.zoom * f, 0.45, 2.2);
+    this.resize();
+  }
 
   /** Cursor ray onto the ground plane, in sim coordinates. */
   pick(ndcX: number, ndcY: number): V2 | null {
@@ -153,8 +168,27 @@ export class View {
     const g = this.game;
     const t = g.time;
 
-    // camera follows Wolt softly
-    const want = new THREE.Vector3(g.pos.x, 0, g.pos.y);
+    // removed scrap piles
+    for (const o of g.removed) { const m = this.obstacleMeshes.get(o); if (m) { this.scene.remove(m); this.obstacleMeshes.delete(o); } }
+    g.removed.length = 0;
+    // shake the pile being salvaged
+    for (const [o, m] of this.obstacleMeshes) {
+      if (!o.loot) continue;
+      const shaking = g.salvage?.target === o;
+      m.position.x = o.x + o.w / 2 + (shaking ? Math.sin(t * 60) * 0.04 : 0);
+      m.position.y = shaking ? Math.abs(Math.sin(t * 37)) * 0.03 : 0;
+    }
+
+    // yacht leaving
+    const y = this.yacht;
+    if (!this.departStart) this.departStart = y.group.position.clone();
+    const dx = g.phase === 'play' ? 0 : -0.5 * 1.3 * g.departT * g.departT;
+    y.group.position.x = this.departStart.x + dx;
+    for (const wh of y.wheels) wh.rotation.y = dx / 0.85;
+    this.wolt.group.visible = g.phase === 'play';
+
+    // camera follows Wolt softly (the yacht when leaving)
+    const want = g.phase === 'play' ? new THREE.Vector3(g.pos.x, 0, g.pos.y) : new THREE.Vector3(y.group.position.x + 4, 0, y.group.position.z);
     if (this.camTarget.lengthSq() === 0) this.camTarget.copy(want);
     this.camTarget.lerp(want, 1 - Math.exp(-dt * 4));
     this.camera.position.copy(this.camTarget).add(CAM_OFFSET);
@@ -179,14 +213,20 @@ export class View {
     // yacht turbines always spin
     for (const [i, r] of this.yacht.turbines.entries()) r.rotation.z += dt * (2.2 + i * 0.4);
 
-    // station: relay colour, lamps, windows
-    const boot = g.stationBoot / BOOT_TIME;
-    const powered = g.stationPowered();
+    // yacht battery, port, fabricator
+    const pct = g.batteryPct();
+    const charging = g.yachtCharging();
+    (y.battery.material as THREE.MeshStandardMaterial).emissiveIntensity = pct * 1.1 + (charging ? 0.25 + Math.sin(t * 5) * 0.25 : 0);
+    (y.port.material as THREE.MeshStandardMaterial).emissive.set(g.batteryFull() ? PAL.ok : charging ? PAL.flow : PAL.warn);
+    (y.fabLight.material as THREE.MeshStandardMaterial).emissiveIntensity = g.craftT > 0 ? 1.5 + Math.sin(t * 20) : 0.3;
+
+    // station: the old solar station is alive, relay green, lamps on
+    const boot = 1;
     const st = this.station;
     const col = new THREE.Color(PAL.off).lerp(new THREE.Color(PAL.ok), boot);
     const relayMat = st.relay.material as THREE.MeshStandardMaterial;
     relayMat.emissive.copy(col);
-    relayMat.emissiveIntensity = 1.6 + (powered && boot < 1 ? Math.sin(t * 14) * 0.8 + 0.8 : 1);
+    relayMat.emissiveIntensity = 2.2 + Math.sin(t * 1.5) * 0.3;
     st.relayLight.color.copy(col);
     st.relayLight.intensity = 2 + boot * 3;
     st.lamps.forEach((l, i) => {
@@ -196,7 +236,7 @@ export class View {
       l.light.intensity = on * 7 * flicker;
     });
     st.windows.forEach(wm => ((wm.material as THREE.MeshStandardMaterial).emissiveIntensity = boot * 1.6));
-    (st.port.material as THREE.MeshStandardMaterial).emissive.set(g.portBusy('station') ? (powered ? PAL.ok : PAL.warn) : PAL.off);
+    (st.port.material as THREE.MeshStandardMaterial).emissive.set(g.portBusy('station') ? PAL.ok : PAL.warn);
 
     this.updateCables(t);
     this.updateRings(t);
@@ -282,7 +322,7 @@ export class View {
         else if (l >= CABLE_WARN) { m.emissive.set(PAL.warn); m.emissiveIntensity = 0.6; }
         else { m.emissive.set(0x000000); m.emissiveIntensity = 0; }
       } else {
-        const powered = g.networks.get('station')?.powered;
+        const powered = g.yachtCharging();
         m.emissive.set(this.overlay ? PAL.flow : 0x000000);
         m.emissiveIntensity = this.overlay ? 0.8 : 0;
         if (powered) {
@@ -292,7 +332,8 @@ export class View {
           const L = cp.getLength();
           const n = Math.min(40, Math.floor(L / 1.2));
           for (let i = 0; i < n && pulseN < 64; i++) {
-            const u = ((i / n) + t * 0.12) % 1;
+            const u0 = ((i / n) + t * 0.12) % 1;
+            const u = c.from === 'station' ? u0 : 1 - u0; // energy flows from the station
             const p = cp.getPointAt(u);
             m4.makeTranslation(p.x, p.y + 0.04, p.z);
             this.pulses.setMatrixAt(pulseN++, m4);

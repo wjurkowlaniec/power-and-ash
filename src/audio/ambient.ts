@@ -136,5 +136,26 @@ export class Sound {
   unplug() { this.burst(2200, 3, 0.2, 0.07, 'bandpass'); this.tone(140, 0.15, 0.12, 'triangle', 1.4); }
   reel() { for (let i = 0; i < 10; i++) setTimeout(() => this.cableTick(), i * 35); }
   deny() { this.tone(120, 0.15, 0.18, 'square', 0.8); }
+  salvage() { for (let i = 0; i < 5; i++) setTimeout(() => this.burst(1200 + Math.random() * 1500, 2, 0.18, 0.08, 'bandpass', 0.7, 0.2), i * 70); this.tone(70, 0.2, 0.4, 'sine', 0.6); }
+  scrape() { this.burst(900 + Math.random() * 900, 3, 0.06, 0.12, 'bandpass', 0.6, 0.05); }
+  craft() { this.tone(440, 0.08, 0.5, 'sine', 1.01); setTimeout(() => this.tone(660, 0.06, 0.8, 'sine', 1.0), 120); }
+  craftTick() { this.burst(2400, 6, 0.04, 0.04, 'bandpass', 1, 0); }
+  charged() { this.tone(330, 0.08, 1.2, 'sine', 1.0); setTimeout(() => this.tone(495, 0.07, 1.6, 'sine', 1.0), 200); }
+  depart() { this.tone(55, 0.3, 3.5, 'sawtooth', 1.8); this.burst(300, 0.7, 0.3, 3, 'lowpass', 0.5, 0.3); }
+  win() { for (const [f, d] of [[262, 0], [330, 150], [392, 300], [523, 500]] as const) setTimeout(() => this.tone(f, 0.07, 2.5, 'sine', 1), d); }
+  play(e: string) {
+    switch (e) {
+      case 'grab': return this.grab();
+      case 'plug': return this.plug();
+      case 'unplug': return this.unplug();
+      case 'reel': return this.reel();
+      case 'deny': return this.deny();
+      case 'salvage': return this.salvage();
+      case 'craft': return this.craft();
+      case 'charged': return this.charged();
+      case 'depart': return this.depart();
+      case 'win': return this.win();
+    }
+  }
   online() { this.tone(220, 0.1, 1.8, 'sine', 1.5); this.tone(330, 0.06, 2.2, 'sine', 1.5); }
 }
