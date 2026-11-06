@@ -1,7 +1,7 @@
 import * as THREE from 'three';
 import { PAL } from './palette';
 import { mat, mesh, obstacleMesh, yachtModel, stationModel, woltModel, rnd, YachtModel, StationModel, WoltModel } from './models';
-import { Game, CABLE_WARN } from '../sim/game';
+import { Game, CABLE_WARN, Target } from '../sim/game';
 import { Obstacle } from '../sim/world';
 import { Models, fit, place } from './assets';
 import { V2 } from '../sim/vec';
@@ -34,6 +34,9 @@ export class View {
   private zoom = 1;
   private obstacleMeshes = new Map<Obstacle, THREE.Object3D>();
   private departStart: THREE.Vector3 | null = null;
+  /** Meshes the mouse can point at, and what they stand for. */
+  private pickables: { obj: THREE.Object3D; target: () => Target | null }[] = [];
+  private woltChest = new THREE.Vector3();
 
   constructor(private game: Game, container: HTMLElement, private models: Models = new Map()) {
     const r = new THREE.WebGLRenderer({ antialias: true });
@@ -68,6 +71,7 @@ export class View {
     s.add(this.station.group);
     this.wolt = woltModel(); s.add(this.wolt.group);
     if (models.size) this.buildDecor();
+    this.registerPickables();
 
     const ringMat = new THREE.MeshBasicMaterial({ color: PAL.warn, transparent: true, opacity: 0.55, side: THREE.DoubleSide, depthWrite: false, fog: false });
     this.ring = new THREE.Mesh(new THREE.RingGeometry(0.985, 1, 128), ringMat);
@@ -85,6 +89,32 @@ export class View {
     this.dust = this.buildDust(); s.add(this.dust);
     this.resize();
     addEventListener('resize', () => this.resize());
+  }
+
+  private registerPickables() {
+    const g = this.game;
+    for (const [o, m] of this.obstacleMeshes) if (o.loot) this.pickables.push({ obj: m, target: () => g.world.obstacles.includes(o) ? { kind: 'scrap', o } : null });
+    this.pickables.push({ obj: this.yacht.port, target: () => ({ kind: 'port', id: 'yacht' }) });
+    this.pickables.push({ obj: this.station.port, target: () => ({ kind: 'port', id: 'station' }) });
+    this.pickables.push({ obj: this.yacht.fabricator, target: () => ({ kind: 'point', id: 'fabricator' }) });
+    this.pickables.push({ obj: this.yacht.helm, target: () => ({ kind: 'point', id: 'helm' }) });
+    this.pickables.push({ obj: this.wolt.group, target: () => ({ kind: 'self' }) });
+  }
+
+  /** What is under the cursor: a raycast against interactive meshes, then the ground. */
+  pickTarget(ndcX: number, ndcY: number): Target | null {
+    if (this.game.phase !== 'play') return null;
+    this.raycaster.setFromCamera(new THREE.Vector2(ndcX, ndcY), this.camera);
+    let best: { d: number; t: Target } | null = null;
+    for (const p of this.pickables) {
+      const t = p.target();
+      if (!t) continue;
+      const hit = this.raycaster.intersectObject(p.obj, true)[0];
+      if (hit && (!best || hit.distance < best.d)) best = { d: hit.distance, t };
+    }
+    if (best) return best.t;
+    const at = this.pick(ndcX, ndcY);
+    return at ? this.game.targetAt(at) : null;
   }
 
   private buildGround(): THREE.Mesh {
@@ -266,6 +296,19 @@ export class View {
     w.legs[0].position.y = 0.21 + (g.moving ? Math.max(0, Math.sin(this.walkPhase)) * 0.08 : 0);
     w.legs[1].position.y = 0.21 + (g.moving ? Math.max(0, -Math.sin(this.walkPhase)) * 0.08 : 0);
     w.reel.rotation.z += g.moving && g.held ? dt * 8 : 0;
+    // lamp and eye follow the battery: dim and flickery when nearly empty
+    const ep = g.energyPct();
+    const weak = ep < 0.12 ? (Math.sin(t * 23) > 0.6 ? 0.35 : 1) : 1;
+    const lampOn = g.light && !g.empty() ? 1 : 0;
+    w.spot.intensity += ((lampOn * 5 * weak * (0.55 + 0.45 * Math.min(1, ep * 4))) - w.spot.intensity) * Math.min(1, dt * 14);
+    (w.head.material as THREE.MeshStandardMaterial).emissiveIntensity = 0.25 + lampOn * 1.75 * weak;
+
+    // the sail goes see-through when it stands between the camera and Wolt
+    this.woltChest.set(g.pos.x, 0.8, g.pos.y);
+    const toW = this.woltChest.clone().project(this.camera);
+    this.raycaster.setFromCamera(new THREE.Vector2(toW.x, toW.y), this.camera);
+    const hitSail = g.phase === 'play' && this.raycaster.intersectObject(this.yacht.sail.cloth, false).length > 0;
+    this.yacht.sail.setFade(hitSail ? 0.3 : 1, dt);
 
     // wind: sail, turbines
     const wind = g.wind;

@@ -1,5 +1,5 @@
 import './style.css';
-import { Game, CABLE_WARN, REEL_HOLD, SALVAGE_TIME, CRAFT_TIME } from './sim/game';
+import { Game, CABLE_WARN, REEL_HOLD, CRAFT_TIME, WOLT_BATTERY, LOW_ENERGY, Target, Action } from './sim/game';
 import { level1 } from './sim/level';
 import { View } from './render/view';
 import { Sound } from './audio/ambient';
@@ -22,6 +22,7 @@ let view = new View(game, document.getElementById('app')!, models);
 const sound = new Sound();
 // handy for debugging in the console
 (window as unknown as { game: Game }).game = game;
+(window as unknown as { view: View }).view = view;
 
 // ---------- input
 const keys = new Set<string>();
@@ -29,8 +30,53 @@ let interact = false;
 let overlay = false;
 let mouse: { x: number; y: number } | null = null;
 let lmb = false;
-addEventListener('pointerdown', e => { if (e.button === 0 && running) lmb = true; });
-addEventListener('pointerup', e => { if (e.button === 0) lmb = false; });
+let dragging = false;
+let dragT = 0;
+const ndc = (e: { clientX: number; clientY: number }) => ({ x: e.clientX / innerWidth * 2 - 1, y: -(e.clientY / innerHeight) * 2 + 1 });
+const onCanvas = (e: Event) => (e.target as HTMLElement).tagName === 'CANVAS';
+
+// ---------- mouse: click/hold the ground to walk, click a thing to use it, right click = all actions
+const ctx = () => $('ctx');
+function closeMenu() { ctx().hidden = true; }
+function openMenu(x: number, y: number, t: Target, acts: Action[]) {
+  const m = ctx();
+  m.innerHTML = `<div class="h">${targetName(t).toUpperCase()}</div>` + acts.map((a, i) =>
+    `<button type="button" data-i="${i}" ${a.ok ? '' : 'disabled'}><span>${a.label}</span>${a.ok ? '' : `<small>${a.why ?? ''}</small>`}</button>`).join('');
+  m.hidden = false;
+  m.style.left = Math.min(x, innerWidth - 220) + 'px';
+  m.style.top = Math.min(y, innerHeight - 40 - acts.length * 32) + 'px';
+  m.querySelectorAll('button').forEach(b => b.addEventListener('click', ev => {
+    ev.stopPropagation();
+    const a = acts[Number(b.dataset.i)];
+    if (a.ok) game.command(t, a.id);
+    closeMenu();
+  }));
+  (m.querySelector('button:not([disabled])') as HTMLButtonElement | null)?.focus({ preventScroll: true });
+}
+function targetName(t: Target): string {
+  switch (t.kind) {
+    case 'ground': return 'teren';
+    case 'self': return 'Wolt';
+    case 'scrap': return t.o.kind === 'barrel' ? 'beczka' : 'złom';
+    case 'port': return game.ports.find(p => p.id === t.id)!.name;
+    case 'point': return game.points.find(p => p.id === t.id)!.name;
+  }
+}
+addEventListener('contextmenu', e => e.preventDefault());
+addEventListener('pointerdown', e => {
+  if (!running || !onCanvas(e)) return;
+  closeMenu();
+  const t = view.pickTarget(ndc(e).x, ndc(e).y);
+  if (!t) return;
+  const acts = game.actionsFor(t);
+  if (e.button === 0) {
+    lmb = true;
+    if (t.kind === 'ground') { game.command(t, 'walk'); dragging = true; dragT = 0; return; }
+    if (acts.length > 1) openMenu(e.clientX, e.clientY, t, acts);
+    else if (acts.length === 1) game.command(t, acts[0].id);
+  } else if (e.button === 2 && t.kind !== 'ground' && acts.length) openMenu(e.clientX, e.clientY, t, acts);
+});
+addEventListener('pointerup', e => { if (e.button === 0) { lmb = false; dragging = false; } });
 addEventListener('wheel', e => { view.zoomBy(Math.exp(e.deltaY * 0.001)); e.preventDefault(); }, { passive: false });
 addEventListener('keydown', e => {
   if (e.code === 'AltLeft' || e.code === 'AltRight') { overlay = true; e.preventDefault(); }
@@ -38,6 +84,8 @@ addEventListener('keydown', e => {
   keys.add(e.code);
   if (e.code === 'KeyE') interact = true;
   if (e.code === 'KeyM') sound.toggleMute();
+  if (e.code === 'KeyL' && running) game.toggleLight();
+  if (e.code === 'Escape') closeMenu();
   if (e.code === 'KeyH') { const h = $('help'); h.hidden = !h.hidden; }
   if (e.code === 'Equal' || e.code === 'NumpadAdd') view.zoomBy(1 / 1.2);
   if (e.code === 'Minus' || e.code === 'NumpadSubtract') view.zoomBy(1.2);
@@ -46,8 +94,9 @@ addEventListener('keyup', e => {
   keys.delete(e.code);
   if (e.code === 'AltLeft' || e.code === 'AltRight') overlay = false;
 });
-addEventListener('blur', () => { keys.clear(); overlay = false; lmb = false; });
-addEventListener('pointermove', e => { mouse = { x: e.clientX / innerWidth * 2 - 1, y: -(e.clientY / innerHeight) * 2 + 1 }; });
+addEventListener('blur', () => { keys.clear(); overlay = false; lmb = false; dragging = false; });
+let mouseScreen: { x: number; y: number } | null = null;
+addEventListener('pointermove', e => { mouse = ndc(e); mouseScreen = { x: e.clientX, y: e.clientY }; });
 
 const $ = (id: string) => document.getElementById(id)!;
 const startEl = $('start');
@@ -59,16 +108,46 @@ $('again').addEventListener('click', () => {
   game = new Game(level1());
   view = new View(game, app, models);
   (window as unknown as { game: Game }).game = game;
+  (window as unknown as { view: View }).view = view;
   $('end').hidden = true; running = true; lastToastCount = -1;
 });
 
 // ---------- HUD
 const hotbar = $('hotbar');
 hotbar.innerHTML = ['chwytak', 'rozbier.', 'kabel', 'kołek', 'lampa', 'extender']
-  .map((s, i) => `<span class="slot ${i === 2 ? 'on' : 'off'}">${i + 1} ${s}</span>`).join('');
+  .map((s, i) => `<span class="slot ${i === 2 ? 'on' : 'off'}" id="slot${i}">${i + 1} ${s}</span>`).join('');
 let lastToastCount = 0;
 
+let hoverKey = '';
 function hud() {
+  // Wolt's battery
+  const ep = game.energyPct();
+  const en = $('en');
+  en.style.width = ep * 100 + '%';
+  en.className = game.energy < LOW_ENERGY ? 'low' : '';
+  $('enNum').textContent = `${Math.round(game.energy)}/${WOLT_BATTERY} Wh`;
+  const r = game.energyRate;
+  const why = game.energySource === 'port' ? 'ładowanie z portu' : game.energySource === 'rest' ? 'postój, ładuje się' : game.salvage ? 'rozbieranie' : game.moving ? (keys.has('ShiftLeft') || keys.has('ShiftRight') ? 'bieg' : 'marsz') : 'czuwanie';
+  $('enRate').innerHTML = `<span class="${r >= 0 ? 'okc' : r < -0.9 ? 'tense' : ''}">${r >= 0 ? '+' : '−'}${Math.abs(r).toFixed(2)} Wh/s</span> · ${why}<br>światło: ${game.light ? 'wł.' : 'wył.'} <span class="dim">(L)</span>`;
+  $('slot4').className = 'slot ' + (game.light ? 'on' : 'off');
+
+  // what's under the cursor
+  const hv = $('hover');
+  const ht = running && mouse && ctx().hidden ? view.pickTarget(mouse.x, mouse.y) : null;
+  if (ht && ht.kind !== 'ground' && mouseScreen) {
+    const acts = game.actionsFor(ht);
+    const key = targetName(ht) + acts.map(a => a.label + a.ok).join();
+    if (key !== hoverKey) {
+      hoverKey = key;
+      hv.innerHTML = acts.length
+        ? `<span class="k">LPM</span>${acts[0].label}${acts[0].ok ? '' : ` <span class="limit">(${acts[0].why ?? 'niedostępne'})</span>`}${acts.length > 1 ? ` · <span class="k">PPM</span>więcej` : ''}`
+        : targetName(ht);
+    }
+    hv.hidden = false;
+    hv.style.left = mouseScreen.x + 'px'; hv.style.top = mouseScreen.y + 'px';
+    document.body.style.cursor = 'pointer';
+  } else { hv.hidden = true; hoverKey = ''; document.body.style.cursor = ''; }
+
   $('clock').innerHTML = `<span>13:40</span><span class="dim">wiatr ${game.wind.arrow()} ${game.wind.strength.toFixed(0)} m/s${game.wind.gust > 0.4 ? ' · podmuch' : ''}</span>`;
   const st = game.cableState();
   const l = game.heldLength();
@@ -107,7 +186,7 @@ function hud() {
     tip.hidden = false;
     tip.className = 'tip' + (h.ok ? '' : ' bad');
     tip.style.left = s.x + 'px'; tip.style.top = s.y + 'px';
-    const prog = game.salvage ? game.salvage.t / SALVAGE_TIME : game.craftT > 0 ? 1 - game.craftT / CRAFT_TIME : 0;
+    const prog = game.salvage ? game.salvage.t / game.salvageTime(game.salvage.target) : game.craftT > 0 ? 1 - game.craftT / CRAFT_TIME : 0;
     tip.innerHTML = `<span class="k">${h.key}</span>${h.text}` + (prog > 0 ? `<div class="prog"><i style="width:${prog * 100}%"></i></div>` : '');
   } else tip.hidden = true;
 
@@ -120,7 +199,8 @@ function hud() {
 function showEnd() {
   running = false;
   const m = Math.floor(game.time / 60), sec = Math.floor(game.time % 60);
-  $('endStats').textContent = `Czas: ${m}:${String(sec).padStart(2, '0')}. Rozebrany złom: ${7 - game.scrapLeft().length} z 7. Kabel: ${game.reelOwned} m. Żaglowóz z pełną baterią jedzie dalej przez popiół.`;
+  const total = game.level.obstacles.filter(o => o.loot).length;
+  $('endStats').textContent = `Czas: ${m}:${String(sec).padStart(2, '0')}. Rozebrany złom: ${total - game.scrapLeft().length} z ${total}. Kabel: ${game.reelOwned} m. Żaglowóz z pełną baterią jedzie dalej przez popiół.`;
   $('end').hidden = false;
 }
 
@@ -136,8 +216,14 @@ function loop(now: number) {
     const mx = (keys.has('KeyD') || keys.has('ArrowRight') ? 1 : 0) - (keys.has('KeyA') || keys.has('ArrowLeft') ? 1 : 0);
     const my = (keys.has('KeyS') || keys.has('ArrowDown') ? 1 : 0) - (keys.has('KeyW') || keys.has('ArrowUp') ? 1 : 0);
     const run = keys.has('ShiftLeft') || keys.has('ShiftRight');
+    // holding the button on the ground: Wolt follows the cursor
+    if (dragging && lmb && mouse) {
+      dragT -= dt;
+      const at = view.pick(mouse.x, mouse.y);
+      if (at && dragT <= 0) { game.command({ kind: 'ground', at }, 'walk'); dragT = 0.15; }
+    }
     const prev = { ...game.pos };
-    game.update(dt, { move: { x: mx, y: my }, run, interact, use: keys.has('KeyE') || lmb, reel: keys.has('KeyQ'), aim: aim && dist(aim, game.pos) < 12 ? aim : null });
+    game.update(dt, { move: { x: mx, y: my }, run, interact, use: keys.has('KeyE'), reel: keys.has('KeyQ'), aim: aim && dist(aim, game.pos) < 12 ? aim : null });
     interact = false;
 
     // sound hooks
