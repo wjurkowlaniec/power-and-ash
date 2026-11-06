@@ -18,7 +18,7 @@ const walk = (g: Game, to: V2, maxT = 20) => {
 function salvageAll(g: Game) {
   for (const o of g.scrapLeft()) {
     g.pos = { x: o.x + o.w / 2, y: o.y - 0.6 };
-    tick(g, 1.6, { use: true });
+    tick(g, 2.1, { use: true });
   }
 }
 
@@ -44,6 +44,7 @@ describe('level 1 "Rozruch"', () => {
 
   it('full playthrough: salvage → craft 20 m → connect → charge → leave', () => {
     const g = new Game(level1());
+    g.energy = 100;
     salvageAll(g);
     expect(g.inv.copper).toBeGreaterThanOrEqual(4);
     expect(g.inv.plastic).toBeGreaterThanOrEqual(4);
@@ -113,5 +114,100 @@ describe('Wolt facing', () => {
     // standing still, he turns to the cursor
     g.update(DT, { ...idle(), aim: { x: 20, y: 40 } });
     expect(Math.cos(g.facing)).toBeLessThan(-0.99);
+  });
+});
+
+describe("Wolt's battery", () => {
+  it('drains faster running than walking, and recovers standing still', () => {
+    const g = new Game(level1());
+    g.energy = 50; g.light = false;
+    g.pos = { x: 30, y: 42 };
+    tick(g, 2, { move: { x: 1, y: 0 } });
+    const walked = 50 - g.energy;
+    g.energy = 50; g.pos = { x: 30, y: 42 };
+    tick(g, 2, { move: { x: 1, y: 0 }, run: true });
+    const ran = 50 - g.energy;
+    expect(ran).toBeGreaterThan(walked * 2);
+    const e0 = g.energy;
+    tick(g, 5);
+    expect(g.energy).toBeGreaterThan(e0);
+    expect(g.energySource).toBe('rest');
+  });
+
+  it('charges fast next to the live station port', () => {
+    const g = new Game(level1());
+    g.energy = 10;
+    g.pos = { x: 32.8, y: 23.5 };
+    tick(g, 3);
+    expect(g.energySource).toBe('port');
+    expect(g.energy).toBeGreaterThan(15);
+  });
+
+  it('cannot salvage on an empty battery, and the light goes out', () => {
+    const g = new Game(level1());
+    g.energy = 0.001;
+    const pile = g.scrapLeft()[0];
+    g.pos = { x: pile.x + pile.w / 2, y: pile.y - 0.6 };
+    tick(g, 2, { use: true });
+    expect(g.world.obstacles).toContain(pile);
+    expect(g.light).toBe(false);
+  });
+});
+
+describe('barrels', () => {
+  it('can be salvaged for iron', () => {
+    const g = new Game(level1());
+    const b = g.world.obstacles.find(o => o.kind === 'barrel')!;
+    expect(b.loot).toBeTruthy();
+    g.pos = { x: b.x + 0.5, y: b.y - 0.6 };
+    tick(g, 2.2, { use: true });
+    expect(g.world.obstacles).not.toContain(b);
+    expect(g.inv.iron).toBeGreaterThan(0);
+  });
+});
+
+describe('mouse orders', () => {
+  it('walks around the container wall to a clicked spot', () => {
+    const g = new Game(level1());
+    g.energy = 100;
+    g.pos = { x: 22, y: 25 };
+    g.command({ kind: 'ground', at: { x: 28, y: 25 } }, 'walk');
+    tick(g, 12);
+    expect(Math.hypot(g.pos.x - 28, g.pos.y - 25)).toBeLessThan(0.3);
+    expect(g.order).toBeNull();
+  });
+
+  it('click on scrap: walks there and salvages it fully', () => {
+    const g = new Game(level1());
+    g.energy = 100;
+    const pile = g.scrapLeft()[0];
+    g.pos = { x: pile.x - 4, y: pile.y + 3 };
+    g.command({ kind: 'scrap', o: pile }, 'salvage');
+    tick(g, 6);
+    expect(g.world.obstacles).not.toContain(pile);
+    expect(g.order).toBeNull();
+  });
+
+  it('a plugged port offers both unplug and reel (context menu)', () => {
+    const g = new Game(level1());
+    g.reelOwned = 20;
+    g.pos = { x: 33.0, y: 23.5 };
+    g.command({ kind: 'port', id: 'station' }, 'grab');
+    tick(g, 0.1);
+    expect(g.held?.from).toBe('station');
+    expect(g.actionsFor({ kind: 'port', id: 'station' }).map(a => a.id)).toEqual(['reel']);
+    g.command({ kind: 'self' }, 'light');
+    expect(g.light).toBe(false);
+  });
+
+  it('fabricator: craft everything at once', () => {
+    const g = new Game(level1());
+    g.inv.copper = 4; g.inv.plastic = 4;
+    g.pos = { x: 8.5, y: 18.9 };
+    const acts = g.actionsFor({ kind: 'point', id: 'fabricator' });
+    expect(acts.map(a => a.id)).toEqual(['craft', 'craftAll']);
+    g.command({ kind: 'point', id: 'fabricator' }, 'craftAll');
+    tick(g, 6);
+    expect(g.reelOwned).toBe(20);
   });
 });

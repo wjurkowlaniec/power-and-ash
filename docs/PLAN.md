@@ -20,6 +20,7 @@ odległy metal z pogłosem), robiony proceduralnie w Web Audio, bez plików audi
 | M5 | Rozbieranie złomu, recykler, fabrykator, 4 surowce; cel: przekaźnik Stacji 2 przez 60 s | ⏳ |
 | M6 | Dźwięk 2: warstwy ambientu zależne od pory dnia i burzy, dźwięki maszyn w przestrzeni | ⏳ |
 | M7 | Sterowanie dotykowe i pad | ⏳ |
+| F1 | Feedback: pokład z europalet na stalowej ramie, bateria Wolta (zużycie, ładowanie na postoju i przy porcie), światło L, beczki do rozebrania, sterowanie myszą z menu kontekstowym, żagiel przezroczysty, gdy zasłania Wolta | ✅ |
 
 ## Zasady kabla (M2)
 
@@ -33,8 +34,24 @@ odległy metal z pogłosem), robiony proceduralnie w Web Audio, bez plików audi
 
 Bateria żaglowozu jest pusta, a Wolt nie ma kabla. Za ścianą kontenerów stoi Stacja 2 ze sprawnymi panelami (600 W).
 
-1. Rozbierz złom (przytrzymaj `E` albo LPM przy kupce). 7 kupek daje razem 6 miedzi, 6 plastiku, 5 żelaza i 1 szkło.
+1. Rozbierz złom i beczki (kliknij albo przytrzymaj `E` przy kupce). 7 kupek i 2 beczki dają razem 6 miedzi, 7 plastiku, 8 żelaza i 1 szkło.
 2. Przy fabrykatorze (północna burta żaglowozu) `E` robi 5 m kabla z 1 miedzi i 1 plastiku. Potrzeba 20 m.
 3. Weź kabel z portu stacji albo żaglowozu i wepnij w drugi port. Trasa od północy ma ok. 18,4 m, a od południa jest za długa.
 4. Bateria 2 kWh ładuje się ok. 25 s (czas gry jest przyspieszony).
 5. `E` przy sterze (rufa, zachodnia burta) i żaglowóz odjeżdża. Wpięty kabel wyskakuje z portu.
+
+## Bateria Wolta
+
+Wolt ma własne ogniwo 100 Wh i zaczyna z 25 Wh.
+
+| Stan | Wh/s |
+|---|---|
+| czuwanie | −0,03 |
+| marsz | −0,3 |
+| bieg | −1,0 |
+| rozbieranie | −1,5 |
+| światło | −0,2 |
+| postój (po 1 s) | +0,8 |
+| postój przy żywym porcie (Stacja 2, naładowany żaglowóz) | +4 |
+
+Na pustej baterii Wolt wlecze się (40% prędkości), nie biega, nie rozbiera, a światło gaśnie.

@@ -15,6 +15,9 @@ export class Sail {
     uFlutter: { value: 0.1 },
     uSide: { value: 1 },
   };
+  /** 1 = solid, lower = screen-door see-through (when the sail hides Wolt). */
+  private fade = { value: 1 };
+  readonly cloth: THREE.Mesh;
   private angle = 0;
   private angVel = 0;
   private side = 1;
@@ -45,9 +48,10 @@ export class Sail {
     const map = sailTexture();
     const mat = new THREE.MeshStandardMaterial({ map, side: THREE.DoubleSide, roughness: 1, alphaTest: 0.5, flatShading: true });
     const depth = new THREE.MeshDepthMaterial({ depthPacking: THREE.RGBADepthPacking, map, alphaTest: 0.5, side: THREE.DoubleSide });
-    for (const m of [mat, depth]) m.onBeforeCompile = sh => this.inject(sh);
+    for (const m of [mat, depth]) m.onBeforeCompile = sh => this.inject(sh, m === mat);
 
     const cloth = new THREE.Mesh(geo, mat);
+    this.cloth = cloth;
     cloth.customDepthMaterial = depth;
     cloth.castShadow = true; cloth.receiveShadow = true;
     this.group.add(cloth);
@@ -58,8 +62,22 @@ export class Sail {
     this.group.add(boom);
   }
 
-  private inject(sh: THREE.WebGLProgramParametersWithUniforms) {
+  private inject(sh: THREE.WebGLProgramParametersWithUniforms, color: boolean) {
     Object.assign(sh.uniforms, this.uniforms);
+    if (color) {
+      // dithered see-through: keeps the opaque pipeline (and the shadow) intact
+      sh.uniforms.uFade = this.fade;
+      sh.fragmentShader = sh.fragmentShader
+        .replace('#include <common>', `#include <common>
+          uniform float uFade;`)
+        .replace('#include <alphatest_fragment>', `#include <alphatest_fragment>
+          if (uFade < 0.999) {
+            vec2 q = floor(mod(gl_FragCoord.xy, 4.0));
+            float b = mod(q.x * 2.0 + q.y * 3.0 + floor(q.y / 2.0) * 5.0, 4.0) / 4.0
+                    + mod(q.x + q.y * 2.0, 2.0) / 8.0;
+            if (b >= uFade) discard;
+          }`);
+    }
     sh.vertexShader = sh.vertexShader
       .replace('#include <common>', `#include <common>
         uniform float uTime, uBillow, uFlutter, uSide;`)
@@ -81,6 +99,11 @@ export class Sail {
    * windLocal: wind direction in the yacht's local frame (radians, 0 = bow / +x);
    * strength: m/s including gusts.
    */
+  /** Ease the see-through amount towards `want` (1 solid … 0.25 mostly open). */
+  setFade(want: number, dt: number) {
+    this.fade.value += (want - this.fade.value) * Math.min(1, dt * 6);
+  }
+
   update(dt: number, t: number, windLocal: number, strength: number) {
     // boom points downwind but stays aft (its rest direction is -x): clamp to ±75°
     const wx = Math.cos(windLocal), wz = Math.sin(windLocal);

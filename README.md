@@ -12,10 +12,14 @@ Top-down gra survivalowa w przeglądarce. Automat serwisowy Wolt ciągnie kable 
 
 | Klawisz | Akcja |
 |---|---|
-| WASD / strzałki | ruch |
+| LPM na terenie | idź tam (przytrzymaj: Wolt idzie za kursorem) |
+| LPM na obiekcie | podejdź i użyj (złom, beczka, port, fabrykator, ster, Wolt = światło) |
+| PPM na obiekcie | menu ze wszystkimi akcjami |
+| WASD / strzałki | ruch (przerywa marsz myszą) |
 | Shift | bieg |
 | E | użyj: weź / wepnij / wypnij kabel, fabrykator, ster |
-| E lub LPM (przytrzymaj) | rozbierz złom |
+| E (przytrzymaj) | rozbierz złom albo beczkę |
+| L | światło Wolta wł./wył. |
 | kółko myszy, + / − | zoom |
 | Q (przytrzymaj) | zwiń kabel |
 | Alt | panel sieci |

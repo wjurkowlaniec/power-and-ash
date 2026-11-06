@@ -155,7 +155,9 @@ export class Sound {
       case 'charged': return this.charged();
       case 'depart': return this.depart();
       case 'win': return this.win();
+      case 'light': return this.lightClick();
     }
   }
+  lightClick() { this.burst(3200, 8, 0.05, 0.03, 'bandpass', 1, 0); this.tone(1800, 0.02, 0.06, 'square', 0.8); }
   online() { this.tone(220, 0.1, 1.8, 'sine', 1.5); this.tone(330, 0.06, 2.2, 'sine', 1.5); }
 }

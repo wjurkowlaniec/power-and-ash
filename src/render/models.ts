@@ -3,6 +3,7 @@ import { PAL } from './palette';
 import { Obstacle } from '../sim/world';
 import { Sail } from './sail';
 import { Models, fit } from './assets';
+import { yachtDeck } from './deck';
 
 let seed = 11;
 export const rnd = () => ((seed = (seed * 16807) % 2147483647) / 2147483647);
@@ -136,15 +137,13 @@ function modelFor(o: Obstacle, models: Models): THREE.Object3D | null {
   }
 }
 
-export interface YachtModel { group: THREE.Group; turbines: THREE.Object3D[]; port: THREE.Mesh; battery: THREE.Mesh; fabLight: THREE.Mesh; wheels: THREE.Mesh[]; sail: Sail }
+export interface YachtModel { group: THREE.Group; turbines: THREE.Object3D[]; port: THREE.Mesh; battery: THREE.Mesh; fabLight: THREE.Mesh; wheels: THREE.Mesh[]; sail: Sail; fabricator: THREE.Object3D; helm: THREE.Object3D }
 
 export function yachtModel(r: { x: number; y: number; w: number; h: number }, portLocal: THREE.Vector3): YachtModel {
   const g = new THREE.Group();
   g.position.set(r.x + r.w / 2, 0, r.y + r.h / 2);
-  const hull = mat(0x4a5055, { r: 0.6, m: 0.4 }), deck = mat(0x7d786e), paint = mat(0x8a4a2c, { r: 0.7 });
-  g.add(box(r.w - 0.1, 0.9, r.h - 0.3, hull, 0, 1.1, 0));
-  g.add(box(r.w, 0.2, r.h - 0.1, paint, 0, 0.7, 0));
-  g.add(box(r.w - 0.5, 0.08, r.h - 0.7, deck, 0, 1.6, 0));
+  // body: steel frame + euro-pallet deck (top ≈ 1.58 m)
+  g.add(yachtDeck(r.w, r.h).group);
   const dark = mat(0x222426, { r: 0.7 });
   const wheels: THREE.Mesh[] = [];
   for (const [x, z] of [[-4, -r.h / 2], [3.6, -r.h / 2], [-4, r.h / 2], [3.6, r.h / 2]]) {
@@ -159,13 +158,18 @@ export function yachtModel(r: { x: number; y: number; w: number; h: number }, po
   const battery = box(1.6, 1.1, 1.0, new THREE.MeshStandardMaterial({ color: 0x2c4f60, roughness: 0.5, emissive: 0x6fc4e6, emissiveIntensity: 0 }), -4.1, 2.15, -1.6);
   g.add(battery);
   // fabricator at the north rail, next to its use point
-  g.add(box(2.2, 1.0, 1.3, mat(0xbab4a8), -1.5, 2.1, -2.1));
+  const fabricator = box(2.2, 1.0, 1.3, mat(0xbab4a8), -1.5, 2.1, -2.1);
+  g.add(fabricator);
   const fabLight = box(0.7, 0.18, 0.5, new THREE.MeshStandardMaterial({ color: 0x222222, emissive: PAL.warn, emissiveIntensity: 0.3 }), -1.5, 2.7, -2.1);
   g.add(fabLight);
   // helm at the stern
-  g.add(mesh(new THREE.CylinderGeometry(0.06, 0.06, 1.1, 6), steel, -5.3, 2.15, 0));
+  const helm = new THREE.Group(); g.add(helm);
+  helm.add(mesh(new THREE.CylinderGeometry(0.06, 0.06, 1.1, 6), steel, -5.3, 2.15, 0));
   const wheel = mesh(new THREE.TorusGeometry(0.42, 0.05, 6, 16), mat(0x5a4a3a), -5.3, 2.75, 0);
-  wheel.rotation.y = Math.PI / 2; g.add(wheel);
+  wheel.rotation.y = Math.PI / 2; helm.add(wheel);
+  // an invisible, generous hit box so the helm is easy to click
+  const hit = new THREE.Mesh(new THREE.BoxGeometry(1, 1.6, 1.2), new THREE.MeshBasicMaterial({ visible: false }));
+  hit.position.set(-5.3, 2.2, 0); helm.add(hit);
   for (let i = 0; i < 3; i++) g.add(box(0.85, 0.85, 0.85, mat(0x5a4a3a), -1.2 + i * 0.95, 2.05, 2.0));
   // mast + sail
   g.add(mesh(new THREE.CylinderGeometry(0.1, 0.14, 10, 8), steel, 1.2, 6.6, 0));
@@ -186,7 +190,7 @@ export function yachtModel(r: { x: number; y: number; w: number; h: number }, po
   const port = box(0.42, 0.42, 0.42, mat(0x1d1d1d, { e: PAL.warn, ei: 1.2 }), portLocal.x, portLocal.y, portLocal.z);
   g.add(port);
   port.material = (port.material as THREE.Material).clone();
-  return { group: g, turbines, port, battery, fabLight, wheels, sail };
+  return { group: g, turbines, port, battery, fabLight, wheels, sail, fabricator, helm };
 }
 
 export interface StationModel {

@@ -4,6 +4,7 @@ import { Cable } from './cable';
 import { LevelDef, PortDef, StationPoint } from './level';
 import { PowerNode, solveNetworks, NetworkState } from './power';
 import { Wind } from './wind';
+import { findPath } from './path';
 
 export const CABLE_MAX = 20;      // m per segment
 export const CABLE_WARN = 18;     // m, orange + slowdown
@@ -22,6 +23,20 @@ export const CABLE_PER_CRAFT = 5; // m
 /** Game time runs faster while charging: Wh gained per W of surplus per real second. */
 export const CHARGE_SPEED = 0.135;
 export const DEPART_TIME = 6;     // s of the leaving animation
+export const BARREL_SALVAGE_TIME = 2.0;
+
+// Wolt's own battery (the small quantum cell in his chest), in Wh
+export const WOLT_BATTERY = 100;
+export const WOLT_START = 25;
+/** Drain in Wh/s. */
+export const DRAIN = { base: 0.03, walk: 0.3, run: 1.0, salvage: 1.5, light: 0.2 } as const;
+/** Standing still the cell slowly recovers; by a live port it charges fast. */
+export const REST_CHARGE = 0.8;
+export const PORT_CHARGE = 4;
+export const REST_DELAY = 1.0;    // s of standing before the trickle starts
+export const PORT_CHARGE_RANGE = 2.2;
+export const EMPTY_SPEED = 0.4;   // speed multiplier on an empty battery
+export const LOW_ENERGY = 15;
 
 export interface Input {
   move: V2;          // desired direction in world space, length ≤ 1
@@ -37,8 +52,19 @@ export const idle = (): Input => ({ move: { x: 0, y: 0 }, run: false, interact: 
 export interface PlacedCable { cable: Cable; from: string; to: string | null }
 export interface Hint { text: string; key: string; at: V2; height: number; ok: boolean }
 export type CableState = 'none' | 'held' | 'tense' | 'limit';
-export type GameEvent = 'grab' | 'plug' | 'unplug' | 'reel' | 'deny' | 'salvage' | 'craft' | 'charged' | 'depart' | 'win';
+export type GameEvent = 'grab' | 'plug' | 'unplug' | 'reel' | 'deny' | 'salvage' | 'craft' | 'charged' | 'depart' | 'win' | 'light';
 export type Phase = 'play' | 'departing' | 'done';
+
+/** Something the player can point at with the mouse. */
+export type Target =
+  | { kind: 'ground'; at: V2 }
+  | { kind: 'scrap'; o: Obstacle }
+  | { kind: 'port'; id: string }
+  | { kind: 'point'; id: StationPoint['id'] }
+  | { kind: 'self' };
+export type ActionId = 'walk' | 'salvage' | 'grab' | 'plug' | 'unplug' | 'reel' | 'craft' | 'craftAll' | 'depart' | 'light';
+export interface Action { id: ActionId; label: string; ok: boolean; why?: string }
+interface Order { target: Target; action: ActionId; path: V2[]; last: V2 | null; stuck: number; working: boolean }
 
 export interface Objective { text: string; done: boolean; active: boolean }
 
@@ -68,6 +94,15 @@ export class Game {
   networks = new Map<string, NetworkState>();
   readonly nodes: PowerNode[];
   readonly wind = new Wind(7);
+  energy = WOLT_START;
+  /** Current net energy flow in Wh/s (negative = draining), for the HUD. */
+  energyRate = 0;
+  energySource: 'rest' | 'port' | null = null;
+  light = true;
+  stillT = 0;
+  order: Order | null = null;
+  craftQueue = 0;
+  private lowWarned = false;
 
   constructor(readonly level: LevelDef) {
     this.world = new World(level.width, level.height, level.obstacles);
@@ -80,9 +115,18 @@ export class Game {
       { id: 'yacht', produce: 0, demand: 0 },
     ];
     this.solve();
+    this.toast('Bateria Wolta: 25%. Postój ładuje powoli, bieg i rozbieranie zużywają więcej.');
   }
 
   // ---------- queries
+  energyPct(): number { return this.energy / WOLT_BATTERY; }
+  empty(): boolean { return this.energy <= 0.01; }
+  salvageTime(o: Obstacle): number { return o.kind === 'barrel' ? BARREL_SALVAGE_TIME : SALVAGE_TIME; }
+  /** A port that gives power right now (Wolt can top up next to it). */
+  portLive(id: string): boolean {
+    if (id === 'station') return true;
+    return this.battery > this.level.yachtBattery * 0.05 || this.yachtCharging();
+  }
   reelUsed(): number { return this.cables.reduce((s, c) => s + c.cable.length(), 0); }
   reelLeft(): number { return this.reelOwned - this.reelUsed() - (this.held ? this.held.cable.length() : 0); }
   segmentMax(): number { return Math.min(CABLE_MAX, this.reelOwned - this.reelUsed()); }
@@ -183,21 +227,158 @@ export class Game {
     const s = this.nearestScrap();
     if (s && !this.held) {
       const at = { x: s.x + s.w / 2, y: s.y + s.h / 2 };
-      return { key: 'E', text: this.salvage ? 'rozbieranie…' : 'przytrzymaj, by rozebrać złom', at, height: 0.8, ok: true };
+      if (this.empty()) return { key: 'E', text: 'za mało energii, by rozbierać', at, height: 0.8, ok: false };
+      const what = s.kind === 'barrel' ? 'beczkę' : 'złom';
+      return { key: 'E', text: this.salvage ? 'rozbieranie…' : `przytrzymaj, by rozebrać ${what}`, at, height: 0.8, ok: true };
     }
     return null;
   }
 
   toast(text: string) { this.toasts.push({ text, t: this.time }); }
 
+  // ---------- mouse targets and actions
+  /** What lies under a ground point, by proximity (the view refines this with a raycast). */
+  targetAt(p: V2): Target {
+    if (dist(p, this.pos) < 0.55) return { kind: 'self' };
+    for (const port of this.ports) if (dist(port.pos, p) < 0.8) return { kind: 'port', id: port.id };
+    for (const pt of this.points) if (dist(pt.pos, p) < 0.9) return { kind: 'point', id: pt.id };
+    for (const o of this.scrapLeft()) if (World.distToRect(p, o) < 0.25) return { kind: 'scrap', o };
+    return { kind: 'ground', at: p };
+  }
+
+  /** Actions offered for a target, the default first. */
+  actionsFor(t: Target): Action[] {
+    switch (t.kind) {
+      case 'ground': return [{ id: 'walk', label: 'Idź tutaj', ok: true }];
+      case 'self': return [{ id: 'light', label: this.light ? 'Wyłącz światło' : 'Włącz światło', ok: true }];
+      case 'scrap': {
+        if (!this.world.obstacles.includes(t.o)) return [];
+        const what = t.o.kind === 'barrel' ? 'beczkę' : 'złom';
+        return [{ id: 'salvage', label: `Rozbierz ${what}`, ok: !this.held && !this.empty(), why: this.held ? 'najpierw odłóż kabel' : this.empty() ? 'za mało energii' : undefined }];
+      }
+      case 'point': {
+        if (t.id === 'helm') return [{ id: 'depart', label: 'Odjedź', ok: this.batteryFull(), why: this.batteryFull() ? undefined : `bateria ${Math.floor(this.batteryPct() * 100)}%` }];
+        const room = Math.floor((REEL_CAPACITY - this.reelOwned) / CABLE_PER_CRAFT);
+        const mats = Math.min(Math.floor(this.inv.copper / CABLE_RECIPE.copper), Math.floor(this.inv.plastic / CABLE_RECIPE.plastic));
+        const n = Math.min(room, mats);
+        const why = room < 1 ? 'nawijak pełny' : mats < 1 ? 'potrzeba 1 miedzi i 1 plastiku' : undefined;
+        const list: Action[] = [{ id: 'craft', label: 'Wytwórz 5 m kabla', ok: n >= 1 && !this.held, why: this.held ? 'odłóż kabel' : why }];
+        if (n >= 2) list.push({ id: 'craftAll', label: `Wytwórz ${n * CABLE_PER_CRAFT} m kabla (wszystko)`, ok: !this.held });
+        return list;
+      }
+      case 'port': {
+        const busy = this.portBusy(t.id);
+        if (!this.held) {
+          if (!busy) return [{ id: 'grab', label: 'Weź kabel', ok: this.segmentMax() >= 1, why: this.segmentMax() >= 1 ? undefined : 'brak kabla na nawijaku' }];
+          const list: Action[] = [];
+          if (busy.to === t.id) list.push({ id: 'unplug', label: 'Wypnij kabel', ok: true });
+          list.push({ id: 'reel', label: 'Zwiń kabel na nawijak', ok: true });
+          return list;
+        }
+        if (this.held.from === t.id) return [{ id: 'reel', label: 'Zwiń kabel na nawijak', ok: true }];
+        if (busy) return [{ id: 'plug', label: 'Wepnij kabel', ok: false, why: 'port zajęty' }];
+        return [{ id: 'plug', label: 'Wepnij kabel', ok: true }];
+      }
+    }
+  }
+
+  /** Walk to the target (if needed) and do the action there. */
+  command(t: Target, action: ActionId) {
+    if (this.phase !== 'play') return;
+    if (t.kind === 'self') { this.doAction(t, action); this.order = null; return; }
+    const goal = this.goalOf(t);
+    const path = findPath(this.world, this.pos, goal, PLAYER_RADIUS) ?? [goal];
+    this.order = { target: t, action, path, last: null, stuck: 0, working: false };
+  }
+
+  cancelOrder() { this.order = null; }
+
+  private goalOf(t: Target): V2 {
+    switch (t.kind) {
+      case 'ground': return t.at;
+      case 'scrap': return { x: t.o.x + t.o.w / 2, y: t.o.y + t.o.h / 2 };
+      case 'port': return this.ports.find(p => p.id === t.id)!.pos;
+      case 'point': return this.points.find(p => p.id === t.id)!.pos;
+      case 'self': return this.pos;
+    }
+  }
+
+  /** Distance still to go before the action can happen (≤ 0 = there). */
+  private remaining(t: Target): number {
+    switch (t.kind) {
+      case 'ground': return dist(this.pos, t.at) - 0.15;
+      case 'scrap': return World.distToRect(this.pos, t.o) - SALVAGE_RANGE;
+      case 'port': case 'point': return dist(this.pos, this.goalOf(t)) - (INTERACT_RANGE - 0.3);
+      case 'self': return 0;
+    }
+  }
+
+  private followOrder(dt: number, inp: Input): V2 | null {
+    const o = this.order!;
+    if (o.target.kind === 'scrap' && !this.world.obstacles.includes(o.target.o)) { this.order = null; return null; }
+    const rem = this.remaining(o.target);
+    if (rem <= 0) {
+      if (o.action === 'walk') { this.order = null; return null; }
+      if (o.action === 'salvage' && o.target.kind === 'scrap') {
+        o.working = true;
+        const c = this.goalOf(o.target);
+        this.facing = Math.atan2(c.y - this.pos.y, c.x - this.pos.x);
+        return null;
+      }
+      this.order = null;
+      this.doAction(o.target, o.action);
+      return null;
+    }
+    // stuck = barely moved for a while (a wall, or the cable at its limit)
+    if (o.last && dist(o.last, this.pos) < WALK_SPEED * EMPTY_SPEED * TENSION_SLOW * dt * 0.3) o.stuck += dt; else o.stuck = 0;
+    o.last = { ...this.pos };
+    if (o.stuck > 1.2) {
+      this.order = null;
+      this.toast(this.held && this.cableState() === 'limit' ? 'Kabel nie sięga dalej.' : 'Wolt nie znajduje drogi.');
+      this.events.push('deny');
+      return null;
+    }
+    while (o.path.length > 1 && dist(this.pos, o.path[0]) < 0.3) o.path.shift();
+    const wp = o.path[0] ?? this.goalOf(o.target);
+    const d = sub(wp, this.pos);
+    const l = len(d);
+    if (l < 1e-3) return null;
+    void inp;
+    return scale(d, 1 / l);
+  }
+
+  private doAction(t: Target, a: ActionId) {
+    if (this.phase !== 'play') return;
+    const act = this.actionsFor(t).find(x => x.id === a);
+    if (act && !act.ok) { if (act.why) this.toast(cap(act.why) + '.'); this.events.push('deny'); return; }
+    switch (a) {
+      case 'light': this.toggleLight(); return;
+      case 'craft': this.craft(1); return;
+      case 'craftAll': this.craft(99); return;
+      case 'depart': this.depart(); return;
+      case 'grab': case 'unplug': case 'plug': if (t.kind === 'port') this.portAction(this.ports.find(p => p.id === t.id)!); return;
+      case 'reel': if (t.kind === 'port') { const c = this.held ?? this.cables.find(c => c.from === t.id || c.to === t.id); if (c) this.reelIn(c); } return;
+      default: return;
+    }
+  }
+
+  toggleLight() {
+    if (!this.light && this.empty()) { this.toast('Za mało energii na światło.'); this.events.push('deny'); return; }
+    this.light = !this.light;
+    this.events.push('light');
+  }
+
   // ---------- simulation
   update(dt: number, inp: Input) {
     this.time += dt;
     this.wind.update(dt);
     if (this.phase === 'play') {
-      this.movePlayer(dt, inp);
+      let move = inp.move;
+      if (len(move) > 0.01) this.order = null; // keys override the mouse
+      else if (this.order) move = this.followOrder(dt, inp) ?? { x: 0, y: 0 };
+      this.movePlayer(dt, { ...inp, move });
       // walking: face where you go; standing still: turn towards the cursor (the lamp follows it)
-      if (!this.moving && inp.aim) {
+      if (!this.moving && !this.order && inp.aim) {
         const d = sub(inp.aim, this.pos);
         if (len(d) > 0.6) this.facing = Math.atan2(d.y, d.x);
       }
@@ -205,6 +386,7 @@ export class Game {
       this.updateSalvage(dt, inp);
       this.updateCraft(dt);
       this.updateReel(dt, inp.reel);
+      this.updateEnergy(dt, inp);
     } else {
       this.moving = false;
       this.departT += dt;
@@ -215,13 +397,17 @@ export class Game {
     this.toasts = this.toasts.filter(t => this.time - t.t < 4);
   }
 
+  private running = false;
+
   private movePlayer(dt: number, inp: Input) {
     const m = len(inp.move);
     this.moving = m > 0.01;
+    this.running = this.moving && inp.run && !this.empty();
     if (!this.moving) return;
     const dir = m > 1 ? scale(inp.move, 1 / m) : inp.move;
     this.facing = Math.atan2(dir.y, dir.x);
-    let speed = WALK_SPEED * (inp.run ? RUN_MULT : 1);
+    let speed = WALK_SPEED * (this.running ? RUN_MULT : 1);
+    if (this.empty()) speed *= EMPTY_SPEED;
     if (this.held && this.heldLength() >= CABLE_WARN) speed *= TENSION_SLOW;
     const step = scale(dir, speed * dt);
 
@@ -233,7 +419,29 @@ export class Game {
     if (!this.world.circleBlocked(ty, PLAYER_RADIUS)) cand = ty;
 
     if (this.held) cand = this.constrainByCable(cand);
+    this.moving = dist(cand, this.pos) > 1e-5;
     this.pos = cand;
+  }
+
+  private updateEnergy(dt: number, inp: Input) {
+    const busy = this.moving || !!this.salvage || this.craftT > 0;
+    this.stillT = busy ? 0 : this.stillT + dt;
+    let rate = -DRAIN.base;
+    if (this.moving) rate -= this.running ? DRAIN.run : DRAIN.walk;
+    if (this.salvage) rate -= DRAIN.salvage;
+    if (this.light) rate -= DRAIN.light;
+    this.energySource = null;
+    if (this.stillT >= REST_DELAY) {
+      const live = this.ports.find(p => this.portLive(p.id) && dist(p.pos, this.pos) < PORT_CHARGE_RANGE);
+      this.energySource = live ? 'port' : 'rest';
+      rate += live ? PORT_CHARGE : REST_CHARGE;
+    }
+    void inp;
+    this.energyRate = rate;
+    this.energy = Math.max(0, Math.min(WOLT_BATTERY, this.energy + rate * dt));
+    if (this.empty() && this.light) { this.light = false; this.toast('Bateria Wolta pusta: światło zgasło. Postój albo port Stacji 2 go naładują.'); this.events.push('deny'); }
+    if (this.energy < LOW_ENERGY && !this.lowWarned && rate < 0) { this.lowWarned = true; this.toast('Bateria Wolta słabnie. Stań na chwilę albo podejdź do portu Stacji 2.'); }
+    if (this.energy > LOW_ENERGY + 10) this.lowWarned = false;
   }
 
   /** Keep the held cable within its limit: slide along the reach circle, never past it. */
@@ -256,31 +464,40 @@ export class Game {
     return this.pos;
   }
 
+  /** E key: the obvious thing for whatever Wolt stands next to. */
   private interact() {
     const pt = this.nearestPoint();
     if (pt && !this.held) {
-      if (pt.id === 'fabricator') {
-        if (this.craftT > 0) return;
-        if (!this.canCraft()) { this.events.push('deny'); this.toast(this.reelOwned + CABLE_PER_CRAFT > REEL_CAPACITY ? 'Nawijak jest pełny.' : 'Brakuje materiałów: 1 miedź + 1 plastik na 5 m kabla.'); return; }
-        this.inv.copper -= CABLE_RECIPE.copper; this.inv.plastic -= CABLE_RECIPE.plastic;
-        this.craftT = CRAFT_TIME;
-        return;
-      }
-      if (pt.id === 'helm') {
-        if (!this.batteryFull()) { this.events.push('deny'); this.toast('Bateria żaglowozu jest za słaba na odjazd.'); return; }
-        const attached = this.cables.filter(c => c.from === 'yacht' || c.to === 'yacht');
-        if (attached.length) {
-          this.cables = this.cables.filter(c => !attached.includes(c));
-          this.toast('Kabel wyskoczył z portu żaglowozu.');
-        }
-        this.phase = 'departing';
-        this.departT = 0;
-        this.events.push('depart');
-        return;
-      }
+      if (pt.id === 'fabricator') { if (this.craftT <= 0) this.craft(1); return; }
+      this.depart();
+      return;
     }
     const p = this.nearestPort();
-    if (!p) return;
+    if (p) this.portAction(p);
+  }
+
+  private craft(n: number) {
+    if (this.craftT > 0) { this.craftQueue = Math.max(this.craftQueue, n - 1); return; }
+    if (!this.canCraft()) { this.events.push('deny'); this.toast(this.reelOwned + CABLE_PER_CRAFT > REEL_CAPACITY ? 'Nawijak jest pełny.' : 'Brakuje materiałów: 1 miedź + 1 plastik na 5 m kabla.'); return; }
+    this.inv.copper -= CABLE_RECIPE.copper; this.inv.plastic -= CABLE_RECIPE.plastic;
+    this.craftT = CRAFT_TIME;
+    this.craftQueue = n - 1;
+  }
+
+  private depart() {
+    if (!this.batteryFull()) { this.events.push('deny'); this.toast('Bateria żaglowozu jest za słaba na odjazd.'); return; }
+    const attached = this.cables.filter(c => c.from === 'yacht' || c.to === 'yacht');
+    if (attached.length) {
+      this.cables = this.cables.filter(c => !attached.includes(c));
+      this.toast('Kabel wyskoczył z portu żaglowozu.');
+    }
+    this.order = null;
+    this.phase = 'departing';
+    this.departT = 0;
+    this.events.push('depart');
+  }
+
+  private portAction(p: PortDef) {
     const busy = this.portBusy(p.id);
     if (!this.held) {
       if (!busy) {
@@ -313,12 +530,19 @@ export class Game {
   }
 
   private updateSalvage(dt: number, inp: Input) {
-    const near = this.nearestPort() || this.nearestPoint();
-    const target = !this.held && inp.use && !near ? this.nearestScrap(inp.aim) : null;
+    let target: Obstacle | null = null;
+    const o = this.order;
+    if (o && o.working && o.action === 'salvage' && o.target.kind === 'scrap') target = o.target.o;
+    else if (inp.use && !this.held && !(this.nearestPort() || this.nearestPoint())) target = this.nearestScrap(inp.aim);
+    if (target && this.empty()) {
+      if (this.salvage || o?.working) { this.toast('Za mało energii, by rozbierać. Postój chwilę.'); this.events.push('deny'); }
+      if (o?.working) this.order = null;
+      target = null;
+    }
     if (!target) { this.salvage = null; return; }
     if (!this.salvage || this.salvage.target !== target) this.salvage = { target, t: 0 };
     this.salvage.t += dt;
-    if (this.salvage.t >= SALVAGE_TIME) {
+    if (this.salvage.t >= this.salvageTime(target)) {
       const loot = target.loot!;
       const got: string[] = [];
       const names: Record<Material, string> = { iron: 'żelazo', copper: 'miedź', plastic: 'plastik', glass: 'szkło' };
@@ -326,7 +550,8 @@ export class Game {
       this.world.remove(target);
       this.removed.push(target);
       this.salvage = null;
-      this.toast(`Rozebrano złom: ${got.join(', ')}`);
+      if (o?.working) this.order = null;
+      this.toast(`Rozebrano ${target.kind === 'barrel' ? 'beczkę' : 'złom'}: ${got.join(', ')}`);
       this.events.push('salvage');
     }
   }
@@ -339,6 +564,8 @@ export class Game {
       this.reelOwned += CABLE_PER_CRAFT;
       this.toast(`Fabrykator: +5 m kabla (na nawijaku ${this.reelOwned} m).`);
       this.events.push('craft');
+      if (this.craftQueue > 0 && this.canCraft()) this.craft(this.craftQueue);
+      else this.craftQueue = 0;
     }
   }
 
@@ -348,13 +575,14 @@ export class Game {
     const target = this.held ?? (p ? this.cables.find(c => c.from === p.id || c.to === p.id) : undefined);
     if (!target) { this.reelHold = 0; return; }
     this.reelHold += dt;
-    if (this.reelHold >= REEL_HOLD) {
-      this.reelHold = 0;
-      if (target === this.held) this.held = null;
-      this.cables = this.cables.filter(c => c !== target);
-      this.toast(`Zwinięto ${target.cable.length().toFixed(1)} m kabla na nawijak.`);
-      this.events.push('reel');
-    }
+    if (this.reelHold >= REEL_HOLD) { this.reelHold = 0; this.reelIn(target); }
+  }
+
+  private reelIn(target: PlacedCable) {
+    if (target === this.held) this.held = null;
+    this.cables = this.cables.filter(c => c !== target);
+    this.toast(`Zwinięto ${target.cable.length().toFixed(1)} m kabla na nawijak.`);
+    this.events.push('reel');
   }
 
   private updateCharge(dt: number) {
@@ -378,3 +606,5 @@ export class Game {
     this.networks = solveNetworks(this.nodes, edges);
   }
 }
+
+const cap = (s: string) => s.charAt(0).toUpperCase() + s.slice(1);
