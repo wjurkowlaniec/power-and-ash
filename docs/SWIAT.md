@@ -220,8 +220,9 @@ Etapy **[propozycja]**:
 
 | Etap | Pojazd | Co umożliwia |
 |---|---|---|
-| 0 | pieszo, ładunek w rękach | okolice stacji |
-| 1 | **bojerek**: rama z trzema płozami, żagiel z powłoki balonu meteo, skrzynka 4 sloty | twardy grunt i popiół, szybkie przejazdy po dolinie |
+| – | sam monocykl, ładunek na oponie za hakiem | okolice stacji, za mało prądu na dalej |
+| 0 | **wózek serwisowy** z rozdzielni R-2: cztery małe koła z silnikami w piastach, mała platforma, gniazdo dokowania dla monocyklu, własna bateria **[ustalone 2026-11-07]** | twardy grunt, dłuższe trasy, ładunek; grzęźnie w sypkim popiele |
+| 1 | wózek z masztem i żaglem z powłoki balonu meteo, płozy z ramy starego bojerka | popiół i wydmy, jazda na wiatr, oszczędzanie baterii |
 | 2 | **sanie żaglowe**: dłuższa rama, prawdziwe płótno (wyblakła reklama „Zefir” z Zatopionej Wsi), wymienne płozy albo koła, mała bateria | dłuższe trasy, nocowanie przy pojeździe, pierwszy panel |
 | 3 | **Żaglowóz**: kadłub z ładownią, fabrykator na pokładzie, turbina, panele, nawijak kabli | prawdziwa ruchoma baza, wyprawy na wiele dni |
 | 4 | Żaglowóz rozbudowany: napęd elektryczny na bezwietrzne odcinki, kotwica i wyciągarka, izolacja, grzałki, powłoka | góry, mokradła, zima |
@@ -353,18 +354,31 @@ Szkic układu **[propozycja]**:
                      piasek   wieża radiolinii)
                           ▲
                           │  bród, mokradła
-          ZATOPIONA WIEŚ ◄┴► DOLINA OLSZANKI (start)
-          (szkoła, zapora)    (stacja, wiatrak, rozdzielnia polowa)
+          ZATOPIONA WIEŚ ◄┴► POPIELNA RÓWNINA (open world od Sceny 6)
+          (szkoła, zapora)    (wydmy popiołu, ślady dróg, trop z dziennika wózka)
+                                ▲  wzgórze, za mało prądu
+                                │
+                          DOLINA OLSZANKI (start)
+                          (stacja, wiatrak, rozdzielnia polowa R-2 w kotlinie)
 ```
 
 ### Dolina Olszanki (start)
 
 - **Wygląd:** łąki, olszyny, rowy melioracyjne, polne drogi, rozpadające się wiaty przystanków. Popiół jak szron.
 - **Dźwięk:** wiatr w trawie, żaby nad rowami, skrzypienie masztu.
-- **Bazy:** Stacja Olszanka, wiatrak, rozdzielnia polowa (obecny poziom testowy „Rozruch”).
+- **Bazy:** Stacja Olszanka, wiatrak, rozdzielnia polowa R-2 z wózkiem serwisowym (obecny poziom testowy „Rozruch”).
 - **Zasoby:** złom, miedź z płotów i skrzynek, plastik z pomiarówek, szkło.
 - **Zagrożenia:** pierwsze mikroboty, noce, wilgoć.
-- **Brama wyjścia:** bród i mokradła w stronę Zatopionej Wsi (potrzebne osuszanie), a sypki piasek na północ (potrzebne lepsze płozy).
+- **Brama wyjścia:** wzgórze, na które sam monocykl ma za mało prądu, więc potrzebny jest wózek z R-2. Dalej bród i mokradła w stronę Zatopionej Wsi (potrzebne osuszanie).
+
+### Popielna Równina **[propozycja, 2026-11-07]**
+
+- **Wygląd:** szeroka, płaska równina za wzgórzem, dawne pola przysypane popiołem w wydmy. Wystają z niej słupy, dachy stodół, nasypy dróg. To jest „pustynia” z pomysłu Wojtka, ale z popiołu, a nie z piasku.
+- **Dźwięk:** wiatr bez przeszkód, syk przesypującego się popiołu, daleki brzęk drutów.
+- **Rola:** pierwszy otwarty obszar. Pojawia się po Scenie 5, gdy Wolt ma wózek.
+- **Zasoby:** złom z porzuconych maszyn, rama starego bojerka (płozy), drut.
+- **Zagrożenia:** zasięg (daleko do prądu), sypki popiół, burze pyłowe.
+- **Brama:** twarde nasypy dróg są dla kół, a wydmy dopiero z płozami i żaglem.
 
 ### Zatopiona Wieś
 
@@ -423,7 +437,7 @@ Kierunek: nieoczywiste połączenia i europejski krajobraz. Pomysły do rozmowy:
 
 **[propozycja]** Fabuła jest otwarta, ale ma oś. Każdy rozdział to mniej więcej jeden rok gry.
 
-1. **Przebudzenie** (rok 1): stacja, bateria, bojerek, Echo, pierwszy człowiek, pierwsza zima. Szczegóły w [POCZATEK.md](POCZATEK.md).
+1. **Przebudzenie** (rok 1): stacja, bateria, odjazd na resztce prądu, rozdzielnia R-2 i wózek, Popielna Równina, Echo, pierwszy człowiek, pierwsza zima. Szczegóły w [POCZATEK.md](POCZATEK.md).
 2. **Ludzie** (rok 2): bunkier Szkoła, słownik, elektrownia wodna. Ludzie po raz pierwszy wspominają „noc, gdy zgasło wszystko”. Pierwszy etap analizy baterii.
 3. **Sieć** (lata 3–5): Las Słupów, technicy, wieża radiolinii, łączenie baz anteną. Technicy chcą baterii. Zwrot: echo prowadzi do drugiego automatu misji, starszego i zepsutego, z fragmentami pamięci o Q-2.
 4. **Kopuła** (lata 5–8): Szklany Zalew, ogrodnicy, zasilenie Szklarni przez zimę. Pierwsza duża zmiana świata, którą Wolt sam spowodował.

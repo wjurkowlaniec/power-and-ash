@@ -17,7 +17,7 @@ Czarny ekran. Wiatr, skrzypienie blachy, kapanie wody. Co kilka sekund głuchy, 
 
 Puls się wzmacnia, w ciemności pojawia się bladozielona kropka (jedyny kolor na ekranie). Szum obrazu, jak w starej kamerze. Bateria sięga przez kabel diagnostyczny do jedynej maszyny podpiętej do stanowiska: pustego automatu serwisowego na jednym kole, który stoi w kołysce. Obraz to widok z jego kamery, na **4% jego własnej rezerwy**. To pierwsze zdalne sterowanie w grze, choć gracz jeszcze tego nie wie.
 
-Bez napisów i bez logo. Tytuł gry pojawia się dopiero w Scenie 4, gdy Żaglowóz pierwszy raz rusza.
+Bez napisów i bez logo. Tytuł gry pojawia się dopiero w Scenie 5, gdy Wolt pierwszy raz wyjeżdża pojazdem na równinę.
 
 ## Scena 1. Hala pomiarowa (samouczek ruchu, ok. 5 min)
 
@@ -67,44 +67,50 @@ Pierwsza noc przychodzi niezależnie od postępu, zwykle w trakcie Sceny 2 albo 
 3. **Mikroboty:** na kablu z turbiny pojawiają się małe, migające punkciki, jak świetliki. Przyczepiają się do kabla i podjadają prąd, a fabrykator zwalnia. Światło lampy Wolta je płoszy (rozpierzchają się z cichym szczebiotem). Na tym etapie są niegroźne, raczej zagadkowe i trochę piękne.
 4. Rano kabel ma w kilku miejscach nadgryzioną izolację. Pierwszy znak, że kable się zużywają.
 
-## Scena 4. Szopa i bojerek (budowa Żaglowozu, ok. 20 min)
+## Scena 4. Odjazd (za mało prądu, ok. 15 min)
 
-![Bojerek z żaglem z powłoki balonu meteo na popielnej łące](img/koncepty/bojerek.jpg)
+**[ustalone kierunkowo 2026-11-07, pomysł Wojtka]** Stacja ma prąd, Wolt jest naładowany, ale sam monocykl daleko nie zajedzie. Ta scena ma pokazać, że świat jest duży, a ciało za słabe.
 
-W szopie na podwórzu stoi stara **rama bojerka**: żaglowe sanki z płozami, kiedyś do jazdy po lodzie zalewu. Ma złącze magistrali takie samo jak rama Wolta (pierwszy znak, że bojerek należał do misji). Później bateria będzie umiała sterować bojerkiem zdalnie, np. przyprowadzić go pod stację.
+**Czego uczy:** zasięg i zużycie energii w ruchu, teren, decyzja, co zabrać.
 
-**Czego uczy:** budowa i rozwój pojazdu, sterowanie wiatrem, ładunek.
+1. Po uruchomieniu maszynowni ekran w dyżurce na chwilę łapie sygnał: **Echo** (pierwsza umiejętność baterii) wskazuje kierunek za wzgórzem. Na mapie ściennej ten sam punkt jest zakreślony: „R-2, rozdzielnia polowa”.
+2. Wolt ładuje się do pełna w kołysce. Pasek zasięgu pokazuje, że wystarczy na „mniej więcej tam”, bez zapasu.
+3. **Co zabrać:** opona z częściami za hakiem daje zapas kabla i złomu, ale wyraźnie zjada prąd i spowalnia. Bez niej Wolt dojedzie szybciej, ale na miejscu będzie miał mniej. Pierwszy kompromis między ładunkiem a zasięgiem.
+4. **Droga jest ciężka:** polna droga przechodzi w popiół, potem w podjazd. Koło buksuje na sypkim, monocykl chwieje się na nierównym, a pod górę pasek leci szybko. Wiatr w twarz też kosztuje.
+5. Na grzbiecie wzgórza widać drugą lokację w kotlinie, a za nią szeroką, szarą równinę (pierwszy widok na open world). Zjazd w dół to chwila oddechu: monocykl odzyskuje trochę energii hamowaniem.
+6. Wolt dociera do rozdzielni **na rezerwie**: obraz znowu traci kolor, a ruchy zwalniają jak w Scenie 1. Ostatnie metry to czołganie się z kołem w popiele.
 
-Do uruchomienia potrzeba:
+**Powrót:** jeśli gracz zawróci w połowie, dojedzie do stacji. Jeśli padnie po drodze, bateria stawia ciało w trybie awaryjnym (patrz śmierć w [SWIAT.md](SWIAT.md#bateria-q-1)), a karą jest stracony czas.
 
-| Część | Skąd | Uwagi |
-|---|---|---|
-| Płozy (3 szt.) | dwie w szopie, trzecia przy pomoście nad zbiornikiem | trzecia leży w mule: trzeba ją zaczepić liną do haka i wyciągnąć, cofając monocykl |
-| Maszt | maszt anteny z dachu stacji albo rura z magazynu | wybór: antena daje lepszy maszt, ale stacja traci zasięg radia |
-| Żagiel | **powłoka balonu meteo** z wyrzutni | pierwszy żagiel to cienka, pomarańczowa folia, szybko się strzępi |
-| Liny i bloczki | magazyn | |
-| Zasobnik na ładunek | skrzynka pomiarowa | 4 sloty |
+## Scena 5. Rozdzielnia polowa i pierwszy pojazd (ok. 20 min)
 
-1. Gracz składa bojerek w szopie. Każda część ma swoje miejsce i widać ją na modelu.
-2. Pierwsza jazda: Wolt wjeżdża monocyklem w ramę, wpina się w złącze, stawia żagiel. **Tytuł gry pojawia się na ekranie** na tle doliny, gdy bojerek po raz pierwszy łapie wiatr.
-3. Płozy suną po popiele i suchej trawie. Na kamieniach i asfalcie hamują i się ścierają. Na mokrej łące grzęzną. Teren od razu ma znaczenie.
-4. Sterowanie: wiatr ma kierunek i siłę (widoczny na żaglu i chorągiewce). Pod wiatr się nie jedzie, trzeba halsować albo pchać. To jest ten sam system wiatru co w obecnym prototypie.
+Rozdzielnia polowa R-2 stoi w kotlinie: kontenery, ogrodzenie, rząd paneli słonecznych (600 W, zakurzonych), mała szafa sterownicza. Pod wiatą stoi **wózek serwisowy misji**.
 
-**Wybór z masztem** jest pierwszą decyzją gracza, która ma konsekwencję: bez anteny stacja nie wyśle alarmu, gdy mikroboty zaczną zjadać kabel podczas nieobecności Wolta.
+**Wózek serwisowy (pojazd etap 0):** same kółeczka i mała platforma. Cztery niskie koła z silnikami w piastach, płaska rama z blachy ryflowanej, gniazdo dokowania dla koła monocyklu i złącze magistrali. Bateria wózka jest pusta. Wygląda jak coś, czym technik woził skrzynki między stacjami.
 
-## Scena 5. Echo (otwarcie świata, ok. 30 min i dalej)
+**Czego uczy:** pierwszy pojazd, dokowanie, ładowanie z obcego źródła kablem 20 m (to jest dokładnie mechanika obecnego poziomu „Rozruch”).
 
-Po pierwszej jeździe bateria zaczyna **pulsować kierunkowo**: im bliżej celu, tym szybciej. To umiejętność **Echo**, pierwsza z baterii. Na brzegu ekranu pojawia się delikatny łuk światła wskazujący kierunek.
+1. Wolt najpierw musi przeżyć: na rezerwie wpina się kablem własnym (3 m) w szafę rozdzielni. Panele są zakurzone i dają mało, więc ramieniem trzeba je oczyścić z popiołu. Pasek powoli rośnie.
+2. Wózek stoi za daleko od szafy. Kabla jest za mało, więc trzeba go zrobić z tego, co Wolt przywiózł na oponie albo rozbierze na miejscu (złom, fabrykator przenośny w kontenerze). Jeśli gracz zostawił oponę w stacji, ta część trwa dłużej.
+3. **Dokowanie:** Wolt wjeżdża monocyklem na platformę, a koło wskakuje w gniazdo i zatrzaskuje się. Albo doczepia wózek do haka i ciągnie go jak przyczepkę, ale wtedy wózek jest tylko ładunkiem, a nie napędem. Gracz szybko odkrywa, że po zadokowaniu bateria steruje wózkiem jak swoim ciałem.
+4. **Podłączenie i ładowanie:** kabel z szafy rozdzielni do portu wózka. Trasa wokół kontenerów ma ok. 18 m, a prosto się nie da. Bateria wózka ładuje się powoli (w czasie gry: popołudnie), a w tym czasie Wolt rozbiera złom w okolicy.
+5. W kontenerze leży notatka technika z R-2 (wskazówka: „wózek ciągnie w lewo, nie ładuj go powyżej 80%, bo grzeje się pakiet”) i dziennik trasy wózka: ostatni kurs, punkt na równinie, którego nie ma na mapie stacji.
+6. **Odjazd:** z naładowanym wózkiem Wolt wyjeżdża z kotliny. Kamera się oddala, a przed nim jest **Popielna Równina**: płaska, szara, z wydmami popiołu, słupami i resztkami dróg. **Tutaj pojawia się tytuł gry.** Od tego momentu świat jest otwarty.
 
-Echo prowadzi w stronę Zatopionej Wsi, ale świat jest od teraz otwarty. Gracz może jeździć po dolinie, zbierać złom, rozbudowywać stację.
+**Stan po scenie:** Wolt ma pojazd, który jedzie dalej i szybciej, wozi ładunek i ma własną baterię. Ale wózek jest na kółkach: grzęźnie w sypkim popiele, a na wydmach trzeba szukać twardego podłoża. To pierwsza brama metroidvanii (płozy, a potem żagiel).
 
-W dolinie (obszar startowy):
+## Scena 6. Popielna Równina (otwarcie świata, ok. 30 min i dalej)
 
-- **Rozdzielnia polowa** z małą baterią słoneczną (600 W) za ścianą kontenerów. To jest obecny poziom testowy „Rozruch”: pierwsze ładowanie pojazdu z obcego źródła i pierwszy dłuższy kabel (20 m). W docelowej grze to pierwsza wyprawa poza stację.
-- **Wiatrak** na wzgórzu: stary, drewniany, z prądnicą dobudowaną przez misję. Druga baza do adaptacji, ale jego prądnica ma inny standard złącza. Pierwsza **analiza protokołu**: Wolt musi spędzić noc w stacji, „ucząc się” złącza, zanim zbuduje przejściówkę.
-- **Przystanek** z wiatą, gdzie leży czyjś plecak: konserwy, latarka, zeszyt z rysunkami. Rysunki pokazują ludzi schodzących pod ziemię i robota bardzo podobnego do Wolta. Podpisy są odręczne i na razie nieczytelne. Odszumią się dopiero ze słownikiem (wątek „Dzieci ze Szkoły”).
+Echo prowadzi dalej, do punktu z dziennika wózka, ale świat jest od teraz otwarty. Gracz może wracać do stacji, jeździć po równinie, zbierać złom i rozbudowywać pojazd.
 
-## Scena 6. Pierwszy człowiek (ok. dzień 6–10 gry)
+Na równinie i w dolinie:
+
+- **Ślad z dziennika wózka:** kolejny punkt misji na równinie, czyli trop fabularny (szczegóły do ustalenia).
+- **Rozbudowa pojazdu:** z wózka powstaje pierwszy Żaglowóz. Maszt z rury albo anteny stacji, żagiel z **powłoki balonu meteo** ze stacji (powód, żeby wrócić), płozy na sypki popiół w miejsce kół albo obok nich. To dawna Scena „Szopa i bojerek” przeniesiona na później: rama bojerka może leżeć na równinie jako źródło płóz.
+- **Wiatrak** na wzgórzu nad doliną: stary, drewniany, z prądnicą dobudowaną przez misję. Druga baza do adaptacji, ale prądnica ma inny standard złącza. Pierwsza **analiza protokołu**: Wolt musi spędzić noc, „ucząc się” złącza, zanim zbuduje przejściówkę.
+- **Przystanek** z wiatą przy starej drodze, gdzie leży czyjś plecak: konserwy, latarka, zeszyt z rysunkami. Rysunki pokazują ludzi schodzących pod ziemię i robota bardzo podobnego do Wolta. Podpisy są odręczne i na razie nieczytelne. Odszumią się dopiero ze słownikiem (wątek „Dzieci ze Szkoły”).
+
+## Scena 7. Pierwszy człowiek (ok. dzień 6–10 gry)
 
 ![Zatopiona Wieś: pomost, człowiek w łodzi, wieża kościoła we mgle](img/koncepty/wies.jpg)
 
@@ -115,9 +121,9 @@ Na brzegu zbiornika Wolt znajduje ślady: odciski butów w popiele, jeszcze ciep
 3. Jeśli Wolt nie podejdzie zbyt szybko i nie zaświeci lampą w twarz, człowiek przed ucieczką zostawia na pomoście **przedmiot**: rozładowaną latarkę. To pierwsza „prośba” w języku gestów.
 4. Gdy Wolt naładuje latarkę (z siebie albo w stacji) i zostawi ją w tym samym miejscu, następnego dnia czeka tam odpowiedź: zawiniątko z miedzianym drutem i wyrysowaną mapką. Pierwsza wymiana. Do słownika wpada pierwsze słowo: „światło”.
 
-Od tego momentu ludzie stają się częścią gry. Zatopiona Wieś ma bunkier w schronie pod szkołą, a do niego trzeba będzie dotrzeć, ale bojerek nie jedzie po wodzie, a w wodzie i wilgoci Wolt rdzewieje. Pierwsza brama metroidvanii jest widoczna, zanim da się przez nią przejść.
+Od tego momentu ludzie stają się częścią gry. Zatopiona Wieś ma bunkier w schronie pod szkołą, a do niego trzeba będzie dotrzeć, ale wózek nie jedzie po wodzie, a w wodzie i wilgoci Wolt rdzewieje. Pierwsza brama metroidvanii jest widoczna, zanim da się przez nią przejść.
 
-## Scena 7. Pierwsza zima (koniec pierwszego rozdziału, ok. dzień 15–20)
+## Scena 8. Pierwsza zima (koniec pierwszego rozdziału, ok. dzień 15–20)
 
 Od ok. 15. dnia przychodzą przymrozki. Rano na kablach jest szron, akumulatory stacji tracą pojemność, a Wolt na zewnątrz w nocy wychładza się szybko.
 
@@ -134,8 +140,8 @@ Hibernacja to krótka sekwencja: ekran gaśnie, puls baterii zwalnia, za oknem s
 
 ## Co gracz ma po pierwszym rozdziale
 
-- Baza: Stacja Olszanka (turbina, fabrykator, kołyska ładowania) i być może wiatrak.
-- Żaglowóz etap 1: bojerek na płozach z żaglem z balonu i zasobnikiem 4 sloty.
+- Bazy: Stacja Olszanka (turbina, fabrykator, kołyska ładowania), rozdzielnia polowa R-2 (panele 600 W) i być może wiatrak.
+- Pojazd: wózek serwisowy z R-2 (etap 0), a jeśli gracz zdążył, rozbudowany o maszt, żagiel z balonu i płozy (etap 1).
 - Wolt: bateria z Echem w ciele monocyklu z dodatkami (ramię od startu, hak holowniczy, nawijak, lampa), kabel własny 3 m, grzanie. Pierwsze zdalne sterowanie po kablu (dźwig, suwnica).
 - Pierwsze słowa w słowniku i pierwszy kontakt z ludźmi.
 - Kilka notatek w Archiwum: raport z testu 4411, kartka technika, notatka służbowa, zeszyt z rysunkami.
@@ -145,8 +151,8 @@ Hibernacja to krótka sekwencja: ekran gaśnie, puls baterii zwalnia, za oknem s
 
 | Obecny prototyp | Miejsce w docelowej grze |
 |---|---|
-| Poziom testowy „Rozruch” (złom, fabrykator, kabel 20 m, ładowanie, odjazd) | Scena 5: wyprawa do rozdzielni polowej w dolinie |
+| Poziom testowy „Rozruch” (złom, fabrykator, kabel 20 m, ładowanie, odjazd) | Scena 5: rozdzielnia polowa R-2, ładowanie wózka serwisowego i odjazd na równinę |
 | Żaglowóz z gotowym fabrykatorem | późniejszy etap Żaglowozu (etap 2–3), nie start |
-| Wiatr i żagiel z logo „Zefir” | system wiatru od Sceny 4; logo „Zefir” na żaglu z etapu 2 (prawdziwe płótno z reklamą znalezione w Zatopionej Wsi) |
+| Wiatr i żagiel z logo „Zefir” | system wiatru od Sceny 6 (pierwszy żagiel na wózku); logo „Zefir” na żaglu z etapu 2 (prawdziwe płótno z reklamą znalezione w Zatopionej Wsi) |
 
-Proponowana kolejność budowy: najpierw Scena 1–3 w stacji (najmniej nowych systemów, dużo klimatu), potem bojerek i wiatr.
+Proponowana kolejność budowy: najpierw Scena 1–3 w stacji (najmniej nowych systemów, dużo klimatu), potem Scena 4–5 (odjazd, rozdzielnia, wózek, czyli w dużej mierze istniejący „Rozruch”), a na końcu żagiel i wiatr.
