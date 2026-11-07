@@ -37,3 +37,5 @@ canvas { display: block; }
 .note h2 { font-size: 14px; font-weight: 500; margin: 4px 0 12px; }
 .note p { margin: 0 0 10px; }
 .note .small { color: #26292b88; margin-top: 14px; }
+.vitals .chg { font-style: normal; color: #7fd99a; font-size: 10px; margin-left: 4px; }
+.goal { position: absolute; left: max(18px, env(safe-area-inset-left, 0px)); top: calc(128px + env(safe-area-inset-top, 0px)); max-width: 260px; font-size: 11px; line-height: 1.45; color: #e8e3d8; background: rgba(20,22,24,.55); padding: 6px 9px; border-left: 2px solid #7fd99a; }
