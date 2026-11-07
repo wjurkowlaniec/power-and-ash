@@ -31,6 +31,7 @@ export class StationScene implements Scene {
       <div class="htip" id="sTip" hidden></div>
       <div class="hmsg" id="sMsg" hidden></div>
       <div class="note" id="sNote" hidden></div>
+      <div class="goal" id="sGoal"></div>
       <div class="hkeys" id="sKeys"><b>WASD</b> ruch · <b>E</b> użyj · <b>J</b> archiwum</div>`;
     c.hud.appendChild(this.el);
   }
@@ -59,7 +60,7 @@ export class StationScene implements Scene {
     const my = busy ? 0 : (k.has('KeyS') || k.has('ArrowDown') ? 1 : 0) - (k.has('KeyW') || k.has('ArrowUp') ? 1 : 0);
     st.update(dt, {
       move: { x: mx, y: my }, run: k.has('ShiftLeft') || k.has('ShiftRight'),
-      use: !busy && k.has('KeyE'), usePressed: !busy && pr.has('KeyE'),
+      use: !busy && k.has('KeyE'), usePressed: !busy && pr.has('KeyE'), drop: !busy && pr.has('KeyQ'),
     });
     for (const e of st.events) this.onEvent(e, c);
     st.events.length = 0;
@@ -101,9 +102,11 @@ export class StationScene implements Scene {
   private hud() {
     const st = this.st, $ = (id: string) => document.getElementById(id)!;
     $('sVitals').innerHTML = `<div class="lbl">Q-1 · ${WOLT_POWER} W</div>
-      <div class="row"><span>energia</span><b>${st.battery.toFixed(0)}%</b></div><div class="bar"><i style="width:${st.battery}%"></i></div>
+      <div class="row"><span>energia${st.charging ? ' <em class="chg" title="Q-1 odzyskuje energię na postoju">▲</em>' : ''}</span><b>${st.battery.toFixed(1).replace('.', ',')}%</b></div><div class="bar"><i style="width:${st.battery}%"></i></div>
       <div class="row"><span>temperatura</span><b>6°C</b></div>
       <div class="row"><span>wiatr</span><b>${st.turbine ? 'turbina ↻' : '4 m/s'}</b></div>`;
+    $('sGoal').textContent = st.goal();
+    $('sKeys').innerHTML = `<b>WASD</b> ruch · <b>E</b> użyj · <b>J</b> archiwum` + (st.towing ? ' · <b>Q</b> odczep oponę' : '');
     const hint = st.hint(), tip = $('sTip');
     tip.hidden = !hint;
     if (hint) {
@@ -124,6 +127,6 @@ export class StationScene implements Scene {
       note.innerHTML = `<div class="lbl">archiwum</div><h2>Notatki w pamięci Wolta</h2>` +
         journal.list().map((n, i) => `<p><b>${i + 1}</b> &nbsp;${n.title}</p>`).join('') + `<div class="small">cyfra · czytaj &nbsp; J · zamknij</div>`;
     } else note.hidden = true;
-    $('sKeys').style.opacity = String(Math.max(0, 0.6 - st.t / 20));
+    $('sKeys').style.opacity = st.towing ? '0.7' : String(Math.max(0, 0.6 - st.t / 20));
   }
 }

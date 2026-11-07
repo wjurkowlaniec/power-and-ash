@@ -29,6 +29,7 @@ export const TOW_COST = 0.06;  // extra % per metre with a load
 export const REPAIR_TIME = 3.5;  // s holding E at the mast
 export const FAB_POWER = 600;    // W the fabricator needs
 export const WOLT_POWER = 200;   // W Wolt can give
+export const RECHARGE = 0.15;    // %/s Q-1 recovers while resting
 
 export type Item = 'grease' | 'bearing';
 
@@ -136,6 +137,9 @@ export class Station {
   message: { text: string; t: number } | null = null;
   events: StEvent[] = [];
   private stepAcc = 0;
+  private idle = 0;
+  /** True while Q-1 recovers at rest (for the HUD). */
+  charging = false;
   private denyT = 0;
 
   constructor(battery = 58) { this.battery = battery; }
@@ -187,15 +191,17 @@ export class Station {
       case 'mast': {
         if (this.turbine) return { key: '·', text: 'turbina się kręci', at, ok: true };
         const bearingHere = this.bearingOnTyre && dist(this.tyre.pos, P.mastUse) < 3.2;
-        if (!bearingHere || !this.items.has('grease'))
-          return { key: 'E', text: 'maszt z turbiną: łożysko zatarte', at, ok: false };
+        if (!bearingHere || !this.items.has('grease')) {
+          const miss = [!this.bearingOnTyre ? 'nowe łożysko' : !bearingHere ? 'łożysko bliżej masztu' : '', !this.items.has('grease') ? 'smar' : ''].filter(Boolean).join(' i ');
+          return { key: 'E', text: `łożysko turbiny zatarte · potrzeba: ${miss}`, at, ok: false };
+        }
         return { key: 'E', text: 'przytrzymaj: wejdź po drabince i wymień łożysko', at, ok: true, progress: this.repair / REPAIR_TIME };
       }
     }
   }
 
   /** What Wolt can see from the door note onwards (objectives come from notes, not a list). */
-  update(dt: number, inp: { move: V2; run: boolean; use: boolean; usePressed: boolean }) {
+  update(dt: number, inp: { move: V2; run: boolean; use: boolean; usePressed: boolean; drop?: boolean }) {
     this.t += dt;
     if (this.message && this.t - this.message.t > 5) this.message = null;
     this.denyT = Math.max(0, this.denyT - dt);
@@ -209,8 +215,13 @@ export class Station {
     }
     if (this.turbine) this.turbineT += dt;
     if (this.reading) { this.moving = false; return; }
+    if (inp.drop && this.towing) { this.towing = false; this.towTaut = false; this.events.push('unhook'); }
     this.move(dt, inp);
     this.use(dt, inp);
+    // Q-1 slowly recovers while the body rests (nothing drawn from it)
+    this.idle = this.moving || this.repair > 0 ? 0 : this.idle + dt;
+    this.charging = this.idle > 1 && this.battery < 100;
+    if (this.charging) this.battery = Math.min(100, this.battery + RECHARGE * dt);
     if (this.turbine && this.turbineT > 6 && !this.done) this.done = true;
   }
 
@@ -231,7 +242,11 @@ export class Station {
       if (!this.towing && dist(c, this.tyre.pos) < PLAYER_R + LOADS.tyre.radius) continue;
       if (this.towing) {
         const ts = towStep(this.world, this.tyre, hitchOf(c, this.facing));
-        if (ts.blocked) continue;
+        if (ts.blocked) {
+          if (dist(c, this.tyre.pos) < dist(this.pos, this.tyre.pos)) { this.pos = c; this.towTaut = false; }
+          else if (this.denyT === 0) { this.denyT = 2; this.say('Opona o coś zaczepiła. Podjedź bliżej albo odczep ją (Q).'); }
+          continue;
+        }
         this.tyre.pos = ts.pos; this.tyre.angle = ts.angle; this.towTaut = ts.taut;
       }
       this.pos = c;
@@ -312,6 +327,16 @@ export class Station {
         break;
       }
     }
+  }
+
+  /** One quiet line about what Wolt is after right now (from what he has seen so far). */
+  goal(): string {
+    if (this.turbine) return 'Turbina się kręci. Prąd trzeba doprowadzić do maszynowni.';
+    if (this.doorOpen === 0) return 'Drzwi warsztatu mają zamek elektryczny. Po lewej jest port.';
+    if (!this.bearingOnTyre && !this.items.has('grease')) return 'Turbina na maszcie stoi: zatarte łożysko. Nowe łożysko i smar są w magazynie, na drugiej półce.';
+    if (!this.bearingOnTyre) return this.towing ? 'Zaciągnij oponę pod półkę w magazynie i połóż na niej łożysko.' : 'Łożysko jest za ciężkie. Stara opona na podwórzu posłuży jak sanki.';
+    if (!this.items.has('grease')) return 'Brakuje jeszcze smaru z drugiej półki.';
+    return 'Zaciągnij łożysko pod maszt i wymień je (przytrzymaj E).';
   }
 
   private read(id: string) { this.reading = id; this.notesRead.add(id); this.events.push('note'); }

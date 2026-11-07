@@ -4,7 +4,7 @@ import { findPath } from '../src/sim/path';
 import { V2, sub, len } from '../src/sim/vec';
 
 const DT = 1 / 30;
-const inp = (o: Partial<{ move: V2; run: boolean; use: boolean; usePressed: boolean }> = {}) =>
+const inp = (o: Partial<{ move: V2; run: boolean; use: boolean; usePressed: boolean; drop: boolean }> = {}) =>
   ({ move: { x: 0, y: 0 }, run: false, use: false, usePressed: false, ...o });
 
 /** Drive along an A* path (like a player would), with the tyre in tow if hooked. */
@@ -32,7 +32,7 @@ describe('Scene 2: Martwa stacja, part one', () => {
     press(s);
     for (let t = 0; t < 2; t += DT) s.update(DT, inp());
     expect(s.doorOpen).toBe(1);
-    expect(b - s.battery).toBeGreaterThanOrEqual(DOOR_COST - 0.01);
+    expect(b - s.battery).toBeGreaterThanOrEqual(DOOR_COST - 0.5); // a little comes back at rest
     expect(goTo(s, { x: 11.5, y: 7.5 })).toBe(true);   // inside the workshop
   });
 
@@ -66,5 +66,36 @@ describe('Scene 2: Martwa stacja, part one', () => {
     expect(goTo(s, { x: 13.4, y: 14.3 })).toBe(true);
     press(s);
     expect(s.reading).toBe('kartkaTechnika');
+  });
+
+  it('Q always lets go of the tyre, even next to the mast', () => {
+    const s = new Station(58);
+    s.pos = { x: P.mastUse.x + 1, y: P.mastUse.y }; s.tyre.pos = { x: P.mastUse.x - 1.2, y: P.mastUse.y }; s.towing = true;
+    expect(s.nearest()).toBe('mast');
+    s.update(DT, inp({ drop: true }));
+    expect(s.towing).toBe(false);
+  });
+
+  it('a snagged tyre never traps Wolt: he can always move towards it', () => {
+    const s = new Station(58);
+    // tyre jammed on the far side of the mast pylon, rope taut across it
+    s.tyre.pos = { x: 20.3, y: 21 }; s.pos = { x: 23.6, y: 21 }; s.facing = 0; s.towing = true;
+    const x0 = s.pos.x;
+    for (let t = 0; t < 1; t += DT) s.update(DT, inp({ move: { x: -1, y: 0 } }));
+    expect(s.pos.x).toBeLessThan(x0);
+  });
+
+  it('Q-1 slowly recovers while Wolt rests', () => {
+    const s = new Station(40);
+    for (let t = 0; t < 10; t += DT) s.update(DT, inp());
+    expect(s.charging).toBe(true);
+    expect(s.battery).toBeGreaterThan(41);
+  });
+
+  it('the goal line follows progress', () => {
+    const s = new Station(58);
+    expect(s.goal()).toContain('port');
+    s.doorOpen = 1;
+    expect(s.goal()).toContain('drugiej półce');
   });
 });
