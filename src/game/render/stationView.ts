@@ -6,12 +6,13 @@ import { woltMonoModel, WoltMono, WoltAnimator, ArmPose } from '../../render/wol
 import { loadModel, LoadModel } from '../../render/loads';
 import { LOADS } from '../../sim/tow';
 import { V2 } from '../../sim/vec';
-import { Station, ST_W, ST_H, ROOMS, P } from '../sim/station';
+import { Station, ST_W, ST_H, ROOMS, P, CABLE_MAX } from '../sim/station';
 import { Post } from './post';
 
 const CAM_OFFSET = new THREE.Vector3(0, 17, 16);
-const WALL_LOW = 1.0;   // cut-away walls: you see into the rooms
-const WALL_NORTH = 3.2; // the back wall stays tall
+const WALL_H = 3.0;     // full walls under a roof; a round hole opens around Wolt instead of a cut-away
+const ROOF_Y = 3.0;
+const HOLE_R = 2.7;     // m, radius of the see-through hole around Wolt
 const Q_GREEN = 0x5fe39a;
 
 /**
@@ -42,6 +43,15 @@ export class StationView {
   private prevTowing = false;
   private viewSize = 7.5;
   private dust: THREE.Points;
+  /** Shared by the building's materials: fragments in front of Wolt inside this circle are dropped. */
+  private hole = { uHole: { value: new THREE.Vector2() }, uHoleR: { value: 0 }, uHoleZ: { value: 1 } };
+  private holeOpen = 0;
+  private cableMesh: THREE.Mesh | null = null;
+  private cableKey = '';
+  private machineLight!: THREE.PointLight;
+  private machineGlass!: THREE.MeshStandardMaterial;
+  private socketLamp!: THREE.MeshStandardMaterial;
+  private drum!: THREE.Mesh;
 
   constructor(private st: Station, container: HTMLElement, private models: Models) {
     const r = new THREE.WebGLRenderer({ antialias: false });
@@ -74,6 +84,7 @@ export class StationView {
     this.buildYard();
     const sh = this.buildShelf(); this.bearingOnShelf = sh.bearing; this.greaseOnShelf = sh.grease;
     this.buildNotes();
+    this.buildPowerLine();
 
     this.tyre = loadModel('tyre'); s.add(this.tyre.group);
     this.bearingOnTyre = mesh(new THREE.TorusGeometry(0.16, 0.07, 8, 18).rotateX(Math.PI / 2), mat(0x6f7478, { r: 0.4, m: 0.7 }), 0, 0.3, 0);
@@ -136,20 +147,109 @@ export class StationView {
     this.scene.add(mesh(new THREE.BoxGeometry(x1 - x0, 0.06, 10), slab, (x0 + x1) / 2, 0.0, 8, false));
   }
 
+  /** A material for the building that opens a soft round hole around Wolt when he is behind it. */
+  private holeMat(color: number, o: { r?: number; m?: number } = {}): THREE.MeshStandardMaterial {
+    const m = mat(color, o) as THREE.MeshStandardMaterial;
+    m.onBeforeCompile = sh => {
+      Object.assign(sh.uniforms, this.hole);
+      sh.fragmentShader = sh.fragmentShader
+        .replace('void main() {', `uniform vec2 uHole; uniform float uHoleR; uniform float uHoleZ;
+void main() {
+  if (uHoleR > 0.0 && gl_FragCoord.z < uHoleZ) {
+    float hd = distance(gl_FragCoord.xy, uHole);
+    float n = fract(sin(dot(floor(gl_FragCoord.xy / 2.0), vec2(12.9898, 78.233))) * 43758.5453);
+    if (hd < uHoleR * mix(0.82, 1.0, n)) discard;
+  }`);
+    };
+    m.customProgramCacheKey = () => 'hole';
+    return m;
+  }
+
   private buildRooms() {
     const s = this.scene;
-    const wall = mat(0x6e6c66, { r: 0.95 }), cap = mat(0x55534e, { r: 0.9 });
+    const wall = this.holeMat(0x6e6c66, { r: 0.95 }), trim = this.holeMat(0x55534e, { r: 0.9 });
     for (const o of this.st.world.obstacles) {
       if (o.kind !== 'container') continue;
-      const north = o.y === 3;
-      const h = north ? WALL_NORTH : WALL_LOW;
-      s.add(box(o.w, h, o.h, wall, o.x + o.w / 2, h / 2, o.y + o.h / 2));
-      s.add(box(o.w + 0.04, 0.06, o.h + 0.04, cap, o.x + o.w / 2, h + 0.03, o.y + o.h / 2));
+      s.add(box(o.w, WALL_H, o.h, wall, o.x + o.w / 2, WALL_H / 2, o.y + o.h / 2));
     }
-    // windows in the back wall, a roof edge, a gutter
+    const x0 = ROOMS[0].x, x1 = ROOMS[ROOMS.length - 1].x + ROOMS[ROOMS.length - 1].w;
+    // lintels over the door gaps
+    for (const r of ROOMS) for (const d of r.doors) s.add(box(d.w, 0.8, 1, wall, d.x + d.w / 2, WALL_H - 0.4, r.y + r.h - 0.5));
+    // flat roof with an overhang, a parapet and a few things on top
+    const roof = this.holeMat(0x5e5d58, { r: 0.95 });
+    s.add(box(x1 - x0 + 0.6, 0.22, 10.6, roof, (x0 + x1) / 2, ROOF_Y + 0.11, 8));
+    s.add(box(x1 - x0 + 0.6, 0.35, 0.15, trim, (x0 + x1) / 2, ROOF_Y + 0.38, 13.22));
+    s.add(box(x1 - x0 + 0.6, 0.35, 0.15, trim, (x0 + x1) / 2, ROOF_Y + 0.38, 2.78));
+    // tar-paper seams and moss-grey patches so the roof is not one flat slab
+    const seam = this.holeMat(0x3c3b38, { r: 1 }), patch = this.holeMat(0x6f716a, { r: 1 });
+    for (let x = x0 + 1.2; x < x1; x += 1.6) s.add(box(0.05, 0.02, 10.4, seam, x, ROOF_Y + 0.23, 8));
+    for (const [px, pz, w, d] of [[6, 6, 2.2, 1.6], [17, 10.5, 3, 1.2], [27, 5.5, 1.8, 2.4], [31.5, 11, 2.4, 1]] as const)
+      s.add(box(w, 0.015, d, patch, px, ROOF_Y + 0.235, pz));
+    const metal = this.holeMat(0x5a5e62, { r: 0.6, m: 0.5 });
+    s.add(box(1.2, 0.7, 1.2, metal, 34, ROOF_Y + 0.55, 6));        // machine room vent
+    s.add(box(0.5, 0.9, 0.5, metal, 13, ROOF_Y + 0.65, 5));        // workshop flue
+    s.add(box(2.4, 0.08, 0.08, metal, 20, ROOF_Y + 0.6, 4.2));     // antenna boom
+    s.add(box(0.06, 1.4, 0.06, metal, 20, ROOF_Y + 0.9, 4.2));
+    // windows: back wall and the front
     const glass = new THREE.MeshStandardMaterial({ color: 0x9aa3a6, roughness: 0.2, metalness: 0.3 });
-    for (const x of [3, 12, 19, 26, 33.5]) s.add(box(1.6, 0.9, 0.05, glass, x, 2.1, 4.02));
-    s.add(box(ROOMS[ROOMS.length - 1].x + ROOMS[ROOMS.length - 1].w - 0.6, 0.18, 0.6, cap, (ROOMS[ROOMS.length - 1].x + ROOMS[ROOMS.length - 1].w + 0.6) / 2, WALL_NORTH + 0.1, 3.3));
+    this.machineGlass = new THREE.MeshStandardMaterial({ color: 0x8a9396, roughness: 0.2, metalness: 0.3, emissive: 0xffd9a0, emissiveIntensity: 0 });
+    for (const x of [3, 12, 19, 26, 33.5]) s.add(box(1.6, 0.9, 0.05, x === 33.5 ? this.machineGlass : glass, x, 2.1, 3.98));
+    for (const x of [3, 9.3, 14.6, 21, 23.6, 28.4]) s.add(box(1.3, 0.8, 0.05, glass, x, 1.9, 13.02));
+    s.add(box(1.3, 0.8, 0.05, this.machineGlass, 30.8 + 0.6, 1.9, 13.02));
+    s.add(box(1.3, 0.8, 0.05, this.machineGlass, 35.4, 2.1, 13.02));
+    // under the roof it is dim: a little grey light leaks in through each window
+    for (const r of ROOMS) {
+      const l = new THREE.PointLight(0xc8ccd0, r.id === 'machine' ? 0 : 3, 7, 1.6);
+      l.position.set(r.x + r.w / 2, 2.4, r.y + r.h / 2); s.add(l);
+      if (r.id === 'machine') { l.color.setHex(0xffd9a0); this.machineLight = l; }
+    }
+  }
+
+  private buildPowerLine() {
+    const s = this.scene;
+    // the cable drum at the mast foot
+    this.drum = mesh(new THREE.CylinderGeometry(0.35, 0.35, 0.4, 16).rotateZ(Math.PI / 2), mat(0x3e3f40, { r: 0.6, m: 0.5 }), P.junction.x, 0.4, P.junction.y);
+    s.add(this.drum);
+    s.add(box(0.7, 0.08, 0.5, mat(0x2f3133), P.junction.x, 0.04, P.junction.y));
+    // the machine room inlet on its yard wall
+    s.add(box(0.36, 0.46, 0.08, mat(0x2a2c2e), P.socket.x, 0.9, 13.06));
+    this.socketLamp = new THREE.MeshStandardMaterial({ color: 0x220a06, emissive: PAL.off, emissiveIntensity: 0.2 });
+    s.add(mesh(new THREE.BoxGeometry(0.07, 0.07, 0.04), this.socketLamp, P.socket.x, 1.07, 13.11, false));
+  }
+
+  /** Cable from the drum: lies on the ground between bends, rises to Wolt's hand or to the inlet. */
+  private updateCable() {
+    const st = this.st;
+    if (!st.cable) return;
+    const pts = st.cable.points();
+    let endY = 0.04;
+    if (st.cableHeld) {
+      const ex = this.wolt.cableExit.getWorldPosition(new THREE.Vector3());
+      pts[pts.length - 1] = { x: ex.x, y: ex.z }; endY = ex.y;
+    } else if (st.machinePowered) { pts[pts.length - 1] = { x: P.socket.x, y: 13.1 }; endY = 0.9; }
+    const key = pts.map(p => p.x.toFixed(2) + ',' + p.y.toFixed(2)).join(';') + endY.toFixed(2);
+    if (key !== this.cableKey) {
+      this.cableKey = key;
+      const v: THREE.Vector3[] = [];
+      for (let i = 0; i < pts.length; i++) {
+        const y = i === 0 ? 0.4 : i === pts.length - 1 ? endY : 0.04;
+        v.push(new THREE.Vector3(pts[i].x, y, pts[i].y));
+        if (i < pts.length - 1) {
+          const a = pts[i], b = pts[i + 1];
+          v.push(new THREE.Vector3(a.x + (b.x - a.x) * 0.12, 0.03, a.y + (b.y - a.y) * 0.12));
+          v.push(new THREE.Vector3(a.x + (b.x - a.x) * 0.88, 0.03, a.y + (b.y - a.y) * 0.88));
+        }
+      }
+      const geo = new THREE.TubeGeometry(new THREE.CatmullRomCurve3(v, false, 'centripetal'), Math.max(16, v.length * 10), 0.035, 6);
+      if (!this.cableMesh) {
+        this.cableMesh = mesh(geo, new THREE.MeshStandardMaterial({ color: 0x161818, roughness: 0.7, emissive: PAL.flow, emissiveIntensity: 0 }), 0, 0, 0, true);
+        this.scene.add(this.cableMesh);
+      } else { this.cableMesh.geometry.dispose(); this.cableMesh.geometry = geo; }
+    }
+    const m = this.cableMesh!.material as THREE.MeshStandardMaterial;
+    const strain = Math.max(0, (st.cableLength() - (CABLE_MAX - 3)) / 3);
+    m.emissive.setHex(st.machinePowered ? PAL.flow : PAL.warn);
+    m.emissiveIntensity = st.machinePowered ? 0.5 + Math.sin(st.t * 6) * 0.15 : st.cableHeld ? strain * 0.8 : 0;
   }
 
   private buildWorkshopDoor() {
@@ -288,6 +388,20 @@ export class StationView {
 
   // ---------- per frame
 
+  /** Round see-through hole in walls and roof around Wolt while he is inside the building. */
+  private updateHole(dt: number) {
+    const st = this.st;
+    const x0 = ROOMS[0].x, x1 = ROOMS[ROOMS.length - 1].x + ROOMS[ROOMS.length - 1].w;
+    const inside = st.pos.x > x0 - 0.3 && st.pos.x < x1 + 0.3 && st.pos.y > 2.7 && st.pos.y < 13.4;
+    this.holeOpen += ((inside ? 1 : 0) - this.holeOpen) * Math.min(1, dt * 6);
+    const v = new THREE.Vector3(st.pos.x, 0.7, st.pos.y).project(this.camera);
+    const size = this.renderer.getDrawingBufferSize(new THREE.Vector2());
+    const ppm = size.y / (this.camera.top - this.camera.bottom);
+    this.hole.uHole.value.set((v.x + 1) / 2 * size.x, (v.y + 1) / 2 * size.y);
+    this.hole.uHoleZ.value = (v.z + 1) / 2 - 0.002;
+    this.hole.uHoleR.value = this.holeOpen < 0.02 ? 0 : HOLE_R * ppm * this.holeOpen;
+  }
+
   frame(dt: number) {
     const st = this.st, w = this.wolt, t = st.t;
 
@@ -364,12 +478,23 @@ export class StationView {
     }
     dp.needsUpdate = true;
 
+    // the cable and the machine room waking up
+    this.updateCable();
+    this.drum.rotation.x = st.cable ? -st.cableLength() * 1.8 : 0;
+    const pw = st.machinePowered ? Math.min(1, st.poweredT / 2.5) * (st.poweredT < 1.2 ? (Math.random() < 0.5 ? 0.2 : 1) : 1) : 0;
+    this.machineLight.intensity = pw * 9;
+    this.machineGlass.emissiveIntensity = pw * 0.9;
+    this.socketLamp.emissive.setHex(st.machinePowered ? PAL.ok : PAL.off);
+    this.socketLamp.emissiveIntensity = st.machinePowered ? 2 : 0.15 + (st.turbine && Math.sin(t * 3) > 0.9 ? 0.5 : 0);
+
     // camera follows Wolt, kept a little inside the map
     const want = new THREE.Vector3(THREE.MathUtils.clamp(st.pos.x, 7, ST_W - 7), 0, THREE.MathUtils.clamp(st.pos.y, 7, ST_H - 5));
     if (this.camTarget.lengthSq() === 0) this.camTarget.copy(want);
     this.camTarget.lerp(want, 1 - Math.exp(-dt * 2.5));
     this.camera.position.copy(this.camTarget).add(CAM_OFFSET);
     this.camera.lookAt(this.camTarget);
+    this.camera.updateMatrixWorld();
+    this.updateHole(dt);
     this.post.render(this.scene, this.camera);
   }
 }
