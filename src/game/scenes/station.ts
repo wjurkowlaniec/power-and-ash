@@ -95,6 +95,9 @@ export class StationScene implements Scene {
       case 'load': s.clank(0.6, 0.18); break;
       case 'repair': s.servo(1.1, 0.8); break;
       case 'turbine': s.swell(); s.creak(0.6); break;
+      case 'grab': s.clank(1.2, 0.08); s.servo(0.6, 1.1); break;
+      case 'drop': s.clank(0.7, 0.06); break;
+      case 'connect': s.clank(2, 0.06); s.swell(); c.fx.static = 0.4; break;
       case 'note': journal.add(this.st.reading!); this.justOpened = true; s.blip(1.3); break;
     }
   }
@@ -106,7 +109,7 @@ export class StationScene implements Scene {
       <div class="row"><span>temperatura</span><b>6°C</b></div>
       <div class="row"><span>wiatr</span><b>${st.turbine ? 'turbina ↻' : '4 m/s'}</b></div>`;
     $('sGoal').textContent = st.goal();
-    $('sKeys').innerHTML = `<b>WASD</b> ruch · <b>E</b> użyj · <b>J</b> archiwum` + (st.towing ? ' · <b>Q</b> odczep oponę' : '');
+    $('sKeys').innerHTML = `<b>WASD</b> ruch · <b>E</b> użyj · <b>J</b> archiwum` + (st.towing ? ' · <b>Q</b> odczep oponę' : st.cableHeld ? ' · <b>Q</b> połóż kabel' : '');
     const hint = st.hint(), tip = $('sTip');
     tip.hidden = !hint;
     if (hint) {
@@ -127,6 +130,6 @@ export class StationScene implements Scene {
       note.innerHTML = `<div class="lbl">archiwum</div><h2>Notatki w pamięci Wolta</h2>` +
         journal.list().map((n, i) => `<p><b>${i + 1}</b> &nbsp;${n.title}</p>`).join('') + `<div class="small">cyfra · czytaj &nbsp; J · zamknij</div>`;
     } else note.hidden = true;
-    $('sKeys').style.opacity = st.towing ? '0.7' : String(Math.max(0, 0.6 - st.t / 20));
+    $('sKeys').style.opacity = st.towing || st.cableHeld ? '0.7' : String(Math.max(0, 0.6 - st.t / 20));
   }
 }

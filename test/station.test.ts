@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { Station, P, DOOR_COST, REPAIR_TIME } from '../src/game/sim/station';
+import { Station, P, DOOR_COST, REPAIR_TIME, CABLE_MAX } from '../src/game/sim/station';
 import { findPath } from '../src/sim/path';
 import { V2, sub, len } from '../src/sim/vec';
 
@@ -56,6 +56,19 @@ describe('Scene 2: Martwa stacja, part one', () => {
     expect(s.nearest()).toBe('mast');
     press(s); hold(s, REPAIR_TIME + 0.2);
     expect(s.turbine).toBe(true);
+    expect(s.done).toBe(false);
+    // leave the tyre, take the cable from the drum at the mast foot
+    s.update(DT, inp({ drop: true }));
+    expect(goTo(s, { x: P.junction.x + 0.3, y: P.junction.y + 0.4 })).toBe(true);
+    expect(s.nearest()).toBe('junction');
+    press(s);
+    expect(s.cableHeld).toBe(true);
+    // to the machine room inlet; the cable wraps round what is in the way
+    expect(goTo(s, { x: P.socket.x, y: P.socket.y + 0.4 })).toBe(true);
+    expect(s.cableLength()).toBeLessThanOrEqual(CABLE_MAX);
+    expect(s.nearest()).toBe('socket');
+    press(s);
+    expect(s.machinePowered).toBe(true);
     for (let t = 0; t < 7; t += DT) s.update(DT, inp());
     expect(s.done).toBe(true);
     expect(s.battery).toBeGreaterThan(20);
@@ -97,5 +110,15 @@ describe('Scene 2: Martwa stacja, part one', () => {
     expect(s.goal()).toContain('port');
     s.doorOpen = 1;
     expect(s.goal()).toContain('drugiej półce');
+  });
+
+  it('the cable runs out after its length', () => {
+    const s = new Station(58);
+    s.turbine = true; s.pos = { x: P.junction.x, y: P.junction.y + 0.6 };
+    press(s);
+    expect(s.cableHeld).toBe(true);
+    goTo(s, { x: 3, y: 15 }, 30);   // far west: more than the drum holds
+    expect(s.cableLength()).toBeLessThanOrEqual(18.05);
+    expect(s.pos.x).toBeGreaterThan(5);
   });
 });

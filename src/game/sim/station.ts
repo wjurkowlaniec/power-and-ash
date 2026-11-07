@@ -1,3 +1,4 @@
+import { Cable } from '../../sim/cable';
 import { V2, dist, len, scale, sub } from '../../sim/vec';
 import { World, Obstacle } from '../../sim/world';
 import { Load, LOADS, towStep, hitchOf, TOW_RANGE } from '../../sim/tow';
@@ -29,6 +30,9 @@ export const TOW_COST = 0.06;  // extra % per metre with a load
 export const REPAIR_TIME = 3.5;  // s holding E at the mast
 export const FAB_POWER = 600;    // W the fabricator needs
 export const WOLT_POWER = 200;   // W Wolt can give
+export const CABLE_MAX = 18;     // m of cable on the drum at the mast foot
+export const CABLE_WARN = 15.5;
+export const POWERED_HOLD = 6;   // s of the machine room waking before the scene moves on
 export const RECHARGE = 0.15;    // %/s Q-1 recovers while resting
 
 export type Item = 'grease' | 'bearing';
@@ -57,6 +61,8 @@ export const P = {
   mast: { x: 22, y: 21 },
   mastUse: { x: 22, y: 22.6 },
   tyre: { x: 14.5, y: 19.5 },
+  junction: { x: 23.5, y: 22.5 },      // cable drum at the mast foot (after the turbine turns)
+  socket: { x: 35.4, y: 13.6 },        // the machine room's outside power inlet
   shed: { x: 31, y: 18, w: 6, h: 6 },
 };
 
@@ -108,9 +114,9 @@ export function stationObstacles(): Obstacle[] {
 }
 
 export interface StHint { key: string; text: string; at: V2; ok: boolean; progress?: number }
-export type StEvent = 'step' | 'plug' | 'door' | 'deny' | 'pickup' | 'hook' | 'unhook' | 'load' | 'repair' | 'turbine' | 'note' | 'tow';
+export type StEvent = 'grab' | 'drop' | 'connect' | 'step' | 'plug' | 'door' | 'deny' | 'pickup' | 'hook' | 'unhook' | 'load' | 'repair' | 'turbine' | 'note' | 'tow';
 
-type Target = 'port' | 'door' | 'doorNote' | 'fabricator' | 'drawer' | 'wallMap' | 'shelf' | 'tyre' | 'mast' | 'machineDoor';
+type Target = 'junction' | 'cableEnd' | 'socket' | 'port' | 'door' | 'doorNote' | 'fabricator' | 'drawer' | 'wallMap' | 'shelf' | 'tyre' | 'mast' | 'machineDoor';
 
 export class Station {
   readonly world = new World(ST_W, ST_H, stationObstacles());
@@ -129,6 +135,11 @@ export class Station {
   towTaut = false;
   repair = 0;
   turbine = false;
+  /** Cable from the mast drum to the machine room inlet. */
+  cable: Cable | null = null;
+  cableHeld = false;
+  machinePowered = false;
+  poweredT = 0;
   turbineT = 0;
   reading: string | null = null;
   notesRead = new Set<string>();
@@ -148,6 +159,7 @@ export class Station {
   closeNote() { this.reading = null; }
 
   private point(t: Target): V2 {
+    if (t === 'cableEnd') return this.cable ? this.cable.end : P.junction;
     return t === 'tyre' ? this.tyre.pos : t === 'door' ? P.workshopDoor : t === 'mast' ? P.mastUse : (P as unknown as Record<string, V2>)[t];
   }
 
@@ -156,6 +168,9 @@ export class Station {
     if (this.doorOpen >= 1) on.push('fabricator'); else on.push('door');
     if (!this.shelfTaken) on.push('shelf');
     if (!this.turbine) on.push('tyre');
+    if (this.turbine && !this.cable) on.push('junction');
+    if (this.cable && !this.cableHeld && !this.machinePowered) on.push('cableEnd');
+    if (!this.machinePowered) on.push('socket');
     let best: Target | null = null, bd = USE_RANGE;
     for (const id of on) {
       const p = this.point(id);
@@ -175,6 +190,11 @@ export class Station {
     if (!n) return null;
     const at = this.point(n);
     switch (n) {
+      case 'junction': return { key: 'E', text: `bęben kabla pod masztem (${CABLE_MAX} m): weź koniec`, at, ok: true };
+      case 'cableEnd': return { key: 'E', text: 'podnieś koniec kabla', at, ok: true };
+      case 'socket': return this.cableHeld
+        ? { key: 'E', text: 'wepnij kabel z turbiny w przyłącze', at, ok: true }
+        : { key: 'E', text: 'przyłącze maszynowni: bez zasilania', at, ok: false };
       case 'port': return this.doorOpen > 0
         ? { key: 'E', text: 'port zamka (drzwi otwarte)', at, ok: false }
         : { key: 'E', text: `wepnij własny kabel (${OWN_CABLE} m) i zasil zamek`, at, ok: true };
@@ -214,15 +234,17 @@ export class Station {
       }
     }
     if (this.turbine) this.turbineT += dt;
+    if (this.machinePowered) this.poweredT += dt;
     if (this.reading) { this.moving = false; return; }
     if (inp.drop && this.towing) { this.towing = false; this.towTaut = false; this.events.push('unhook'); }
+    else if (inp.drop && this.cableHeld) { this.cableHeld = false; this.events.push('drop'); }
     this.move(dt, inp);
     this.use(dt, inp);
     // Q-1 slowly recovers while the body rests (nothing drawn from it)
     this.idle = this.moving || this.repair > 0 ? 0 : this.idle + dt;
     this.charging = this.idle > 1 && this.battery < 100;
     if (this.charging) this.battery = Math.min(100, this.battery + RECHARGE * dt);
-    if (this.turbine && this.turbineT > 6 && !this.done) this.done = true;
+    if (this.machinePowered && this.poweredT > POWERED_HOLD && !this.done) this.done = true;
   }
 
   private move(dt: number, inp: { move: V2; run: boolean }) {
@@ -232,6 +254,7 @@ export class Station {
     const dir = m > 1 ? scale(inp.move, 1 / m) : inp.move;
     this.facing = Math.atan2(dir.y, dir.x);
     let sp = SPEED * (inp.run ? RUN_MULT : 1);
+    if (this.cableHeld && this.cableLength() > CABLE_WARN) sp *= 0.6;
     if (this.towing) sp *= 1 - LOADS.tyre.drag * (this.bearingOnTyre ? 2.2 : 1);
     if (this.battery < 5) sp *= 0.5;
     const step = scale(dir, sp * dt);
@@ -240,6 +263,10 @@ export class Station {
       const c = { x: this.pos.x + s.x, y: this.pos.y + s.y };
       if (this.world.circleBlocked(c, PLAYER_R)) continue;
       if (!this.towing && dist(c, this.tyre.pos) < PLAYER_R + LOADS.tyre.radius) continue;
+      if (this.cableHeld && !this.cableOk(c)) {
+        if (this.denyT === 0) { this.denyT = 3; this.say(`Kabel się skończył (${CABLE_MAX} m). Poprowadź go krótszą drogą.`); }
+        continue;
+      }
       if (this.towing) {
         const ts = towStep(this.world, this.tyre, hitchOf(c, this.facing));
         if (ts.blocked) {
@@ -251,6 +278,7 @@ export class Station {
       }
       this.pos = c;
     }
+    if (this.cableHeld) this.cable!.moveEnd(this.world, this.pos);
     const d = dist(before, this.pos);
     this.battery = Math.max(0, this.battery - d * (MOVE_COST + (this.towing ? TOW_COST : 0)));
     this.stepAcc += d;
@@ -263,6 +291,27 @@ export class Station {
     if (!n) return;
     const pressed = inp.usePressed;
     switch (n) {
+      case 'junction':
+        if (!pressed) break;
+        this.cable = new Cable({ ...P.junction }, { ...this.pos });
+        this.cableHeld = true; this.events.push('grab');
+        this.say(`Koniec kabla w chwytaku. ${CABLE_MAX} m na bębnie. Przyłącze maszynowni jest na jej ścianie od podwórza.`);
+        break;
+      case 'cableEnd':
+        if (!pressed || !this.cable) break;
+        this.cableHeld = true; this.cable.moveEnd(this.world, this.pos); this.events.push('grab');
+        break;
+      case 'socket':
+        if (!pressed) break;
+        if (!this.cableHeld) {
+          if (this.denyT === 0) { this.denyT = 1; this.events.push('deny'); this.say(this.turbine ? 'Przyłącze jest martwe. Kabel z turbiny trzeba tu przyciągnąć.' : 'Przyłącze maszynowni. Nic tu nie płynie.'); }
+          break;
+        }
+        this.cable!.moveEnd(this.world, P.socket);
+        this.cableHeld = false; this.machinePowered = true; this.poweredT = 0;
+        this.events.push('connect');
+        this.say('Prąd z turbiny płynie do maszynowni. Za ścianą coś budzi się z brzęczeniem.');
+        break;
       case 'port':
         if (!pressed || this.doorOpen > 0) break;
         this.battery = Math.max(0, this.battery - DOOR_COST);
@@ -321,7 +370,7 @@ export class Station {
             this.repair = 0; this.turbine = true; this.items.delete('grease'); this.bearingOnTyre = false;
             this.battery = Math.max(0, this.battery - 3);
             this.events.push('turbine');
-            this.say('Turbina rusza. Teraz prąd z masztu trzeba doprowadzić do maszynowni.');
+            this.say('Turbina rusza. Pod masztem jest bęben z kablem do maszynowni.');
           }
         }
         break;
@@ -331,12 +380,23 @@ export class Station {
 
   /** One quiet line about what Wolt is after right now (from what he has seen so far). */
   goal(): string {
-    if (this.turbine) return 'Turbina się kręci. Prąd trzeba doprowadzić do maszynowni.';
+    if (this.machinePowered) return 'Maszynownia ma prąd.';
+    if (this.cableHeld) return `Doprowadź kabel do przyłącza na ścianie maszynowni (${this.cableLength().toFixed(1).replace('.', ',')} / ${CABLE_MAX} m).`;
+    if (this.cable) return 'Kabel leży na ziemi. Podnieś koniec i doprowadź go do maszynowni.';
+    if (this.turbine) return 'Turbina się kręci. Pod masztem jest bęben z kablem: prąd trzeba doprowadzić do maszynowni.';
     if (this.doorOpen === 0) return 'Drzwi warsztatu mają zamek elektryczny. Po lewej jest port.';
     if (!this.bearingOnTyre && !this.items.has('grease')) return 'Turbina na maszcie stoi: zatarte łożysko. Nowe łożysko i smar są w magazynie, na drugiej półce.';
     if (!this.bearingOnTyre) return this.towing ? 'Zaciągnij oponę pod półkę w magazynie i połóż na niej łożysko.' : 'Łożysko jest za ciężkie. Stara opona na podwórzu posłuży jak sanki.';
     if (!this.items.has('grease')) return 'Brakuje jeszcze smaru z drugiej półki.';
     return 'Zaciągnij łożysko pod maszt i wymień je (przytrzymaj E).';
+  }
+
+  cableLength(): number { return this.cable ? this.cable.length() : 0; }
+  private cableOk(p: V2): boolean {
+    const c = this.cable!.clone();
+    c.moveEnd(this.world, p);
+    const l = c.length();
+    return l <= CABLE_MAX || l < this.cable!.length();
   }
 
   private read(id: string) { this.reading = id; this.notesRead.add(id); this.events.push('note'); }
