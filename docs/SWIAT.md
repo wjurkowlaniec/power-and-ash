@@ -1,6 +1,6 @@
 # Świat i fabuła
 
-Dokument roboczy z rozmowy projektowej (listopad 2026). Szczegółowy przebieg pierwszych godzin gry jest w [POCZATEK.md](POCZATEK.md), a mechaniki kabla i obecny poziom testowy w [PLAN.md](PLAN.md).
+Dokument roboczy z rozmowy projektowej (listopad 2026). Szczegółowy przebieg pierwszych godzin gry jest w [POCZATEK.md](POCZATEK.md), a mechaniki kabla i obecny poziom testowy w [PLAN.md](PLAN.md). Lista wszystkich decyzji z datami jest w [DECYZJE.md](DECYZJE.md).
 
 Oznaczenia: **[ustalone]** to decyzja Wojtka, **[propozycja]** to mój pomysł do akceptacji albo wyrzucenia.
 
