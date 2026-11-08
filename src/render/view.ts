@@ -2,7 +2,8 @@ import * as THREE from 'three';
 import { PAL } from './palette';
 import { mat, mesh, obstacleMesh, yachtModel, stationModel, rnd, YachtModel, StationModel } from './models';
 import { woltMonoModel, WoltMono, WoltAnimator, ArmPose } from './wolt';
-import { loadModel, LoadModel } from './loads';
+import { loadModel, LoadModel, animateDragged, ropeGeometry } from './loads';
+import { GroundFx, SURFACES, pxPerMetre } from './groundFx';
 import { Load, LOADS, ROPE } from '../sim/tow';
 import { Game, CABLE_WARN, Target } from '../sim/game';
 import { Obstacle } from '../sim/world';
@@ -26,9 +27,8 @@ export class View {
   private woltAnim: WoltAnimator;
   private loadMeshes = new Map<Load, LoadModel>();
   private rope: THREE.Mesh | null = null;
-  private marks: THREE.InstancedMesh;
-  private markN = 0;
-  private lastMark = new THREE.Vector3();
+  /** Wheel tracks, drag marks and dust kicked up from the ash. */
+  private ground: GroundFx;
   // motion, for the balance animation
   private prevPos: THREE.Vector3 | null = null;
   private prevYaw = 0;
@@ -93,9 +93,9 @@ export class View {
     this.wolt = woltMonoModel(); s.add(this.wolt.group);
     this.woltAnim = new WoltAnimator(this.wolt);
     for (const l of game.loads) { const m = loadModel(l.kind); s.add(m.group); this.loadMeshes.set(l, m); }
-    // drag marks the towed load leaves in the ash
-    this.marks = new THREE.InstancedMesh(new THREE.PlaneGeometry(0.5, 0.22).rotateX(-Math.PI / 2), new THREE.MeshBasicMaterial({ color: 0x5f5b54, transparent: true, opacity: 0.32, depthWrite: false }), 240);
-    this.marks.count = 0; this.marks.frustumCulled = false; s.add(this.marks);
+    // the whole plain is ash: deep tracks, plenty of dust
+    this.ground = new GroundFx(() => SURFACES.ash);
+    s.add(this.ground.group);
     if (models.size) this.buildDecor();
     this.registerPickables();
 
@@ -312,6 +312,9 @@ export class View {
 
     this.updateWolt(dt, t, aim);
     this.updateLoads(dt);
+    this.ground.setWind(Math.cos(g.wind.dir) * g.wind.strength * 0.3, Math.sin(g.wind.dir) * g.wind.strength * 0.3);
+    this.ground.setScale(pxPerMetre(this.renderer, this.camera));
+    this.ground.update(dt);
 
     // the sail goes see-through when it stands between the camera and Wolt
     this.woltChest.set(g.pos.x, 0.8, g.pos.y);
@@ -378,16 +381,15 @@ export class View {
   private updateWolt(dt: number, t: number, aim: V2 | null) {
     const g = this.game, w = this.wolt;
     w.group.position.set(g.pos.x, 0, g.pos.y);
-    const targetRot = Math.PI / 2 - g.facing;
-    let dr = targetRot - w.group.rotation.y;
-    dr = Math.atan2(Math.sin(dr), Math.cos(dr));
-    // a single wheel turns slower than legs, and slower still with a load on the hook
-    w.group.rotation.y += dr * Math.min(1, dt * (g.tow ? 6 : 9));
+    // the sim already turns him at a wheel's pace: follow it exactly, no lag, no sliding
+    w.group.rotation.y = Math.PI / 2 - g.facing;
     w.group.updateMatrixWorld(true);
 
     const p = w.group.position;
     if (!this.prevPos) { this.prevPos = p.clone(); this.prevYaw = w.group.rotation.y; }
-    const sd = dt > 0 ? p.distanceTo(this.prevPos) / dt : 0;
+    // signed: rolling backwards turns the wheel backwards
+    const yw = w.group.rotation.y;
+    const sd = dt > 0 ? ((p.x - this.prevPos.x) * Math.sin(yw) + (p.z - this.prevPos.z) * Math.cos(yw)) / dt : 0;
     const newSpeed = this.speed + (sd - this.speed) * Math.min(1, dt * 10);
     this.accel += ((dt > 0 ? (newSpeed - this.speed) / dt : 0) - this.accel) * Math.min(1, dt * 6);
     this.speed = newSpeed;
@@ -432,6 +434,7 @@ export class View {
       energy: g.energyPct(), lamp: lampOn,
       lookAt: aim && !g.order ? new THREE.Vector3(aim.x, 0, aim.y) : null,
     });
+    if (g.phase === 'play') this.ground.wheel({ x: p.x, z: p.z, yaw: yw, speed: this.speed, accel: this.accel, yawRate: this.yawRate, slip: this.woltAnim.slip }, dt);
   }
 
   /** Loose loads, the tow rope, and the marks a dragged load leaves. */
@@ -441,9 +444,10 @@ export class View {
       m.group.position.set(l.pos.x, 0, l.pos.y);
       let dr = (Math.PI / 2 - l.angle) - m.group.rotation.y;
       dr = Math.atan2(Math.sin(dr), Math.cos(dr));
-      m.group.rotation.y += dr * Math.min(1, dt * 8);
-      // a dragged load shudders over the ash
-      m.group.position.y = g.tow === l && g.towTaut && this.speed > 0.2 ? Math.abs(Math.sin(g.time * 23)) * 0.015 : 0;
+      m.group.rotation.y += dr * Math.min(1, dt * 5);
+      const dragged = g.tow === l && g.towTaut && this.speed > 0.15;
+      animateDragged(m, l, dragged, g.time, dt);
+      this.ground.drag(l, { x: l.pos.x, z: l.pos.y, yaw: m.group.rotation.y, width: LOADS[l.kind].radius * 1.85, dragging: m.drag > 0.4, speed: this.speed }, dt);
     }
     if (this.rope) { this.scene.remove(this.rope); this.rope.geometry.dispose(); }
     this.rope = null;
@@ -452,23 +456,8 @@ export class View {
     lm.group.updateMatrixWorld(true);
     const a = this.wolt.hitch.getWorldPosition(new THREE.Vector3());
     const b = lm.eye.getWorldPosition(new THREE.Vector3());
-    // a taut rope runs straight; a slack one sags onto the ground
-    const slack = Math.max(0, ROPE - a.distanceTo(b));
-    const mid = a.clone().lerp(b, 0.5);
-    mid.y = Math.max(0.02, Math.min(a.y, b.y) - slack * 0.9);
-    const curve = new THREE.QuadraticBezierCurve3(a, mid, b);
-    this.rope = mesh(new THREE.TubeGeometry(curve, 12, 0.016, 5, false), mat(0x6b6355, { r: 0.9 }), 0, 0, 0, true);
+    this.rope = mesh(ropeGeometry(a, b, ROPE), mat(0x6b6355, { r: 0.9 }), 0, 0, 0, true);
     this.scene.add(this.rope);
-    // marks
-    const lp = lm.group.position;
-    if (g.towTaut && lp.distanceTo(this.lastMark) > 0.35) {
-      const m4 = new THREE.Matrix4().compose(new THREE.Vector3(lp.x, 0.012, lp.z), new THREE.Quaternion().setFromEuler(new THREE.Euler(0, lm.group.rotation.y + Math.PI / 2, 0)), new THREE.Vector3(1, 1, 1));
-      this.marks.setMatrixAt(this.markN % 240, m4);
-      this.markN++;
-      this.marks.count = Math.min(240, this.markN);
-      this.marks.instanceMatrix.needsUpdate = true;
-      this.lastMark.copy(lp);
-    }
   }
 
   private cablePath(c: { cable: { points(): V2[] }; from: string; to: string | null }, held: boolean): THREE.Vector3[] {

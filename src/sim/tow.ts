@@ -62,3 +62,22 @@ export function towStep(world: World, load: Load, hitch: V2): TowStep {
   const angle = len(moved) > 1e-4 ? Math.atan2(hitch.y - p.y, hitch.x - p.x) : load.angle;
   return { pos: p, angle, taut: true, blocked: dist(p, hitch) > reach + 0.02 };
 }
+
+/**
+ * Wolt wants to roll to `cand` with the load on his hitch. The load follows on the rope;
+ * when it snags, it still slides as far as it can and Wolt is held on the rope's circle
+ * around it, so he slows to a stop pulling straight away and can swing round the snag,
+ * instead of freezing on the spot. `free` says where Wolt's body may stand.
+ */
+export function towDrive(world: World, load: Load, from: V2, cand: V2, facing: number, free: (p: V2) => boolean): { pos: V2; step: TowStep } {
+  const h = hitchOf(cand, facing);
+  const s = towStep(world, load, h);
+  if (!s.blocked) return { pos: cand, step: s };
+  const d = sub(h, s.pos), l = len(d);
+  // towards the load is always fine; away from it, he keeps his distance and slides round
+  const keep = Math.max(ROPE + LOADS[load.kind].radius, dist(hitchOf(from, facing), s.pos));
+  if (l <= keep) return { pos: cand, step: { ...s, taut: true } };
+  const held = add(cand, sub(add(s.pos, scale(d, keep / Math.max(l, 1e-6))), h));
+  const pos = free(held) ? held : from;
+  return { pos, step: { pos: s.pos, angle: s.angle, taut: true, blocked: true } };
+}

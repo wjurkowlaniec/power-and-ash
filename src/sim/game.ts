@@ -5,7 +5,8 @@ import { LevelDef, PortDef, StationPoint } from './level';
 import { PowerNode, solveNetworks, NetworkState } from './power';
 import { Wind } from './wind';
 import { findPath } from './path';
-import { Load, LOADS, towStep, hitchOf, TOW_RANGE } from './tow';
+import { Load, LOADS, towDrive, TOW_RANGE } from './tow';
+import { drive, settle, turnTowards } from './drive';
 import { tr } from '../i18n';
 
 export const CABLE_MAX = 20;      // m per segment
@@ -82,6 +83,10 @@ export class Game {
   readonly points: StationPoint[];
   pos: V2;
   facing = 0;          // radians, 0 = +x
+  /** Forward speed along `facing`, m/s (the wheel speeds up and brakes smoothly). */
+  speed = 0;
+  /** Where a click order wants him to stop, m ahead (Infinity = no stop mark). */
+  private stopIn = Infinity;
   moving = false;
   held: PlacedCable | null = null;
   cables: PlacedCable[] = [];
@@ -362,7 +367,7 @@ export class Game {
       if (o.action === 'salvage' && o.target.kind === 'scrap') {
         o.working = true;
         const c = this.goalOf(o.target);
-        this.facing = Math.atan2(c.y - this.pos.y, c.x - this.pos.x);
+        if (this.speed < 0.3) turnTowards(this, Math.atan2(c.y - this.pos.y, c.x - this.pos.x), dt);
         return null;
       }
       this.order = null;
@@ -380,6 +385,8 @@ export class Game {
     }
     while (o.path.length > 1 && dist(this.pos, o.path[0]) < 0.3) o.path.shift();
     const wp = o.path[0] ?? this.goalOf(o.target);
+    // on the last leg, brake to stop on the mark instead of rolling past it
+    if (o.path.length <= 1) this.stopIn = Math.max(0, rem);
     const d = sub(wp, this.pos);
     const l = len(d);
     if (l < 1e-3) return null;
@@ -433,6 +440,7 @@ export class Game {
     this.wind.update(dt);
     if (this.phase === 'play') {
       let move = inp.move;
+      this.stopIn = Infinity;
       if (len(move) > 0.01) this.order = null; // keys override the mouse
       else if (this.order) move = this.followOrder(dt, inp) ?? { x: 0, y: 0 };
       this.movePlayer(dt, { ...inp, move });
@@ -456,17 +464,16 @@ export class Game {
 
   private movePlayer(dt: number, inp: Input) {
     const m = len(inp.move);
-    this.moving = m > 0.01;
+    const want = m > 0.01;
     this.strain = false;
-    this.running = this.moving && inp.run && !this.empty();
-    if (!this.moving) { this.stepTow(this.pos, false); return; }
-    const dir = m > 1 ? scale(inp.move, 1 / m) : inp.move;
-    this.facing = Math.atan2(dir.y, dir.x);
-    let speed = WALK_SPEED * (this.running ? RUN_MULT : 1);
-    if (this.empty()) speed *= EMPTY_SPEED;
-    if (this.held && this.heldLength() >= CABLE_WARN) speed *= TENSION_SLOW;
-    if (this.tow) speed *= 1 - LOADS[this.tow.kind].drag;
-    const step = scale(dir, speed * dt);
+    this.running = want && inp.run && !this.empty();
+    let max = WALK_SPEED * (this.running ? RUN_MULT : 1);
+    if (this.empty()) max *= EMPTY_SPEED;
+    if (this.held && this.heldLength() >= CABLE_WARN) max *= TENSION_SLOW;
+    if (this.tow) max *= 1 - LOADS[this.tow.kind].drag;
+    const step = drive(this, dt, want ? inp.move : { x: 0, y: 0 }, max, undefined, this.stopIn);
+    const intended = len(step);
+    if (intended < 1e-6) { this.moving = false; this.stepTow(this.pos, false); return; }
 
     // collide per axis so Wolt slides along walls
     let cand = { ...this.pos };
@@ -476,9 +483,12 @@ export class Game {
     if (!this.bumps(ty)) cand = ty;
 
     if (this.held) cand = this.constrainByCable(cand);
-    if (this.tow && !this.stepTow(cand, true)) cand = this.pos;
-    this.moving = dist(cand, this.pos) > 1e-5;
-    this.strain = !this.moving;
+    if (this.tow) cand = this.stepTow(cand, true);
+    const moved = dist(cand, this.pos);
+    settle(this, moved, dt);
+    this.moving = moved > 1e-5;
+    // driving but held back: the wheel spins in the ash
+    this.strain = want && moved < intended * 0.35;
     this.pos = cand;
   }
 
@@ -493,20 +503,17 @@ export class Game {
     return false;
   }
 
-  /** Drag the towed load after the hitch at `at`. False if it snagged and holds Wolt back. */
-  private stepTow(at: V2, driving: boolean): boolean {
+  /** Drag the towed load after Wolt rolling to `at`. Returns where he really ends up (a snag holds him on the rope). */
+  private stepTow(at: V2, driving: boolean): V2 {
     const l = this.tow;
-    if (!l) return true;
-    const s = towStep(this.world, l, hitchOf(at, this.facing));
-    if (s.blocked && driving) {
-      this.towTaut = true;
+    if (!l) return at;
+    const r = towDrive(this.world, l, this.pos, at, this.facing, p => !this.bumps(p));
+    l.pos = r.step.pos; l.angle = r.step.angle;
+    this.towTaut = r.step.taut;
+    if (r.step.blocked && driving) {
       if (!this.snagWarned) { this.snagWarned = true; this.toast(tr(`${cap(LOADS[l.kind].name)} zaczepiła się o przeszkodę. Objedź ją albo odczep (E).`, `${cap(LOADS[l.kind].name)} snagged on something. Go around it or unhitch (E).`)); this.events.push('deny'); }
-      return false;
-    }
-    l.pos = s.pos; l.angle = s.angle;
-    this.towTaut = s.taut;
-    if (!s.blocked) this.snagWarned = false;
-    return true;
+    } else if (!r.step.blocked) this.snagWarned = false;
+    return r.pos;
   }
 
   private updateEnergy(dt: number, inp: Input) {

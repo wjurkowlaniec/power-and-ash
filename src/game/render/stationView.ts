@@ -4,8 +4,9 @@ import { mat, mesh, box, obstacleMesh } from '../../render/models';
 import { Models, fit } from '../../render/assets';
 import { PAL } from '../../render/palette';
 import { woltMonoModel, WoltMono, WoltAnimator, ArmPose } from '../../render/wolt';
-import { loadModel, LoadModel } from '../../render/loads';
-import { LOADS } from '../../sim/tow';
+import { loadModel, LoadModel, animateDragged, ropeGeometry } from '../../render/loads';
+import { GroundFx, SURFACES, Surface, pxPerMetre } from '../../render/groundFx';
+import { LOADS, ROPE } from '../../sim/tow';
 import { V2 } from '../../sim/vec';
 import { Station, ST_W, ST_H, ROOMS, P, CABLE_MAX } from '../sim/station';
 import { Post } from './post';
@@ -44,6 +45,7 @@ export class StationView {
   private prevTowing = false;
   private viewSize = 7.5;
   private dust: THREE.Points;
+  private ground: GroundFx;
   /** Shared by the building's materials: fragments in front of Wolt inside this circle are dropped. */
   private hole = { uHole: { value: new THREE.Vector2() }, uHoleR: { value: 0 }, uHoleZ: { value: 1 } };
   private holeOpen = 0;
@@ -89,7 +91,7 @@ export class StationView {
 
     this.tyre = loadModel('tyre'); s.add(this.tyre.group);
     this.bearingOnTyre = mesh(new THREE.TorusGeometry(0.16, 0.07, 8, 18).rotateX(Math.PI / 2), mat(0x6f7478, { r: 0.4, m: 0.7 }), 0, 0.3, 0);
-    this.tyre.group.add(this.bearingOnTyre);
+    this.tyre.body.add(this.bearingOnTyre);
 
     this.wolt = woltMonoModel();
     const cm = (this.wolt.cell.material as THREE.MeshStandardMaterial).clone();
@@ -98,6 +100,11 @@ export class StationView {
     s.add(this.wolt.group);
 
     this.dust = this.buildDust(); s.add(this.dust);
+    // ash in the yard, dusty concrete slabs under the roof
+    const x0 = ROOMS[0].x, x1 = ROOMS[ROOMS.length - 1].x + ROOMS[ROOMS.length - 1].w;
+    const yard: Surface = { ...SURFACES.ash, y: -0.01 }, slab: Surface = { ...SURFACES.dustyConcrete, y: 0.03 };
+    this.ground = new GroundFx((x, z) => x >= x0 && x <= x1 && z >= 3 && z <= 13 ? slab : yard);
+    s.add(this.ground.group);
     this.resize();
     addEventListener('resize', this.onResize);
   }
@@ -423,15 +430,14 @@ void main() {
     this.rotorSpeed += ((st.turbine ? 6 : 0) - this.rotorSpeed) * Math.min(1, dt * 0.4);
     this.rotor.rotation.z += this.rotorSpeed * dt + (st.turbine ? 0 : Math.sin(t * 0.7) * 0.0015);
 
-    // Wolt
+    // Wolt: the sim turns him at a wheel's pace, so the body follows it exactly
     w.group.position.set(st.pos.x, 0, st.pos.y);
-    const target = Math.PI / 2 - st.facing;
-    let dr = target - w.group.rotation.y; dr = Math.atan2(Math.sin(dr), Math.cos(dr));
-    w.group.rotation.y += dr * Math.min(1, dt * (st.towing ? 6 : 9));
+    w.group.rotation.y = Math.PI / 2 - st.facing;
     w.group.updateMatrixWorld(true);
     const p = w.group.position;
     if (!this.prevPos) { this.prevPos = p.clone(); this.prevYaw = w.group.rotation.y; }
-    const sd = dt > 0 ? p.distanceTo(this.prevPos) / dt : 0;
+    const yw = w.group.rotation.y;
+    const sd = dt > 0 ? ((p.x - this.prevPos.x) * Math.sin(yw) + (p.z - this.prevPos.z) * Math.cos(yw)) / dt : 0;
     const ns = this.spd + (sd - this.spd) * Math.min(1, dt * 10);
     this.acc += ((dt > 0 ? (ns - this.spd) / dt : 0) - this.acc) * Math.min(1, dt * 6);
     this.spd = ns;
@@ -451,25 +457,32 @@ void main() {
     const cableTo = st.plugged > 0 ? new THREE.Vector3(P.port.x, 0, 13.1) : null;
     this.anim.update({
       dt, time: t, speed: this.spd, yawRate: this.yawRate, accel: this.acc,
-      strain: false, cableTo, tension, pullFrom, reelSpin: st.plugged > 0 ? 6 : 0, arm,
+      strain: st.strain, cableTo, tension, pullFrom, reelSpin: st.plugged > 0 ? 6 : 0, arm,
       energy: st.battery / 100, lamp: 0.6,
       lookAt: (() => { const h = st.hint(); return h ? new THREE.Vector3(h.at.x, 0, h.at.y) : null; })(),
     });
     (w.cell.material as THREE.MeshStandardMaterial).emissiveIntensity = 0.7 + Math.sin(t * 2) * 0.15;
 
+    this.ground.wheel({ x: p.x, z: p.z, yaw: yw, speed: this.spd, accel: this.acc, yawRate: this.yawRate, slip: this.anim.slip }, dt);
+
     // the tyre and its rope
-    this.tyre.group.position.set(st.tyre.pos.x, st.towing && st.towTaut && this.spd > 0.2 ? Math.abs(Math.sin(t * 23)) * 0.015 : 0, st.tyre.pos.y);
+    this.tyre.group.position.set(st.tyre.pos.x, 0, st.tyre.pos.y);
     let tr = (Math.PI / 2 - st.tyre.angle) - this.tyre.group.rotation.y; tr = Math.atan2(Math.sin(tr), Math.cos(tr));
-    this.tyre.group.rotation.y += tr * Math.min(1, dt * 8);
+    this.tyre.group.rotation.y += tr * Math.min(1, dt * 5);
+    const dragged = st.towing && st.towTaut && this.spd > 0.15;
+    animateDragged(this.tyre, st.tyre, dragged, t, dt);
+    this.ground.drag(st.tyre, { x: st.tyre.pos.x, z: st.tyre.pos.y, yaw: this.tyre.group.rotation.y, width: LOADS.tyre.radius * 1.85, dragging: this.tyre.drag > 0.4, speed: this.spd }, dt);
     if (this.rope) { this.scene.remove(this.rope); this.rope.geometry.dispose(); this.rope = null; }
     if (st.towing) {
+      this.tyre.group.updateMatrixWorld(true);
       const a = w.hitch.getWorldPosition(new THREE.Vector3());
       const b = this.tyre.eye.getWorldPosition(new THREE.Vector3());
-      const mid = a.clone().lerp(b, 0.5); mid.y = st.towTaut ? (a.y + b.y) / 2 : 0.03;
-      const curve = new THREE.QuadraticBezierCurve3(a, mid, b);
-      this.rope = mesh(new THREE.TubeGeometry(curve, 10, 0.016, 5, false), mat(0x6b6355, { r: 0.9 }), 0, 0, 0, true);
+      this.rope = mesh(ropeGeometry(a, b, ROPE), mat(0x6b6355, { r: 0.9 }), 0, 0, 0, true);
       this.scene.add(this.rope);
     }
+    this.ground.setWind(-0.25, 0);
+    this.ground.setScale(pxPerMetre(this.renderer, this.camera));
+    this.ground.update(dt);
     // Wolt's own short cable into the port while it feeds the lock
     if (this.ownCable) { this.scene.remove(this.ownCable); this.ownCable.geometry.dispose(); this.ownCable = null; }
     if (st.plugged > 0) {

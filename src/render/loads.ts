@@ -1,12 +1,20 @@
 import * as THREE from 'three';
 import { mat, mesh, box } from './models';
-import { LoadKind, LOADS } from '../sim/tow';
+import { Load, LoadKind, LOADS } from '../sim/tow';
 
 /** Things Wolt can tow. Facing +z (the rope eye is at the front, +z). */
-export interface LoadModel { group: THREE.Group; eye: THREE.Object3D }
+export interface LoadModel {
+  group: THREE.Group;
+  eye: THREE.Object3D;
+  /** What tilts and shudders while dragged (the group itself only moves and turns). */
+  body: THREE.Group;
+  /** 0..1, eased: how much it is being dragged right now. */
+  drag: number;
+}
 
 export function loadModel(kind: LoadKind): LoadModel {
-  const g = new THREE.Group();
+  const root = new THREE.Group();
+  const g = new THREE.Group(); root.add(g);
   const r = LOADS[kind].radius;
   const eye = new THREE.Object3D();
   if (kind === 'tyre') {
@@ -35,5 +43,30 @@ export function loadModel(kind: LoadKind): LoadModel {
     eye.position.set(0, 0.09, 0.44);
   }
   g.add(eye);
-  return { group: g, eye };
+  return { group: root, eye, body: g, drag: 0 };
+}
+
+/**
+ * A dragged load: the rope lifts its front a little and it judders over the ground; it
+ * eases into that and settles back when the pull stops, instead of jumping between the two.
+ */
+export function animateDragged(m: LoadModel, l: Load, dragged: boolean, t: number, dt: number) {
+  m.drag += ((dragged ? 1 : 0) - m.drag) * Math.min(1, dt * (dragged ? 6 : 3));
+  const k = m.drag, ph = l.id.length * 1.7;
+  const lift = l.kind === 'tyre' ? 0.09 : 0.04;
+  // smooth noise, not a sawtooth: two sines at odd rates
+  const n1 = Math.sin(t * 13 + ph) * 0.6 + Math.sin(t * 21.7 + ph * 2) * 0.4;
+  const n2 = Math.sin(t * 9.3 + ph * 3) * 0.6 + Math.sin(t * 17.1) * 0.4;
+  m.body.rotation.x = -k * (lift + n1 * 0.025);
+  m.body.rotation.z = k * n2 * 0.03;
+  // lifted about the back edge, so the back does not sink into the ground
+  m.body.position.y = k * (LOADS[l.kind].radius * lift + Math.abs(n1) * 0.008);
+}
+
+/** Tow rope from the hitch `a` to the load's eye `b`: straight when taut, sagging onto the ground when slack. */
+export function ropeGeometry(a: THREE.Vector3, b: THREE.Vector3, ropeLen: number): THREE.TubeGeometry {
+  const slack = Math.max(0, ropeLen - a.distanceTo(b));
+  const mid = a.clone().lerp(b, 0.5);
+  mid.y = Math.max(0.02, (a.y + b.y) / 2 - slack * 1.1);
+  return new THREE.TubeGeometry(new THREE.QuadraticBezierCurve3(a, mid, b), 14, 0.016, 5, false);
 }

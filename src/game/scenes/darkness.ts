@@ -61,7 +61,7 @@ export class Darkness implements Scene {
       c.fx.grain = 0.6;
       c.fx.lines = 0.6;
       // the readout flickers
-      this.readout.style.opacity = String(0.55 + Math.random() * 0.35);
+      this.readout.style.opacity = String(0.55 + 0.35 * (0.5 + 0.5 * Math.sin(t * 5.1) * Math.sin(t * 1.7 + 1)));
       c.fx.dot.a *= Math.max(0, 1 - (t - 16) / 3);
     }
     if (t >= DARKNESS_LEN) this.next = 'hall';

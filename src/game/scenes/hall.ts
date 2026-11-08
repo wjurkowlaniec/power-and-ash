@@ -124,7 +124,7 @@ export class HallScene implements Scene {
     const res = $('hReserve');
     res.hidden = h.powered || !h.awake && h.wake === 0 && h.t < 1;
     res.textContent = `${tr('REZERWA', 'RESERVE')} ${num(h.reserve)}%`;
-    res.style.opacity = String(0.5 + Math.random() * 0.4);
+    res.style.opacity = String(0.55 + 0.35 * (0.5 + 0.5 * Math.sin(h.t * 5.1) * Math.sin(h.t * 1.7 + 1)));
     const v = $('hVitals');
     v.hidden = !h.powered || h.poweredT < 1.5;
     if (!v.hidden) {

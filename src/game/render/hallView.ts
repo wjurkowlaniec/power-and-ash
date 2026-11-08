@@ -4,12 +4,22 @@ import { mat, mesh, box } from '../../render/models';
 import { woltMonoModel, WoltMono, WoltAnimator, ArmPose } from '../../render/wolt';
 import { Models, fit } from '../../render/assets';
 import { V2 } from '../../sim/vec';
-import { Hall, HALL_W, HALL_H, layout, PRY_TIME, INSERT_TIME, WAKE_TIME } from '../sim/hall';
+import { Hall, HALL_W, HALL_H, layout, PRY_TIME, INSERT_TIME } from '../sim/hall';
 import { Post } from './post';
+import { GroundFx, SURFACES, Surface, pxPerMetre } from '../../render/groundFx';
 
 const CAM_OFFSET = new THREE.Vector3(0, 15, 15);
 const WALL_H = 3.4;
 const Q_GREEN = 0x5fe39a;
+/** The Q-1 in the chamber; it ends up as a cassette in the body, so it is not huge. */
+const BATTERY_SCALE = 0.62;
+const smooth = THREE.MathUtils.smoothstep;
+/** Soft flicker: smooth noise with rare drop-outs, instead of a new random value every frame. */
+const flicker = (t: number, seed = 0) => {
+  const n = Math.sin(t * 7.3 + seed) * 0.5 + Math.sin(t * 12.9 + seed * 2.1) * 0.3 + Math.sin(t * 2.1 + seed * 0.7) * 0.2;
+  const drop = Math.sin(t * 1.37 + seed * 3) > 0.93 ? 0.35 : 1;
+  return (0.5 + 0.5 * n) * drop;
+};
 
 /**
  * Scene 1 in 3D: a dark concrete hall seen from above at an angle (the south wall is a
@@ -51,6 +61,12 @@ export class HallView {
   private dust: THREE.Points;
   private hemi: THREE.HemisphereLight;
   private ripples: { m: THREE.Mesh; t: number }[] = [];
+  private ground: GroundFx;
+  private chamber!: THREE.Group;
+  private rod!: THREE.Mesh;
+  private landed = false;
+  private wasPowered = false;
+  private batteryCarried = false;
   private viewSize = 5.2;
 
   constructor(private hall: Hall, container: HTMLElement, private models: Models) {
@@ -100,6 +116,10 @@ export class HallView {
     s.add(this.wolt.group);
 
     this.dust = this.buildDust(); s.add(this.dust);
+    // dusty concrete: the wheel wipes faint lines in the dust, and drags the puddle's water on for a few metres
+    const P = layout.puddle, floor: Surface = SURFACES.dustyConcrete, water: Surface = SURFACES.water;
+    this.ground = new GroundFx((x, z) => ((x - P.x) / 1.4) ** 2 + ((z - P.y) / 0.8) ** 2 < 1 ? water : floor);
+    s.add(this.ground.group);
     this.resize();
     addEventListener('resize', this.onResize);
   }
@@ -240,9 +260,12 @@ export class HallView {
     const side = (w: number, x: number, z: number, ry: number) => { const m = mesh(new THREE.PlaneGeometry(w, 2.4), glassM, x, 1.55, z, false); m.rotation.y = ry; g.add(m); return m; };
     side(L.w, 0, -L.h / 2, 0); side(L.h, -L.w / 2, 0, Math.PI / 2); side(L.h, L.w / 2, 0, Math.PI / 2);
     const front = side(L.w - 0.1, 0, L.h / 2, 0);
-    // the arm holding the battery
+    // the arm holding the battery, with a telescopic rod that hands it out through the open front
     g.add(box(0.12, 0.9, 0.12, dark, 0, 2.2, 0));
-    const battery = new THREE.Group(); battery.position.set(0, 1.45, 0); g.add(battery);
+    this.chamber = g;
+    this.rod = mesh(new THREE.CylinderGeometry(0.03, 0.03, 1, 8).translate(0, -0.5, 0), mat(0x55595c, { r: 0.5, m: 0.5 }), 0, 1.75, 0);
+    g.add(this.rod);
+    const battery = new THREE.Group(); battery.position.set(0, 1.45, 0); battery.scale.setScalar(BATTERY_SCALE); g.add(battery);
     const batteryMat = new THREE.MeshStandardMaterial({ color: 0x0f1a14, emissive: Q_GREEN, emissiveIntensity: 1.4, roughness: 0.4 });
     battery.add(mesh(new THREE.BoxGeometry(0.42, 0.62, 0.3), mat(0x1d2420, { r: 0.4, m: 0.6 }), 0, 0, 0));
     battery.add(mesh(new THREE.BoxGeometry(0.3, 0.46, 0.32), batteryMat, 0, 0, 0, false));
@@ -416,18 +439,59 @@ export class HallView {
     this.screenTex.needsUpdate = true;
   }
 
+  /**
+   * Taking the Q-1: the rig's rod hands the cell out through the open front, the gripper
+   * takes it, lifts it over the capsule and lowers it into the cassette in the body.
+   * u = 0..1 of the insertion (0 = not happening).
+   */
+  private updateBattery(u: number, dt: number) {
+    const bt = this.battery, h = this.hall;
+    if (h.powered) { bt.visible = false; this.rod.visible = false; return; }
+    const home = new THREE.Vector3(0, 1.45, 0), out = new THREE.Vector3(0, 1.0, 1.3);
+    // the rod: from the arm's foot down to the battery while it is in the rig
+    const inRig = (p: THREE.Vector3) => {
+      const anchor = new THREE.Vector3(0, 1.75, 0), d = p.clone().sub(anchor).add(new THREE.Vector3(0, 0.12, 0));
+      this.rod.visible = d.length() > 0.05;
+      this.rod.quaternion.setFromUnitVectors(new THREE.Vector3(0, -1, 0), d.clone().normalize());
+      this.rod.scale.set(1, d.length(), 1);
+    };
+    if (u === 0) {
+      if (this.batteryCarried) return;
+      bt.position.copy(home); inRig(home); return;
+    }
+    const present = smooth(u, 0.04, 0.38);
+    const rigPos = home.clone().lerp(out, present);
+    const grab = smooth(u, 0.4, 0.52);
+    // after the hand-over the rod pulls back in
+    inRig(u < 0.52 ? rigPos : out.clone().lerp(home, smooth(u, 0.52, 0.8)));
+    if (u < 0.4) { bt.position.copy(rigPos); return; }
+    if (!this.batteryCarried) { this.batteryCarried = true; this.scene.attach(bt); }
+    const w = this.wolt;
+    w.group.updateMatrixWorld(true);
+    const rigWorld = this.chamber.localToWorld(rigPos.clone());
+    const hand = w.arm.wrist.localToWorld(new THREE.Vector3(0, -0.09, 0));
+    const socketTop = w.body.localToWorld(new THREE.Vector3(0, 0.34, -0.02));
+    const socket = w.body.localToWorld(new THREE.Vector3(0, 0.02, -0.02));
+    const lower = smooth(u, 0.74, 0.9), sink = smooth(u, 0.86, 0.97);
+    const pos = rigWorld.clone().lerp(hand, grab);
+    if (u > 0.74) pos.copy(hand).lerp(socketTop, lower).lerp(socket, sink);
+    bt.position.copy(pos);
+    // turn to sit upright in the body's orientation, and fold to cassette size
+    const q = new THREE.Quaternion().setFromEuler(new THREE.Euler(0, w.group.rotation.y, 0));
+    bt.quaternion.slerp(q, Math.min(1, dt * 6));
+    bt.scale.setScalar(BATTERY_SCALE * (1 - 0.35 * smooth(u, 0.5, 0.8)));
+    bt.visible = u < 0.97;
+  }
+
   frame(dt: number, pulse: number) {
     const h = this.hall, L = layout, w = this.wolt;
     const t = h.t;
 
     // the battery: glows with the pulse; after insertion it is in Wolt's chest
     const glow = 0.5 + pulse * 1.6;
-    const inHand = h.insertT > 0 && h.insertT / INSERT_TIME > 0.35;
-    this.battery.visible = !h.powered && !inHand;
     this.batteryMat.emissiveIntensity = glow;
     this.qLight.intensity = h.powered ? 0.5 : 2.5 + pulse * 8;
     this.chamberEdges.emissiveIntensity = h.powered ? 0.04 : 0.12 + pulse * 0.25;
-    void inHand;
     this.frontGlass.position.y = 1.55 + h.chamberOpen * 2.35;
     this.leverArm.rotation.z = h.leverDown ? -1.9 : 0.25 - Math.min(1, h.pry / PRY_TIME) * 0.6 + (h.pry > 0 ? Math.sin(t * 40) * 0.03 : 0);
     this.door.rotation.y = -h.doorOpen * 1.4;
@@ -448,18 +512,19 @@ export class HallView {
       this.pipe.visible = true; this.pipe.position.set(L.lever.x - 0.35, 0.05, L.lever.y + 0.5); this.pipe.rotation.set(0, 1.1, Math.PI / 2);
     }
 
-    // the body (shared monocycle model): turns only towards where it rolls
-    const target = Math.PI / 2 - h.facing;
-    let dr = target - w.group.rotation.y; dr = Math.atan2(Math.sin(dr), Math.cos(dr));
-    w.group.rotation.y += dr * Math.min(1, dt * (h.powered ? 9 : 4));
-    const k = THREE.MathUtils.smoothstep(h.wake, 0, 1);
+    // the body (shared monocycle model): the sim turns it at a wheel's pace, the view follows exactly
+    w.group.rotation.y = Math.PI / 2 - h.facing;
+    // standing up: sit up in the cradle, then roll back off its edge onto the floor
+    const k = h.awake ? 1 : h.wake;
+    const sit = smooth(k, 0.22, 0.62), roll = smooth(k, 0.5, 0.95);
     const rest = { x: L.cradle.x + 1.2, y: 0.3, z: L.cradle.y + 1.5 };
-    if (!h.awake) w.group.position.set(THREE.MathUtils.lerp(rest.x, h.pos.x, k), THREE.MathUtils.lerp(rest.y, 0, Math.min(1, k * 1.6)), THREE.MathUtils.lerp(rest.z, h.pos.y, k));
+    if (!h.awake) w.group.position.set(THREE.MathUtils.lerp(rest.x, h.pos.x, roll), rest.y * (1 - smooth(k, 0.74, 0.88)), THREE.MathUtils.lerp(rest.z, h.pos.y, roll));
     else w.group.position.set(h.pos.x, 0, h.pos.y);
     w.group.updateMatrixWorld(true);
     const p = w.group.position;
     if (!this.prevPos) { this.prevPos = p.clone(); this.prevYaw = w.group.rotation.y; }
-    const sd = dt > 0 ? p.distanceTo(this.prevPos) / dt : 0;
+    const yw = w.group.rotation.y;
+    const sd = dt > 0 ? ((p.x - this.prevPos.x) * Math.sin(yw) + (p.z - this.prevPos.z) * Math.cos(yw)) / dt : 0;
     const ns = this.spd + (sd - this.spd) * Math.min(1, dt * 10);
     this.acc += ((dt > 0 ? (ns - this.spd) / dt : 0) - this.acc) * Math.min(1, dt * 6);
     this.spd = ns;
@@ -479,7 +544,8 @@ export class HallView {
       tension = Math.max(0, (tl - 6.5) / 2.5);
       if (tension > 0) pullFrom = new THREE.Vector3(last.x - h.pos.x, 0, last.y - h.pos.y).normalize();
     }
-    const arm: ArmPose = h.pry > 0 ? 'work' : h.insertT > 0 || h.hasPipe ? 'reach' : h.reading ? 'reach' : 'rest';
+    const u = h.insertT > 0 ? h.insertT / INSERT_TIME : 0;
+    const arm: ArmPose = h.pry > 0 ? 'work' : u > 0 ? (u < 0.5 ? 'reach' : u < 0.94 ? 'stow' : 'rest') : h.hasPipe || h.reading ? 'reach' : 'rest';
     const pk = Math.min(1, h.poweredT / 3);
     this.anim.update({
       dt, time: t, speed: this.spd, yawRate: this.yawRate, accel: this.acc,
@@ -490,15 +556,28 @@ export class HallView {
       lookAt: (() => { const n = h.hint(); return n && h.awake ? new THREE.Vector3(n.at.x, 0, n.at.y) : null; })(),
     });
     if (!h.awake) {
-      // slumped back in the cradle, then the jolt of rolling off
-      w.balance.rotation.x = (1 - k) * -0.5 + (h.wake > 0 && h.wake < 0.6 ? Math.sin(t * 24) * 0.05 : 0);
-      w.balance.rotation.z = h.wake > 0 ? Math.sin(k * 9) * 0.25 * (1 - k) : 0;
+      // slumped back in the cradle; sits up (a touch past upright) as the servos find their places
+      const twitch = h.wake > 0 ? Math.max(0, Math.sin(k / 0.25 * Math.PI)) * (k < 0.25 ? 1 : 0) : 0;
+      w.balance.rotation.x += -0.5 * (1 - sit) + Math.sin(sit * Math.PI) * 0.07 + twitch * Math.sin(t * 13) * 0.025;
+      w.balance.rotation.z += twitch * Math.sin(t * 9 + 1) * 0.03;
     }
+    // the drop off the cradle's edge: one soft jolt the balance springs absorb
+    if (!this.landed && k > 0.86) { this.landed = true; this.anim.kick(-2.2, 0.8); }
+    this.updateBattery(u, dt);
+    if (h.powered && !this.wasPowered) this.anim.kick(1.6);
+    this.wasPowered = h.powered;
     // indoors the lamp needs more punch than outside; the cell window shows the battery once it is in
     w.spot.intensity = h.powered ? pk * 22 : 0;
-    (w.cell.material as THREE.MeshStandardMaterial).emissiveIntensity = h.powered ? 0.9 + pulse * 0.6 : 0;
-    (w.head.material as THREE.MeshStandardMaterial).emissiveIntensity = h.powered ? 0.4 + pk * 1.6 : (h.t > 1 ? 0.3 + Math.random() * 0.2 : 0.05);
-    this.glow.intensity = h.powered ? 2 : (h.t > 1 ? 5 + Math.random() * 1.2 : 0);
+    const cellOn = h.powered ? 0.9 + pulse * 0.6 : 0;
+    const cm = w.cell.material as THREE.MeshStandardMaterial;
+    cm.emissiveIntensity += (cellOn - cm.emissiveIntensity) * Math.min(1, dt * 3);
+    // on reserve the eyes and the cockpit glow come up flickering, softly, not frame by frame
+    const eyes = h.t > 1 ? Math.min(1, (h.t - 1) / 0.8) : 0;
+    (w.head.material as THREE.MeshStandardMaterial).emissiveIntensity = h.powered ? 0.4 + pk * 1.6 : 0.05 + eyes * (0.22 + flicker(t) * 0.12);
+    this.glow.intensity = h.powered ? 2 : eyes * (4.6 + flicker(t, 1) * 1.4);
+    this.ground.wheel({ x: p.x, z: p.z, yaw: yw, speed: this.spd, accel: this.acc, yawRate: this.yawRate, slip: this.anim.slip }, dt);
+    this.ground.setScale(pxPerMetre(this.renderer, this.camera));
+    this.ground.update(dt);
     this.updateTether(pulse);
 
     // light comes up slightly once he can see properly
@@ -520,6 +599,5 @@ export class HallView {
     this.camera.position.copy(this.camTarget).add(CAM_OFFSET);
     this.camera.lookAt(this.camTarget);
     this.post.render(this.scene, this.camera);
-    void WAKE_TIME;
   }
 }
