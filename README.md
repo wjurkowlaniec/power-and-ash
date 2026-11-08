@@ -54,3 +54,13 @@ Struktura:
 - `src/render/` to scena Three.js, która czyta stan gry (wspólne: model i animator Wolta `wolt.ts`, ładunki `loads.ts`, ślady i pył `groundFx.ts`).
 - `src/audio/` to proceduralny dźwięk w Web Audio.
 - `test/` to testy logiki.
+
+Pełny opis kodu, buildu i testów: [docs/ARCHITEKTURA.md](docs/ARCHITEKTURA.md) (repo, silnik, tech demo) i [docs/GRA.md](docs/GRA.md) (sceny gry).
+
+## Deploy
+
+Każdy push na `main` buduje i publikuje grę na GitHub Pages (`.github/workflows/pages.yml`: testy, build, kopia `docs/` pod `/docs/`). Każdy PR przechodzi CI (`.github/workflows/ci.yml`: testy i build). Zasada projektu: każda zmiana idzie przez PR, po zielonym CI jest squash-merge do `main` i od razu ląduje na Pages do testu. Jeśli strona pokazuje starą wersję, zrób Ctrl+Shift+R.
+
+## Przejmowanie projektu
+
+Zacznij od [AGENTS.md](AGENTS.md) (zasady pracy, także dla ludzi) i [docs/DECYZJE.md](docs/DECYZJE.md) (wszystkie decyzje Wojtka z datami i to, co czeka na decyzję). Każda decyzja i każda zmiana trafia do dokumentacji w tym samym PR.

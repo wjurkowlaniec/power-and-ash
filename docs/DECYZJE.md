@@ -1,8 +1,10 @@
-# Rejestr decyzji: świat, fabuła, systemy
+# Rejestr decyzji
 
 Chronologiczna lista decyzji Wojtka z rozmów projektowych, sparafrazowana. Szczegóły są w [SWIAT.md](SWIAT.md) (świat i systemy) i [POCZATEK.md](POCZATEK.md) (początek gry scena po scenie). Ten plik jest po to, żeby każdy, kto przejmuje projekt (człowiek albo inny agent), wiedział, co zostało ustalone, kiedy i co odrzucono, bez czytania historii rozmów.
 
 **Zasada:** każda nowa decyzja trafia tutaj (data, krótko co i dlaczego, link do sekcji) i jednocześnie do dokumentu, którego dotyczy. Gdy decyzja zmienia wcześniejszą, stary wpis zostaje przekreślony z odnośnikiem do nowego, a nie usunięty.
+
+Plik ma dwie części: najpierw **świat, fabuła i systemy** (po datach), potem **sposób pracy, technologia, styl i rozgrywka** (decyzje z testów gry i tech demo). Kod i jego budowa są w [ARCHITEKTURA.md](ARCHITEKTURA.md) i [GRA.md](GRA.md).
 
 Oznaczenia w SWIAT.md: **[ustalone]** to decyzja Wojtka, **[propozycja]** to szkic do akceptacji, **[do wymyślenia]** to luka.
 
@@ -53,3 +55,69 @@ Oznaczenia w SWIAT.md: **[ustalone]** to decyzja Wojtka, **[propozycja]** to szk
 - Ślad na równinie i czy zadokowany wózek to ciało, czy osobny pojazd.
 - Mapa świata (później, Wojtek chce ją narysować sam).
 - Pozostałe punkty w [Otwartych pytaniach](SWIAT.md#otwarte-pytania).
+
+## Sposób pracy, technologia, styl i rozgrywka
+
+Decyzje z rozmów o prototypie, tech demo i grze (wątki: research, prototyp, wygląd Wolta, gra, animacje, czat projektu). Sparafrazowane.
+
+### Sposób pracy
+
+| Data | Decyzja | Gdzie |
+|---|---|---|
+| 2026-11-06 | Na razie pracujemy tylko w chmurze. | [AGENTS.md](../AGENTS.md) |
+| 2026-11-06 | Wszystko w repo `wjurkowlaniec/power-and-ash`: kod, dokumenty, issues, deploy na GitHub Pages. Własny hosting (LAMP/FTP) był proponowany, niepotrzebny. | [ARCHITEKTURA.md: CI i deploy](ARCHITEKTURA.md#ci-i-deploy) |
+| 2026-11-06 | **Zawsze deploy do testów.** Każda zmiana ma być grywalna online. Praktyka: PR, zielone CI, agent sam robi squash-merge do `main`, Pages wdraża się automatycznie. | [ARCHITEKTURA.md: CI i deploy](ARCHITEKTURA.md#ci-i-deploy) |
+| 2026-11-06 | Aktualizacje postępów krok po kroku (commit, deploy, zamknięty etap). | |
+| 2026-11-06 | Dwie ścieżki: obecny prototyp zostaje **tech demem**, stałym poligonem do testów mechanik i oceniania. Równolegle powstaje **prawdziwa gra** według POCZATEK.md. Wspólny silnik, gra pod `/`, demo pod `/demo/`. | [ARCHITEKTURA.md](ARCHITEKTURA.md), [GRA.md](GRA.md) |
+| 2026-11-07 | Uwagi Wojtka z testów to obserwacje, nie ścisła specyfikacja („wyciągnij coś z tego”). Luźnych myśli nie brać dosłownie. | |
+| 2026-11-08 | Wojtek wrzuca myśli losowo i w dowolnym miejscu, a agent je porządkuje i rozdziela na zadania. Ten sposób pracy jest akceptowany („10 na 10”). | |
+| 2026-11-08 | **Stała zasada dokumentacji:** każda decyzja i myśl Wojtka (może być sparafrazowana) trafia do repo, nie tylko do pamięci agenta. Repo ma być samowystarczalne: aktualne dokumenty, rejestr decyzji, instrukcje dla agentów, opis architektury, porządek w kodzie. Każdy PR aktualizuje dokumentację, której dotyczy. | [AGENTS.md](../AGENTS.md), [CLAUDE.md](../CLAUDE.md) |
+| 2026-11-08 | Priorytet: najpierw dopracować bazę (płynne animacje, precyzyjny ruch robota, ślady zależne od podłoża). Gdy baza będzie dobra, Wojtek sam rysuje mapę. | [RUCH-I-ANIMACJA.md](RUCH-I-ANIMACJA.md) |
+
+### Technologia
+
+| Data | Decyzja | Gdzie |
+|---|---|---|
+| 2026-11-06 | Punkt wyjścia: gra w gatunku The Last Caretaker (kable, złom, prąd, pojazd jako baza), ale własna: bez nazw, postaci, fabuły, grafik i lokacji oryginału. | [design.html](design.html) |
+| 2026-11-06 | Widok z góry na siatce, jak w Factorio (zamiast przekroju z boku). | [design.html](design.html) |
+| 2026-11-06 | Silnik obojętny, byle działał w przeglądarce. Lepiej 2D na scenie 3D. Wybrane Three.js + TypeScript + Vite (Godot 4 odrzucony: ciężki eksport web). | [ARCHITEKTURA.md: Stack](ARCHITEKTURA.md#stack-i-powody) |
+| 2026-11-06 | Wizualizacje renderowane w Three.js w docelowym stylu (dzień, zmierzch, noc, burza, nakładka sieci) przyjęte z entuzjazmem: „właśnie coś takiego bym chciał”. | [docs/img/](img/) |
+| 2026-11-08 | Wersja angielska gry i dema, przełącznik PL/EN, `?lang=en`. Polski jest oryginałem. | [ARCHITEKTURA.md: Pozostałe wspólne](ARCHITEKTURA.md#pozostałe-wspólne) |
+
+### Styl, grafika, dźwięk
+
+| Data | Decyzja | Gdzie |
+|---|---|---|
+| 2026-11-06 | Estetyka jak w Inside (Playdead): wyciszona paleta, mgła, miękkie światło, minimalizm, ciemne sylwetki. Blisko pierwszego renderu „dzień”. | [render/palette.ts](../src/render/palette.ts), [SWIAT.md: Ton i styl](SWIAT.md#ton-i-styl) |
+| 2026-11-06 | Dźwięk: gęsty ambient otoczenia jak w GrassChopper (Steam), tylko jako nastrój. Dźwięki własne, proceduralne. | [ARCHITEKTURA.md](ARCHITEKTURA.md) |
+| 2026-11-06 | Żagiel reaguje na zmienny wiatr i ładnie faluje. Ma stare, wypłowiałe logo w stylu dawnych reklam, ale wymyślonej marki (powstała oranżada „Zefir”), wszystko ma wyglądać na zdegradowane. | [render/sail.ts](../src/render/sail.ts) |
+| 2026-11-06 | Lepsze modele z darmowych paczek CC0 wskazanych przez Wojtka (Quaternius: Nature, Sci-Fi, Downtown; KayKit Resource Bits), wyblakłe pod popiół. | [CREDITS.md](../CREDITS.md) |
+| 2026-11-06 | Pokład żaglowozu nie może być „generic”: ma być widać, z czego jest zbudowany (podpory konstrukcyjne, europalety). | [render/deck.ts](../src/render/deck.ts) |
+| 2026-11-06 | Koncepty postaci mają być wizualizacjami z generatora obrazów, nie renderami z gry. Bez generatora w chmurze Wojtek wybrał same prompty. | [img/wolt/](img/wolt/README.md) |
+| 2026-11-06 | Wygląd Wolta: z 10 wariantów podobają się Monocykl i Latarnik, ze wspólną bazą rozbudowywaną etapami (trochę jak w Star Wars). Monocykl w grze „jest prawie ok”. | [img/wolt/](img/wolt/README.md), [SWIAT.md: Ciała i transfer](SWIAT.md#ciała-i-transfer) |
+| 2026-11-07 | Budynek stacji ma mieć dach. Gdy zasłania Wolta, w dachu pojawia się okrągły prześwit wokół postaci (jak w Control Resonant), zamiast zdejmowania całego dachu albo ściany. | [GRA.md](GRA.md) |
+| 2026-11-08 | Animacje mają być płynne i ładne, nie skokowe (dotąd wyglądało to prosto, jak Little Big Adventure): ciągnięcie zaczepionej opony, start gry, branie baterii. Robot ma być precyzyjniejszy. | [RUCH-I-ANIMACJA.md](RUCH-I-ANIMACJA.md) |
+| 2026-11-08 | Buksowanie w miejscu z piachem spod koła zamiast zamierania. Ślady zależne od podłoża, opona zostawia inne ślady niż robot. Ślady z prostokątów były słabe. | [RUCH-I-ANIMACJA.md](RUCH-I-ANIMACJA.md) |
+
+### Rozgrywka i sterowanie (z testów)
+
+| Data | Decyzja | Gdzie |
+|---|---|---|
+| 2026-11-06 | Zoom jest obowiązkowy. | [README.md: Sterowanie](../README.md#sterowanie) |
+| 2026-11-06 | Poziom 1 tech demo: kabel trzeba wytworzyć z rzeczy znalezionych na miejscu, podpiąć, naładować i odjechać („Rozruch”). | [PLAN.md](PLAN.md#poziom-1-rozruch) |
+| 2026-11-06 | Wolt ma własną baterię: na postoju delikatnie się ładuje, widać, ile zużywa (bieg więcej, rozbieranie złomu też), światło można włączać i wyłączać, na starcie ma bardzo mało energii. Beczki też da się rozebrać. | [PLAN.md: Bateria Wolta](PLAN.md#bateria-wolta) |
+| 2026-11-06 | Podstawowe sterowanie może być całe myszą: przytrzymanie przycisku = Wolt jedzie za kursorem, klik na obiekt = użyj, a gdy obiekt ma kilka akcji, rozwija się menu kontekstowe. | [README.md: Sterowanie](../README.md#sterowanie) |
+| 2026-11-06 | Żagiel nie może zasłaniać Wolta (robi się ażurowy). | [render/sail.ts](../src/render/sail.ts) |
+| 2026-11-06 | Ciemność na starcie gry była za długa (skrócona do 20 s). Robot na rezerwie nie może zwalniać coraz bardziej. Przy dźwigni gra musi jasno podpowiadać, co zrobić. | [GRA.md](GRA.md) |
+| 2026-11-06 | Wolt nie obraca się do myszy, tylko w kierunku jazdy. Zamiast kroków słychać skrzypienie koła. | [RUCH-I-ANIMACJA.md](RUCH-I-ANIMACJA.md) |
+| 2026-11-06 | Wolt może doczepiać rzeczy do siebie i je holować (opona, cegły). Kabel ma konsekwencje dla animacji i zachowania. Ramię od startu. | [SWIAT.md: Ramię i holowanie](SWIAT.md#ramię-i-holowanie-ustalone-2026-11-06) |
+| 2026-11-07 | Gracz nie może utknąć: ładunek zawsze da się odczepić, zaczepiona opona nie blokuje ruchu, na postoju widać ładowanie, a cel jest czytelny. | [GRA.md](GRA.md) |
+| 2026-11-07 | Scena stacji nie kończy się na turbinie: dalej ciągnie się kabel z masztu do maszynowni. | [POCZATEK.md: Scena 2](POCZATEK.md#scena-2-martwa-stacja-energia-kabel-złom-ok-15-min) |
+| 2026-11-08 | Po najechaniu myszą na złom: co to jest i co da rozebranie. Bilans prądu: co ładuje, a co zużywa, linia po linii, nie tylko suma. | [GRA.md](GRA.md), [PLAN.md](PLAN.md) |
+| 2026-11-08 | Luźne myśli do mapy świata (nie dosłownie): co 15–30 s gracz ma coś ciekawego do zrobienia, ale na początku podróżuje się żaglem, więc liczą się też postoje i zbieranie po drodze. Napędy zmieniają się z czasem: żagiel, płozy na piasek i lód, inne technologie, na końcu np. kwantowy poduszkowiec. Ironia losu: świat się poddał, ludzie cofnęli się w rozwoju (katastrofa, zmiany klimatu), a jeden robot ulepsza technologię i wyprowadza ich z powrotem, mimo ich oporu, przywracając dobre warunki. | wątek mapy świata (w toku) |
+
+## Czeka na decyzję (sposób pracy, styl, rozgrywka)
+
+- Ruiny kamienic za krawędzią mapy tech demo: zostawić czy pustkowie bez miasta (pytanie z 2026-11-06 bez odpowiedzi, ruiny na razie są).
+- Liczby mocy na stacji (turbina 1200 W, maszynownia 250 W, fabrykator 600 W) są wymyślone przez agenta, do potwierdzenia.
+- Czy pył przy buksowaniu jest wystarczająco widoczny na jasnym popiele.
