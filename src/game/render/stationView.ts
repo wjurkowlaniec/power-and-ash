@@ -375,6 +375,14 @@ void main() {
     const paper = new THREE.MeshStandardMaterial({ color: 0xe0dccf, roughness: 0.9, emissive: 0xe0dccf, emissiveIntensity: 0.08 });
     // the technician's note on the door frame
     this.scene.add(mesh(new THREE.PlaneGeometry(0.3, 0.4), paper, P.doorNote.x, 1.3, 13.04, false));
+    // the duty room's bookshelf: faded spines
+    const shelfM = mat(0x4a4238, { r: 0.9 });
+    this.scene.add(box(0.9, 1.9, 2.9, shelfM, 21.5, 0.95, 9.5));
+    const spines = [0x6b5a48, 0x5a6058, 0x7a6a52, 0x54504a, 0x6e5f5a];
+    for (let row = 0; row < 3; row++) for (let k = 0; k < 9; k++) {
+      const h = 0.32 + ((k * 7 + row) % 4) * 0.04;
+      this.scene.add(box(0.3, h, 0.22, mat(spines[(k + row) % spines.length], { r: 0.95 }), 21.05, 0.3 + row * 0.6 + h / 2, 8.3 + k * 0.29));
+    }
     // the drawer front
     this.scene.add(box(0.6, 0.15, 0.05, mat(0x4a4238), 20, 0.55, 5.03));
   }

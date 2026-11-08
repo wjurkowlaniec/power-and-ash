@@ -1,7 +1,7 @@
 import { Ctx, Scene } from '../scene';
 import { Station, WOLT_POWER } from '../sim/station';
 import { StationView } from '../render/stationView';
-import { NOTES, journal } from '../notes';
+import { NOTES, journal, noteHtml, journalHtml } from '../notes';
 import { story } from '../state';
 
 /**
@@ -98,7 +98,7 @@ export class StationScene implements Scene {
       case 'grab': s.clank(1.2, 0.08); s.servo(0.6, 1.1); break;
       case 'drop': s.clank(0.7, 0.06); break;
       case 'connect': s.clank(2, 0.06); s.swell(); c.fx.static = 0.4; break;
-      case 'note': journal.add(this.st.reading!); this.justOpened = true; s.blip(1.3); break;
+      case 'note': { const up = journal.add(this.st.reading!); this.justOpened = true; s.blip(1.3); if (up) { this.st.message = { text: `Korpus urósł. Odkodowano: ${up}. Stare zapisy w archiwum nabierają treści.`, t: this.st.t }; setTimeout(() => s.swell(), 400); } break; }
     }
   }
 
@@ -124,11 +124,10 @@ export class StationScene implements Scene {
     if (st.reading) {
       const n = NOTES[st.reading];
       note.hidden = false;
-      note.innerHTML = `<div class="lbl">${n.kind}</div><h2>${n.title}</h2><div class="body">${n.body.split('\n\n').map(p => `<p>${p}</p>`).join('')}</div><div class="small">E · odłóż &nbsp; J · archiwum</div>`;
+      note.innerHTML = noteHtml(n);
     } else if (this.journalOpen) {
       note.hidden = false;
-      note.innerHTML = `<div class="lbl">archiwum</div><h2>Notatki w pamięci Wolta</h2>` +
-        journal.list().map((n, i) => `<p><b>${i + 1}</b> &nbsp;${n.title}</p>`).join('') + `<div class="small">cyfra · czytaj &nbsp; J · zamknij</div>`;
+      note.innerHTML = journalHtml();
     } else note.hidden = true;
     $('sKeys').style.opacity = st.towing || st.cableHeld ? '0.7' : String(Math.max(0, 0.6 - st.t / 20));
   }
