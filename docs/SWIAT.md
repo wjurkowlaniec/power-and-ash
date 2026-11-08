@@ -13,20 +13,21 @@ Oznaczenia: **[ustalone]** to decyzja Wojtka, **[propozycja]** to mój pomysł d
 5. [Ciała i transfer](#ciała-i-transfer)
 6. [Notatki i archiwum](#notatki-i-archiwum)
 7. [Wolt](#wolt)
-8. [Rozwój: obliczenia w tle](#rozwój-obliczenia-w-tle)
-9. [Żaglowóz](#żaglowóz)
-10. [Ludzie i bunkry](#ludzie-i-bunkry)
-11. [Czas: doba, pory roku, hibernacja](#czas-doba-pory-roku-hibernacja)
-12. [Bazy](#bazy)
-13. [Zagrożenia](#zagrożenia)
-14. [Mapa świata i obszary](#mapa-świata-i-obszary)
-15. [Łuk fabularny](#łuk-fabularny)
-16. [Gra po fabule](#gra-po-fabule)
-17. [Otwarte pytania](#otwarte-pytania)
+8. [Ładowanie](#ładowanie-zawsze-przez-fizyczne-połączenie)
+9. [Rozwój: obliczenia w tle](#rozwój-obliczenia-w-tle)
+10. [Żaglowóz](#żaglowóz)
+11. [Ludzie i bunkry](#ludzie-i-bunkry)
+12. [Czas: doba, pory roku, hibernacja](#czas-doba-pory-roku-hibernacja)
+13. [Bazy](#bazy)
+14. [Zagrożenia](#zagrożenia)
+15. [Mapa świata i obszary](#mapa-świata-i-obszary)
+16. [Łuk fabularny](#łuk-fabularny)
+17. [Gra po fabule](#gra-po-fabule)
+18. [Otwarte pytania](#otwarte-pytania)
 
 ## W jednym akapicie
 
-Wolt to kwantowa bateria, prototyp z misji badawczej, która myśli i steruje ciałami maszyn. Budzi się w stacji pomiarowej jako jedyna rzecz w okolicy, która się ruszyła, przejmuje pusty automat serwisowy na jednym kole i od tej pory zawsze jest w jego ramie. Ciało rozbudowuje, a później steruje zdalnie innymi maszynami i przenosi się do innych ciał. Bateria, a przeskalowana mogłaby dać światu nieograniczoną, czystą energię. Ludzie przetrwali w bunkrach i brakuje im prądu. Wolt przez wiele lat, z hibernacjami na zimę, odkrywa, czym jest, czyli czym jest bateria, uczy się ludzi, adaptuje stare bazy i odbudowuje sieć energii. Gra nie kończy się wraz z fabułą. **[ustalone]**
+Wolt to kwantowa bateria, prototyp z misji badawczej, która myśli i steruje ciałami maszyn. Budzi się w stacji pomiarowej jako jedyna rzecz w okolicy, która się ruszyła, przejmuje pusty automat serwisowy na jednym kole i od tej pory zawsze jest w jego ramie. Ciało rozbudowuje, a później steruje zdalnie innymi maszynami i przenosi się do innych ciał. Przeskalowana bateria mogłaby dać światu nieograniczoną, czystą energię. Ludzie przetrwali w bunkrach i brakuje im prądu. Wolt przez wiele lat, z hibernacjami na zimę, odkrywa, czym jest, czyli czym jest bateria, uczy się ludzi, adaptuje stare bazy i odbudowuje sieć energii. Gra nie kończy się wraz z fabułą. **[ustalone]**
 
 ## Ton i styl
 
@@ -201,6 +202,20 @@ Parametry Wolta **[propozycja]**:
 | Zużycie ciała | stawy, serwa, oko | wymiana części, smar |
 
 Ulepszenia Wolta to zamienne moduły na ramie bazowej (patrz [Ciała i transfer](#ciała-i-transfer)): izolacja, radiator, osuszacz, mocniejsza lampa, dłuższy kabel własny, nawijak o większej pojemności, czujniki (wilgotność gruntu, prąd w ziemi, ślady mikrobotów).
+
+## Ładowanie: zawsze przez fizyczne połączenie
+
+**[propozycja 2026-11-08, do akceptacji]** W tym świecie nie ma ładowania bezprzewodowego ani indukcyjnego. Prąd zawsze płynie przez kabel albo styk. To wzmacnia główny temat gry (kabel, sieć, połączenia) i daje animacje, które pokazują, co się dzieje.
+
+| Sposób | Gdzie | Jak wygląda | Animacja |
+|---|---|---|---|
+| **Kabel własny Wolta (3 m)** | każdy port w terenie | wtyczka na krótkim przewodzie na bębenku przy ramie | Wolt staje przy porcie, ramię odwija wtyczkę, otwiera klapkę gniazda i wpina. Iskra, klik, dioda portu z czerwonej na bursztynową. Przewód leży naprężony między Woltem i portem, a odjazd ponad 3 m wyrywa wtyczkę. |
+| **Kołyska / stacja dokująca** | tylko w bazach (hala stacji, później żaglowóz) | niska stalowa rampa z dwiema miedzianymi szynami i ramieniem stykowym nad nią | Wolt wjeżdża kołem na rampę, a ramię stykowe opada jak pantograf tramwaju i dociska się do styków na ramie. Krótki trzask, potem ciche buczenie. |
+| **Kabel z nawijaka (20 m)** | między portami: stacja → pojazd, baza → baza | miedziany kabel z wtyczkami na obu końcach | jak w obecnej mechanice kabla |
+
+**Wygląd portu w terenie:** metalowa skrzynka na słupku albo przy ścianie, wyblakła farba, uchylna klapka chroniąca przed popiołem, a pod nią okrągłe przemysłowe gniazdo wielopinowe. Obok mała tabliczka z numerem stacji, bursztynowa dioda stanu i zegarowy amperomierz, którego wskazówka drga podczas ładowania. Port jest czytelny z daleka dzięki diodzie i kształtowi klapki. Żadnych płaskich prostokątów.
+
+**Uzasadnienie:** ładowanie bez kabla zabrałoby sens nawijakowi, kablom i rozbudowie sieci. Każde ładowanie ma za to swój koszt: Wolt stoi przy porcie, jest przywiązany przewodem, a w terenie to chwila, w której mogą podejść mikroboty.
 
 ## Rozwój: obliczenia w tle
 
@@ -470,6 +485,7 @@ Decyzja na końcu nie zamyka gry, tylko zmienia świat dalej.
 - Czy Popiół jako skutek katastrofy Q-2 jest OK? To mocno ustawia ton i stosunek ludzi do baterii.
 - Kto budzi Wolta i dlaczego teraz.
 - Ile umiejętności baterii i w jakiej kolejności.
+- Czy ładowanie zostaje tylko przez kabel i styk (bez indukcji).
 - Ile ciał i modułów, i które maszyny da się przejąć zdalnie.
 - Czy transfer do innego ciała jest od połowy gry, czy dopiero późno.
 - Ile notatek na obszar i jak bardzo mają prowadzić za rękę.
