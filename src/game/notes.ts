@@ -1,3 +1,5 @@
+import { tr, lang, num } from '../i18n';
+
 /**
  * Notes found in the world (in the spirit of Control): short documents, logs and
  * personal scraps. Each tells a bit of the story, and many carry a practical hint
@@ -29,7 +31,7 @@ export interface Note {
 const INK = 'stroke="#2c2f31" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"';
 const RED = 'stroke="#8a2a1e" stroke-width="2.5" fill="none" stroke-linecap="round" stroke-linejoin="round"';
 
-export const NOTES: Record<string, Note> = {
+const NOTES_PL: Record<string, Note> = {
   protokol: {
     id: 'protokol', label: 'Instrukcja przy komorze', script: 'tech', kind: 'instrukcja', sketch: `<svg viewBox="0 0 300 120"><rect x="110" y="20" width="90" height="80" rx="6" ${INK}/><circle cx="155" cy="60" r="16" ${INK}/><path d="M110 70 L80 70 L60 40" ${INK}/><path d="M62 42 L20 -4" ${RED} stroke-dasharray="6 4"/><path d="M40 30 L52 60 M44 54 L52 60 L58 51" ${RED}/><text x="8" y="112" font-size="11" fill="#2c2f31">⊣ ↓</text></svg>`, title: 'Protokół serwisowy · komora testowa K-2',
     body: `W razie zaniku zasilania komora pozostaje zamknięta (blokada bezpieczeństwa).
@@ -90,16 +92,82 @@ ROZDZIELNIA · stacja, która dzieli i kieruje prąd do odbiorców.`,
   },
 };
 
+/** English text of the notes. The corpus each note adds is counted from the Polish original, so decoding moves at the same pace in both languages. */
+const NOTES_EN: Record<string, Pick<Note, 'label' | 'title' | 'body'>> = {
+  protokol: {
+    label: 'Instructions by the chamber', title: 'Service protocol · test chamber K-2',
+    body: `If power is lost, the chamber stays shut (safety interlock).
+
+Manual opening: emergency lever on the left side of the chamber. The mechanism is very stiff. Use an extension (e.g. a pipe), fit it over the lever and hold until the latch releases.
+
+Do not remove the cell without a technician present. DO NOT DISCONNECT from the measurement circuit during a test.
+
+— illegible signature`,
+  },
+  raport4411: {
+    label: 'Printout at the test stand', title: 'Zorza Programme · test report 4411',
+    body: `Prototype Q-1, Olszanka field station.
+
+From 03:12 the cell returns more energy than it took in during the charge cycle. Surplus 0.4%. Repeated three times. ████████ does not confirm a measurement error.
+
+Recommendation: DO NOT DISCONNECT FROM THE SERVICE AUTOMATON. The cell stabilises only under load.`,
+  },
+  kartkaTechnika: {
+    label: 'Note on the workshop door', title: 'Note on the workshop door',
+    body: `The lock died again. When there's no power, plug yourself into the port on the left, it only takes a moment.
+
+And DON'T LEAVE THE TURBINE WITH THAT BEARING. The new bearing and grease are in the storeroom, second shelf. The bearing weighs a ton, take the old tyre to the mast and pull it like a sled.
+
+— T.`,
+  },
+  notatkaKierowniczki: {
+    label: 'Letter from the duty room drawer', title: 'Memo · transfer of Q-1',
+    body: `To: Zorza Programme management
+From: manager of Olszanka station
+Subject: transfer of Q-1 to the laboratory
+
+I refuse. Q-1 is stable only here, with our automaton. If anyone wants to build Q-2 on four months of data, let them sign it themselves.`,
+  },
+  mapaSieci: {
+    label: 'Map on the duty room wall', title: 'Map on the duty room wall',
+    body: `A map of the valley and the mountains. Seven points are circled in marker and joined by a line: the Seven Stations Network. Olszanka is the first from the west.
+
+One point in the mountains, far from the line, has been crossed out over and over until the pen went through the paper.`,
+  },
+  podrecznik: {
+    label: 'Thick book from the duty room', title: "Distribution network electrician's handbook",
+    body: `Chapter 4. Connecting sources of different power.
+
+Before you connect two sources, check the voltage at both ends. A weaker source will not drive a load that needs more than it gives: a 600 W fabricator will not start from a cell that gives 200 W.
+
+Run the cable by the shortest route and do not leave it taut over edges.`,
+  },
+  slownik: {
+    label: 'Dictionary from the duty room shelf', title: 'Small technical dictionary',
+    body: `BEARING · a part that supports a shaft and reduces friction. A seized bearing locks the rotor.
+
+INLET · a socket through which a building takes power from outside.
+
+SUBSTATION · a station that splits and routes power to consumers.`,
+  },
+};
+
+export const NOTES: Record<string, Note> = Object.fromEntries(Object.entries(NOTES_PL).map(([id, n]) => {
+  const corpus = n.corpus ?? n.body.length + n.title.length;
+  const en = lang === 'en' ? NOTES_EN[id] : undefined;
+  return [id, { ...n, corpus, ...(en ?? {}) }];
+}));
+
 const KEY = 'pip.notes';
 let read: string[] = [];
 try { read = JSON.parse(localStorage.getItem(KEY) ?? '[]'); } catch { read = []; }
 
 /** Decoding levels: each opens a script. Thresholds are characters of collected text. */
 export const LEVELS = [
-  { at: 450, name: 'liczby, jednostki i znaki ostrzegawcze' },
-  { at: 1400, name: 'druk techniczny' },
-  { at: 3500, name: 'zwykły druk' },
-  { at: 7000, name: 'pismo odręczne' },
+  { at: 450, name: tr('liczby, jednostki i znaki ostrzegawcze', 'numbers, units and warning signs') },
+  { at: 1400, name: tr('druk techniczny', 'technical print') },
+  { at: 3500, name: tr('zwykły druk', 'plain print') },
+  { at: 7000, name: tr('pismo odręczne', 'handwriting') },
 ];
 const SCRIPT_LEVEL: Record<Script, number> = { image: 0, machine: 0, tech: 2, print: 3, hand: 4 };
 
@@ -166,15 +234,15 @@ const esc = (t: string) => t.replace(/&/g, '&amp;').replace(/</g, '&lt;');
 export function noteHtml(n: Note): string {
   const body = decoded(n.body, n.script).split('\n\n').map(p => `<p>${esc(p).replace(/\n/g, '<br>')}</p>`).join('');
   const sk = n.sketch ? `<div class="sketch">${n.sketch}</div>` : '';
-  const state = isReadable(n) ? '' : `<div class="small undecoded">pismo nieodczytane · zbierz więcej tekstu (${Math.round(journal.corpus() / 100) / 10} tys. znaków w korpusie)</div>`;
-  return `<div class="lbl">${n.label}</div><h2>${esc(decoded(n.title, n.script))}</h2>${sk}<div class="body ${n.script}">${body}</div>${state}<div class="small">E · odłóż &nbsp; J · archiwum</div>`;
+  const state = isReadable(n) ? '' : `<div class="small undecoded">${tr(`pismo nieodczytane · zbierz więcej tekstu (${num(Math.round(journal.corpus() / 100) / 10)} tys. znaków w korpusie)`, `script not decoded · collect more text (${num(Math.round(journal.corpus() / 100) / 10)}k characters in the corpus)`)}</div>`;
+  return `<div class="lbl">${n.label}</div><h2>${esc(decoded(n.title, n.script))}</h2>${sk}<div class="body ${n.script}">${body}</div>${state}<div class="small">${tr('E · odłóż &nbsp; J · archiwum', 'E · put down &nbsp; J · archive')}</div>`;
 }
 
 /** The Archive: Wolt's labels, plus how far decoding has got. */
 export function journalHtml(): string {
   const lv = journal.level(), next = LEVELS[lv];
-  const prog = next ? `<div class="bar"><i style="width:${Math.min(100, journal.corpus() / next.at * 100)}%"></i></div><div class="small">następne: ${next.name}</div>` : '';
-  return `<div class="lbl">archiwum</div><h2>Zapisy w pamięci Wolta</h2>` +
-    journal.list().map((n, i) => `<p><b>${i + 1}</b> &nbsp;${n.label}${isReadable(n) ? '' : ' <span class="undecoded">· nieczytelne</span>'}</p>`).join('') +
-    `<div class="small">odczytane: ${lv ? LEVELS.slice(0, lv).map(l => l.name).join(', ') : 'nic'}</div>${prog}<div class="small">cyfra · czytaj &nbsp; J · zamknij</div>`;
+  const prog = next ? `<div class="bar"><i style="width:${Math.min(100, journal.corpus() / next.at * 100)}%"></i></div><div class="small">${tr('następne', 'next')}: ${next.name}</div>` : '';
+  return `<div class="lbl">${tr('archiwum', 'archive')}</div><h2>${tr('Zapisy w pamięci Wolta', "Records in Wolt's memory")}</h2>` +
+    journal.list().map((n, i) => `<p><b>${i + 1}</b> &nbsp;${n.label}${isReadable(n) ? '' : ` <span class="undecoded">· ${tr('nieczytelne', 'unreadable')}</span>`}</p>`).join('') +
+    `<div class="small">${tr('odczytane', 'decoded')}: ${lv ? LEVELS.slice(0, lv).map(l => l.name).join(', ') : tr('nic', 'nothing')}</div>${prog}<div class="small">${tr('cyfra · czytaj &nbsp; J · zamknij', 'digit · read &nbsp; J · close')}</div>`;
 }

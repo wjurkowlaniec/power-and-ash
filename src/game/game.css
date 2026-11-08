@@ -61,3 +61,4 @@ canvas { display: block; }
 .grid .sum { border-top: 1px solid #ffffff1a; padding-top: 4px; margin-top: 6px; }
 .grid .dim { opacity: .55; }
 @media (max-width: 640px) { .grid { top: auto; bottom: calc(90px + env(safe-area-inset-bottom, 0px)); width: 200px; } }
+.wake-lang { position: absolute; top: calc(16px + env(safe-area-inset-top, 0px)); right: max(16px, env(safe-area-inset-right, 0px)); color: #ffffff77; }

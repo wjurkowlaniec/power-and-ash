@@ -6,6 +6,7 @@ import { PowerNode, solveNetworks, NetworkState } from './power';
 import { Wind } from './wind';
 import { findPath } from './path';
 import { Load, LOADS, towStep, hitchOf, TOW_RANGE } from './tow';
+import { tr } from '../i18n';
 
 export const CABLE_MAX = 20;      // m per segment
 export const CABLE_WARN = 18;     // m, orange + slowdown
@@ -133,7 +134,7 @@ export class Game {
       { id: 'yacht', produce: 0, demand: 0 },
     ];
     this.solve();
-    this.toast('Bateria Wolta: 25%. Postój ładuje powoli, bieg i rozbieranie zużywają więcej.');
+    this.toast(tr('Bateria Wolta: 25%. Postój ładuje powoli, bieg i rozbieranie zużywają więcej.', "Wolt's battery: 25%. Standing still recharges it slowly; running and salvaging use more."));
   }
 
   // ---------- queries
@@ -206,11 +207,11 @@ export class Game {
     const c = this.inv.copper + this.reelOwned / CABLE_PER_CRAFT, p = this.inv.plastic + this.reelOwned / CABLE_PER_CRAFT;
     const gathered = c >= 4 && p >= 4;
     const list: Objective[] = [
-      { text: `Rozbierz złom: miedź ${Math.min(4, c)}/4, plastik ${Math.min(4, p)}/4`, done: gathered || haveCable, active: false },
-      { text: `Wytwórz kabel w fabrykatorze: ${this.reelOwned}/${need} m`, done: haveCable, active: false },
-      { text: 'Połącz port Stacji 2 z portem żaglowozu', done: connected || charged, active: false },
-      { text: `Naładuj żaglowóz: ${Math.floor(this.batteryPct() * 100)}%`, done: charged, active: false },
-      { text: 'Odjedź: E przy sterze', done: this.phase !== 'play', active: false },
+      { text: tr(`Rozbierz złom: miedź ${Math.min(4, c)}/4, plastik ${Math.min(4, p)}/4`, `Salvage scrap: copper ${Math.min(4, c)}/4, plastic ${Math.min(4, p)}/4`), done: gathered || haveCable, active: false },
+      { text: tr(`Wytwórz kabel w fabrykatorze: ${this.reelOwned}/${need} m`, `Make cable in the fabricator: ${this.reelOwned}/${need} m`), done: haveCable, active: false },
+      { text: tr('Połącz port Stacji 2 z portem żaglowozu', 'Connect the Station 2 port to the yacht port'), done: connected || charged, active: false },
+      { text: tr(`Naładuj żaglowóz: ${Math.floor(this.batteryPct() * 100)}%`, `Charge the land yacht: ${Math.floor(this.batteryPct() * 100)}%`), done: charged, active: false },
+      { text: tr('Odjedź: E przy sterze', 'Leave: E at the helm'), done: this.phase !== 'play', active: false },
     ];
     const first = list.findIndex(o => !o.done);
     if (first >= 0) list[first].active = true;
@@ -222,42 +223,42 @@ export class Game {
     const pt = this.nearestPoint();
     if (pt && !this.held) {
       if (pt.id === 'fabricator') {
-        if (this.craftT > 0) return { key: '…', text: 'fabrykator pracuje', at: pt.pos, height: 2.4, ok: true };
-        if (this.reelOwned + CABLE_PER_CRAFT > REEL_CAPACITY) return { key: 'E', text: 'nawijak pełny', at: pt.pos, height: 2.4, ok: false };
+        if (this.craftT > 0) return { key: '…', text: tr('fabrykator pracuje', 'fabricator working'), at: pt.pos, height: 2.4, ok: true };
+        if (this.reelOwned + CABLE_PER_CRAFT > REEL_CAPACITY) return { key: 'E', text: tr('nawijak pełny', 'reel full'), at: pt.pos, height: 2.4, ok: false };
         return this.canCraft()
-          ? { key: 'E', text: `wytwórz kabel 5 m (1 miedź + 1 plastik)`, at: pt.pos, height: 2.4, ok: true }
-          : { key: 'E', text: `kabel 5 m: potrzeba 1 miedzi i 1 plastiku`, at: pt.pos, height: 2.4, ok: false };
+          ? { key: 'E', text: tr('wytwórz kabel 5 m (1 miedź + 1 plastik)', 'make 5 m of cable (1 copper + 1 plastic)'), at: pt.pos, height: 2.4, ok: true }
+          : { key: 'E', text: tr('kabel 5 m: potrzeba 1 miedzi i 1 plastiku', '5 m of cable needs 1 copper and 1 plastic'), at: pt.pos, height: 2.4, ok: false };
       }
       if (pt.id === 'helm') return this.batteryFull()
-        ? { key: 'E', text: 'odjazd', at: pt.pos, height: 2.2, ok: true }
-        : { key: 'E', text: `bateria ${Math.floor(this.batteryPct() * 100)}%, za mało na odjazd`, at: pt.pos, height: 2.2, ok: false };
+        ? { key: 'E', text: tr('odjazd', 'leave'), at: pt.pos, height: 2.2, ok: true }
+        : { key: 'E', text: tr(`bateria ${Math.floor(this.batteryPct() * 100)}%, za mało na odjazd`, `battery ${Math.floor(this.batteryPct() * 100)}%, not enough to leave`), at: pt.pos, height: 2.2, ok: false };
     }
     const p = this.nearestPort();
     if (p) {
       const busy = this.portBusy(p.id);
       if (!this.held) {
         if (!busy) return this.segmentMax() < 1
-          ? { key: 'E', text: 'brak kabla na nawijaku', at: p.pos, height: p.height, ok: false }
-          : { key: 'E', text: `weź kabel (${this.segmentMax().toFixed(0)} m)`, at: p.pos, height: p.height, ok: true };
-        if (busy.to === p.id) return { key: 'E', text: 'wypnij kabel', at: p.pos, height: p.height, ok: true };
-        return { key: 'Q', text: 'przytrzymaj, by zwinąć kabel', at: p.pos, height: p.height, ok: true };
+          ? { key: 'E', text: tr('brak kabla na nawijaku', 'no cable on the reel'), at: p.pos, height: p.height, ok: false }
+          : { key: 'E', text: tr(`weź kabel (${this.segmentMax().toFixed(0)} m)`, `take cable (${this.segmentMax().toFixed(0)} m)`), at: p.pos, height: p.height, ok: true };
+        if (busy.to === p.id) return { key: 'E', text: tr('wypnij kabel', 'unplug cable'), at: p.pos, height: p.height, ok: true };
+        return { key: 'Q', text: tr('przytrzymaj, by zwinąć kabel', 'hold to reel in the cable'), at: p.pos, height: p.height, ok: true };
       }
-      if (this.held.from === p.id) return { key: 'Q', text: 'przytrzymaj, by zwinąć kabel', at: p.pos, height: p.height, ok: true };
-      if (busy) return { key: 'E', text: 'port zajęty', at: p.pos, height: p.height, ok: false };
+      if (this.held.from === p.id) return { key: 'Q', text: tr('przytrzymaj, by zwinąć kabel', 'hold to reel in the cable'), at: p.pos, height: p.height, ok: true };
+      if (busy) return { key: 'E', text: tr('port zajęty', 'port in use'), at: p.pos, height: p.height, ok: false };
       const need = this.held.cable.baseLength() + dist(this.held.cable.last, p.pos);
-      if (need > this.segmentMax() + 0.01) return { key: 'E', text: `za krótki kabel (${need.toFixed(1)} m)`, at: p.pos, height: p.height, ok: false };
-      return { key: 'E', text: `wepnij w ${p.name}`, at: p.pos, height: p.height, ok: true };
+      if (need > this.segmentMax() + 0.01) return { key: 'E', text: tr(`za krótki kabel (${need.toFixed(1)} m)`, `cable too short (${need.toFixed(1)} m)`), at: p.pos, height: p.height, ok: false };
+      return { key: 'E', text: tr(`wepnij w ${p.name}`, `plug into ${p.name}`), at: p.pos, height: p.height, ok: true };
     }
     const s = this.nearestScrap();
     if (s && !this.held) {
       const at = { x: s.x + s.w / 2, y: s.y + s.h / 2 };
-      if (this.empty()) return { key: 'E', text: 'za mało energii, by rozbierać', at, height: 0.8, ok: false };
-      const what = s.kind === 'barrel' ? 'beczkę' : 'złom';
-      return { key: 'E', text: this.salvage ? 'rozbieranie…' : `przytrzymaj, by rozebrać ${what}`, at, height: 0.8, ok: true };
+      if (this.empty()) return { key: 'E', text: tr('za mało energii, by rozbierać', 'not enough energy to salvage'), at, height: 0.8, ok: false };
+      const what = s.kind === 'barrel' ? tr('beczkę', 'the barrel') : tr('złom', 'the scrap');
+      return { key: 'E', text: this.salvage ? tr('rozbieranie…', 'salvaging…') : tr(`przytrzymaj, by rozebrać ${what}`, `hold to salvage ${what}`), at, height: 0.8, ok: true };
     }
     const l = this.nearestLoad();
-    if (l && !this.tow) return { key: 'E', text: `doczep ${LOADS[l.kind].name}`, at: l.pos, height: 0.7, ok: true };
-    if (this.tow && !this.moving) return { key: 'E', text: `odczep ${LOADS[this.tow.kind].name}`, at: this.tow.pos, height: 0.7, ok: true };
+    if (l && !this.tow) return { key: 'E', text: tr(`doczep ${LOADS[l.kind].name}`, `hitch ${LOADS[l.kind].name}`), at: l.pos, height: 0.7, ok: true };
+    if (this.tow && !this.moving) return { key: 'E', text: tr(`odczep ${LOADS[this.tow.kind].name}`, `unhitch ${LOADS[this.tow.kind].name}`), at: this.tow.pos, height: 0.7, ok: true };
     return null;
   }
 
@@ -277,44 +278,44 @@ export class Game {
   /** Actions offered for a target, the default first. */
   actionsFor(t: Target): Action[] {
     switch (t.kind) {
-      case 'ground': return [{ id: 'walk', label: 'Idź tutaj', ok: true }];
+      case 'ground': return [{ id: 'walk', label: tr('Idź tutaj', 'Walk here'), ok: true }];
       case 'self': {
-        const list: Action[] = [{ id: 'light', label: this.light ? 'Wyłącz światło' : 'Włącz światło', ok: true }];
-        if (this.tow) list.push({ id: 'untow', label: `Odczep ${LOADS[this.tow.kind].name}`, ok: true });
+        const list: Action[] = [{ id: 'light', label: this.light ? tr('Wyłącz światło', 'Light off') : tr('Włącz światło', 'Light on'), ok: true }];
+        if (this.tow) list.push({ id: 'untow', label: tr(`Odczep ${LOADS[this.tow.kind].name}`, `Unhitch ${LOADS[this.tow.kind].name}`), ok: true });
         return list;
       }
       case 'load': {
         const l = this.loads.find(x => x.id === t.id)!;
-        if (l === this.tow) return [{ id: 'untow', label: `Odczep ${LOADS[l.kind].name}`, ok: true }];
-        return [{ id: 'tow', label: `Doczep ${LOADS[l.kind].name}`, ok: !this.tow, why: this.tow ? 'hak jest zajęty' : undefined }];
+        if (l === this.tow) return [{ id: 'untow', label: tr(`Odczep ${LOADS[l.kind].name}`, `Unhitch ${LOADS[l.kind].name}`), ok: true }];
+        return [{ id: 'tow', label: tr(`Doczep ${LOADS[l.kind].name}`, `Hitch ${LOADS[l.kind].name}`), ok: !this.tow, why: this.tow ? tr('hak jest zajęty', 'the hook is in use') : undefined }];
       }
       case 'scrap': {
         if (!this.world.obstacles.includes(t.o)) return [];
-        const what = t.o.kind === 'barrel' ? 'beczkę' : 'złom';
-        return [{ id: 'salvage', label: `Rozbierz ${what}`, ok: !this.held && !this.empty(), why: this.held ? 'najpierw odłóż kabel' : this.empty() ? 'za mało energii' : undefined }];
+        const what = t.o.kind === 'barrel' ? tr('beczkę', 'barrel') : tr('złom', 'scrap');
+        return [{ id: 'salvage', label: tr(`Rozbierz ${what}`, `Salvage ${what}`), ok: !this.held && !this.empty(), why: this.held ? tr('najpierw odłóż kabel', 'put the cable down first') : this.empty() ? tr('za mało energii', 'not enough energy') : undefined }];
       }
       case 'point': {
-        if (t.id === 'helm') return [{ id: 'depart', label: 'Odjedź', ok: this.batteryFull(), why: this.batteryFull() ? undefined : `bateria ${Math.floor(this.batteryPct() * 100)}%` }];
+        if (t.id === 'helm') return [{ id: 'depart', label: tr('Odjedź', 'Leave'), ok: this.batteryFull(), why: this.batteryFull() ? undefined : tr(`bateria ${Math.floor(this.batteryPct() * 100)}%`, `battery ${Math.floor(this.batteryPct() * 100)}%`) }];
         const room = Math.floor((REEL_CAPACITY - this.reelOwned) / CABLE_PER_CRAFT);
         const mats = Math.min(Math.floor(this.inv.copper / CABLE_RECIPE.copper), Math.floor(this.inv.plastic / CABLE_RECIPE.plastic));
         const n = Math.min(room, mats);
-        const why = room < 1 ? 'nawijak pełny' : mats < 1 ? 'potrzeba 1 miedzi i 1 plastiku' : undefined;
-        const list: Action[] = [{ id: 'craft', label: 'Wytwórz 5 m kabla', ok: n >= 1 && !this.held, why: this.held ? 'odłóż kabel' : why }];
-        if (n >= 2) list.push({ id: 'craftAll', label: `Wytwórz ${n * CABLE_PER_CRAFT} m kabla (wszystko)`, ok: !this.held });
+        const why = room < 1 ? tr('nawijak pełny', 'reel full') : mats < 1 ? tr('potrzeba 1 miedzi i 1 plastiku', 'needs 1 copper and 1 plastic') : undefined;
+        const list: Action[] = [{ id: 'craft', label: tr('Wytwórz 5 m kabla', 'Make 5 m of cable'), ok: n >= 1 && !this.held, why: this.held ? tr('odłóż kabel', 'put the cable down') : why }];
+        if (n >= 2) list.push({ id: 'craftAll', label: tr(`Wytwórz ${n * CABLE_PER_CRAFT} m kabla (wszystko)`, `Make ${n * CABLE_PER_CRAFT} m of cable (all)`), ok: !this.held });
         return list;
       }
       case 'port': {
         const busy = this.portBusy(t.id);
         if (!this.held) {
-          if (!busy) return [{ id: 'grab', label: 'Weź kabel', ok: this.segmentMax() >= 1, why: this.segmentMax() >= 1 ? undefined : 'brak kabla na nawijaku' }];
+          if (!busy) return [{ id: 'grab', label: tr('Weź kabel', 'Take cable'), ok: this.segmentMax() >= 1, why: this.segmentMax() >= 1 ? undefined : tr('brak kabla na nawijaku', 'no cable on the reel') }];
           const list: Action[] = [];
-          if (busy.to === t.id) list.push({ id: 'unplug', label: 'Wypnij kabel', ok: true });
-          list.push({ id: 'reel', label: 'Zwiń kabel na nawijak', ok: true });
+          if (busy.to === t.id) list.push({ id: 'unplug', label: tr('Wypnij kabel', 'Unplug cable'), ok: true });
+          list.push({ id: 'reel', label: tr('Zwiń kabel na nawijak', 'Reel the cable in'), ok: true });
           return list;
         }
-        if (this.held.from === t.id) return [{ id: 'reel', label: 'Zwiń kabel na nawijak', ok: true }];
-        if (busy) return [{ id: 'plug', label: 'Wepnij kabel', ok: false, why: 'port zajęty' }];
-        return [{ id: 'plug', label: 'Wepnij kabel', ok: true }];
+        if (this.held.from === t.id) return [{ id: 'reel', label: tr('Zwiń kabel na nawijak', 'Reel the cable in'), ok: true }];
+        if (busy) return [{ id: 'plug', label: tr('Wepnij kabel', 'Plug in cable'), ok: false, why: tr('port zajęty', 'port in use') }];
+        return [{ id: 'plug', label: tr('Wepnij kabel', 'Plug in cable'), ok: true }];
       }
     }
   }
@@ -373,7 +374,7 @@ export class Game {
     o.last = { ...this.pos };
     if (o.stuck > 1.2) {
       this.order = null;
-      this.toast(this.held && this.cableState() === 'limit' ? 'Kabel nie sięga dalej.' : 'Wolt nie znajduje drogi.');
+      this.toast(this.held && this.cableState() === 'limit' ? tr('Kabel nie sięga dalej.', "The cable won't reach any further.") : tr('Wolt nie znajduje drogi.', "Wolt can't find a way."));
       this.events.push('deny');
       return null;
     }
@@ -408,20 +409,20 @@ export class Game {
     this.tow = l;
     this.towTaut = false;
     this.snagWarned = false;
-    this.toast(`Doczepiono ${LOADS[l.kind].name}. Ciągnie się za Woltem i spowalnia go.`);
+    this.toast(tr(`Doczepiono ${LOADS[l.kind].name}. Ciągnie się za Woltem i spowalnia go.`, `Hitched ${LOADS[l.kind].name}. It drags behind Wolt and slows him down.`));
     this.events.push('hook');
   }
 
   private unhook() {
     if (!this.tow) return;
-    this.toast(`Odczepiono ${LOADS[this.tow.kind].name}.`);
+    this.toast(tr(`Odczepiono ${LOADS[this.tow.kind].name}.`, `Unhitched ${LOADS[this.tow.kind].name}.`));
     this.tow = null;
     this.towTaut = false;
     this.events.push('unhook');
   }
 
   toggleLight() {
-    if (!this.light && this.empty()) { this.toast('Za mało energii na światło.'); this.events.push('deny'); return; }
+    if (!this.light && this.empty()) { this.toast(tr('Za mało energii na światło.', 'Not enough energy for the light.')); this.events.push('deny'); return; }
     this.light = !this.light;
     this.events.push('light');
   }
@@ -499,7 +500,7 @@ export class Game {
     const s = towStep(this.world, l, hitchOf(at, this.facing));
     if (s.blocked && driving) {
       this.towTaut = true;
-      if (!this.snagWarned) { this.snagWarned = true; this.toast(`${cap(LOADS[l.kind].name)} zaczepiła się o przeszkodę. Objedź ją albo odczep (E).`); this.events.push('deny'); }
+      if (!this.snagWarned) { this.snagWarned = true; this.toast(tr(`${cap(LOADS[l.kind].name)} zaczepiła się o przeszkodę. Objedź ją albo odczep (E).`, `${cap(LOADS[l.kind].name)} snagged on something. Go around it or unhitch (E).`)); this.events.push('deny'); }
       return false;
     }
     l.pos = s.pos; l.angle = s.angle;
@@ -511,24 +512,24 @@ export class Game {
   private updateEnergy(dt: number, inp: Input) {
     const busy = this.moving || !!this.salvage || this.craftT > 0;
     this.stillT = busy ? 0 : this.stillT + dt;
-    const f: Flow[] = [{ label: 'czuwanie (układy)', rate: -DRAIN.base }];
-    if (this.moving) f.push({ label: this.running ? 'bieg' : 'jazda', rate: this.running ? -DRAIN.run : -DRAIN.walk });
-    if (this.salvage) f.push({ label: 'rozbieranie', rate: -DRAIN.salvage });
-    if (this.tow && this.moving) f.push({ label: `ciągnie ${LOADS[this.tow.kind].name}`, rate: -LOADS[this.tow.kind].drain });
-    if (this.light) f.push({ label: 'światło', rate: -DRAIN.light });
+    const f: Flow[] = [{ label: tr('czuwanie (układy)', 'standby (systems)'), rate: -DRAIN.base }];
+    if (this.moving) f.push({ label: this.running ? tr('bieg', 'running') : tr('jazda', 'driving'), rate: this.running ? -DRAIN.run : -DRAIN.walk });
+    if (this.salvage) f.push({ label: tr('rozbieranie', 'salvaging'), rate: -DRAIN.salvage });
+    if (this.tow && this.moving) f.push({ label: tr(`ciągnie ${LOADS[this.tow.kind].name}`, `towing ${LOADS[this.tow.kind].name}`), rate: -LOADS[this.tow.kind].drain });
+    if (this.light) f.push({ label: tr('światło', 'light'), rate: -DRAIN.light });
     this.energySource = null;
     if (this.stillT >= REST_DELAY) {
       const live = this.ports.find(p => this.portLive(p.id) && dist(p.pos, this.pos) < PORT_CHARGE_RANGE);
       this.energySource = live ? 'port' : 'rest';
-      f.push(live ? { label: `ładowanie: ${live.name}`, rate: PORT_CHARGE } : { label: 'postój (Q-1 się odnawia)', rate: REST_CHARGE });
+      f.push(live ? { label: tr(`ładowanie: ${live.name}`, `charging: ${live.name}`), rate: PORT_CHARGE } : { label: tr('postój (Q-1 się odnawia)', 'resting (Q-1 recovers)'), rate: REST_CHARGE });
     }
     void inp;
     const rate = f.reduce((a, x) => a + x.rate, 0);
     this.flows = f;
     this.energyRate = rate;
     this.energy = Math.max(0, Math.min(WOLT_BATTERY, this.energy + rate * dt));
-    if (this.empty() && this.light) { this.light = false; this.toast('Bateria Wolta pusta: światło zgasło. Postój albo port Stacji 2 go naładują.'); this.events.push('deny'); }
-    if (this.energy < LOW_ENERGY && !this.lowWarned && rate < 0) { this.lowWarned = true; this.toast('Bateria Wolta słabnie. Stań na chwilę albo podejdź do portu Stacji 2.'); }
+    if (this.empty() && this.light) { this.light = false; this.toast(tr('Bateria Wolta pusta: światło zgasło. Postój albo port Stacji 2 go naładują.', "Wolt's battery is empty and the light went out. Standing still or the Station 2 port will recharge him.")); this.events.push('deny'); }
+    if (this.energy < LOW_ENERGY && !this.lowWarned && rate < 0) { this.lowWarned = true; this.toast(tr('Bateria Wolta słabnie. Stań na chwilę albo podejdź do portu Stacji 2.', "Wolt's battery is running low. Stand still for a while or go to the Station 2 port.")); }
     if (this.energy > LOW_ENERGY + 10) this.lowWarned = false;
   }
 
@@ -569,18 +570,18 @@ export class Game {
 
   private craft(n: number) {
     if (this.craftT > 0) { this.craftQueue = Math.max(this.craftQueue, n - 1); return; }
-    if (!this.canCraft()) { this.events.push('deny'); this.toast(this.reelOwned + CABLE_PER_CRAFT > REEL_CAPACITY ? 'Nawijak jest pełny.' : 'Brakuje materiałów: 1 miedź + 1 plastik na 5 m kabla.'); return; }
+    if (!this.canCraft()) { this.events.push('deny'); this.toast(this.reelOwned + CABLE_PER_CRAFT > REEL_CAPACITY ? tr('Nawijak jest pełny.', 'The reel is full.') : tr('Brakuje materiałów: 1 miedź + 1 plastik na 5 m kabla.', 'Missing materials: 1 copper + 1 plastic per 5 m of cable.')); return; }
     this.inv.copper -= CABLE_RECIPE.copper; this.inv.plastic -= CABLE_RECIPE.plastic;
     this.craftT = CRAFT_TIME;
     this.craftQueue = n - 1;
   }
 
   private depart() {
-    if (!this.batteryFull()) { this.events.push('deny'); this.toast('Bateria żaglowozu jest za słaba na odjazd.'); return; }
+    if (!this.batteryFull()) { this.events.push('deny'); this.toast(tr('Bateria żaglowozu jest za słaba na odjazd.', "The land yacht's battery is too low to leave.")); return; }
     const attached = this.cables.filter(c => c.from === 'yacht' || c.to === 'yacht');
     if (attached.length) {
       this.cables = this.cables.filter(c => !attached.includes(c));
-      this.toast('Kabel wyskoczył z portu żaglowozu.');
+      this.toast(tr('Kabel wyskoczył z portu żaglowozu.', 'The cable popped out of the yacht port.'));
     }
     this.order = null;
     this.phase = 'departing';
@@ -592,7 +593,7 @@ export class Game {
     const busy = this.portBusy(p.id);
     if (!this.held) {
       if (!busy) {
-        if (this.segmentMax() < 1) { this.toast('Nawijak jest pusty. Wytwórz kabel w fabrykatorze.'); this.events.push('deny'); return; }
+        if (this.segmentMax() < 1) { this.toast(tr('Nawijak jest pusty. Wytwórz kabel w fabrykatorze.', 'The reel is empty. Make cable in the fabricator.')); this.events.push('deny'); return; }
         const c = new Cable(p.pos, p.pos);
         c.moveEnd(this.world, this.pos);
         this.held = { cable: c, from: p.id, to: null };
@@ -602,7 +603,7 @@ export class Game {
         this.cables = this.cables.filter(c => c !== busy);
         busy.cable.moveEnd(this.world, this.pos);
         this.held = busy;
-        this.toast('Wypięto kabel.');
+        this.toast(tr('Wypięto kabel.', 'Cable unplugged.'));
         this.events.push('unplug');
       }
       return;
@@ -611,12 +612,12 @@ export class Game {
     if (busy) { this.events.push('deny'); return; }
     const c = this.held.cable.clone();
     c.moveEnd(this.world, p.pos);
-    if (c.length() > this.segmentMax() + 0.01) { this.toast('Za krótki kabel. Spróbuj krótszej trasy.'); this.events.push('deny'); return; }
+    if (c.length() > this.segmentMax() + 0.01) { this.toast(tr('Za krótki kabel. Spróbuj krótszej trasy.', 'Cable too short. Try a shorter route.')); this.events.push('deny'); return; }
     this.held.cable = c;
     this.held.to = p.id;
     this.cables.push(this.held);
     this.held = null;
-    this.toast(`Wpięto w ${p.name}.`);
+    this.toast(tr(`Wpięto w ${p.name}.`, `Plugged into ${p.name}.`));
     this.events.push('plug');
   }
 
@@ -626,7 +627,7 @@ export class Game {
     if (o && o.working && o.action === 'salvage' && o.target.kind === 'scrap') target = o.target.o;
     else if (inp.use && !this.held && !(this.nearestPort() || this.nearestPoint())) target = this.nearestScrap(inp.aim);
     if (target && this.empty()) {
-      if (this.salvage || o?.working) { this.toast('Za mało energii, by rozbierać. Postój chwilę.'); this.events.push('deny'); }
+      if (this.salvage || o?.working) { this.toast(tr('Za mało energii, by rozbierać. Postój chwilę.', 'Not enough energy to salvage. Stand still for a while.')); this.events.push('deny'); }
       if (o?.working) this.order = null;
       target = null;
     }
@@ -636,13 +637,13 @@ export class Game {
     if (this.salvage.t >= this.salvageTime(target)) {
       const loot = target.loot!;
       const got: string[] = [];
-      const names: Record<Material, string> = { iron: 'żelazo', copper: 'miedź', plastic: 'plastik', glass: 'szkło' };
+      const names: Record<Material, string> = { iron: tr('żelazo', 'iron'), copper: tr('miedź', 'copper'), plastic: tr('plastik', 'plastic'), glass: tr('szkło', 'glass') };
       for (const [k, n] of Object.entries(loot) as [Material, number][]) { this.inv[k] += n; got.push(`+${n} ${names[k]}`); }
       this.world.remove(target);
       this.removed.push(target);
       this.salvage = null;
       if (o?.working) this.order = null;
-      this.toast(`Rozebrano ${target.kind === 'barrel' ? 'beczkę' : 'złom'}: ${got.join(', ')}`);
+      this.toast(tr(`Rozebrano ${target.kind === 'barrel' ? 'beczkę' : 'złom'}: ${got.join(', ')}`, `Salvaged ${target.kind === 'barrel' ? 'a barrel' : 'scrap'}: ${got.join(', ')}`));
       this.events.push('salvage');
     }
   }
@@ -653,7 +654,7 @@ export class Game {
     if (this.craftT <= 0) {
       this.craftT = 0;
       this.reelOwned += CABLE_PER_CRAFT;
-      this.toast(`Fabrykator: +5 m kabla (na nawijaku ${this.reelOwned} m).`);
+      this.toast(tr(`Fabrykator: +5 m kabla (na nawijaku ${this.reelOwned} m).`, `Fabricator: +5 m of cable (${this.reelOwned} m on the reel).`));
       this.events.push('craft');
       if (this.craftQueue > 0 && this.canCraft()) this.craft(this.craftQueue);
       else this.craftQueue = 0;
@@ -672,7 +673,7 @@ export class Game {
   private reelIn(target: PlacedCable) {
     if (target === this.held) this.held = null;
     this.cables = this.cables.filter(c => c !== target);
-    this.toast(`Zwinięto ${target.cable.length().toFixed(1)} m kabla na nawijak.`);
+    this.toast(tr(`Zwinięto ${target.cable.length().toFixed(1)} m kabla na nawijak.`, `Reeled in ${target.cable.length().toFixed(1)} m of cable.`));
     this.events.push('reel');
   }
 
@@ -684,7 +685,7 @@ export class Game {
     if (net.nodes.length > 1 && !full) {
       const surplus = net.production; // the battery takes everything the station gives
       this.battery = Math.min(this.level.yachtBattery, this.battery + surplus * CHARGE_SPEED * dt);
-      if (this.batteryFull()) { this.toast('Bateria żaglowozu naładowana. Wracaj do steru.'); this.events.push('charged'); }
+      if (this.batteryFull()) { this.toast(tr('Bateria żaglowozu naładowana. Wracaj do steru.', "The land yacht's battery is charged. Head back to the helm.")); this.events.push('charged'); }
     }
   }
 
