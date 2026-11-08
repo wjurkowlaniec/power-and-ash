@@ -1,4 +1,5 @@
 import * as THREE from 'three';
+import { cableTube } from './cableTube';
 import { mat, mesh, box, obstacleMesh } from '../../render/models';
 import { Models, fit } from '../../render/assets';
 import { PAL } from '../../render/palette';
@@ -240,7 +241,7 @@ void main() {
           v.push(new THREE.Vector3(a.x + (b.x - a.x) * 0.88, 0.03, a.y + (b.y - a.y) * 0.88));
         }
       }
-      const geo = new THREE.TubeGeometry(new THREE.CatmullRomCurve3(v, false, 'centripetal'), Math.max(16, v.length * 10), 0.035, 6);
+      const geo = cableTube(v, 0.035);
       if (!this.cableMesh) {
         this.cableMesh = mesh(geo, new THREE.MeshStandardMaterial({ color: 0x161818, roughness: 0.7, emissive: PAL.flow, emissiveIntensity: 0 }), 0, 0, 0, true);
         this.scene.add(this.cableMesh);
