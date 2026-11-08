@@ -34,6 +34,11 @@ export const CABLE_MAX = 18;     // m of cable on the drum at the mast foot
 export const CABLE_WARN = 15.5;
 export const POWERED_HOLD = 6;   // s of the machine room waking before the scene moves on
 export const RECHARGE = 0.15;    // %/s Q-1 recovers while resting
+export const TURBINE_POWER = 1200; // W the repaired turbine gives in this wind
+export const MACHINE_POWER = 250;  // W the machine room draws once it wakes (control, lights, pumps)
+
+/** One line of a power balance. Wolt's in %/s of Q-1, the station's in W. */
+export interface Flow { label: string; rate: number; state?: 'off' | 'wait' | 'on' }
 
 export type Item = 'grease' | 'bearing';
 
@@ -153,7 +158,11 @@ export class Station {
   private idle = 0;
   /** True while Q-1 recovers at rest (for the HUD). */
   charging = false;
+  /** Smoothed drain of Q-1 by cause, %/s (for the HUD balance). */
+  private drive = 0;
+  private towDrain = 0;
   private denyT = 0;
+  private lastStep = 0;
 
   constructor(battery = 58) { this.battery = battery; }
 
@@ -184,6 +193,32 @@ export class Station {
     // a hooked tyre is always right behind: E unhooks it when nothing else is in reach
     if (!best && this.towing) best = 'tyre';
     return best;
+  }
+
+  /** Q-1 balance line by line (%/s): what drains Wolt right now and what refills him. */
+  flows(): Flow[] {
+    const f: Flow[] = [];
+    if (this.drive > 0.002) f.push({ label: 'jazda', rate: -this.drive });
+    if (this.towDrain > 0.002) f.push({ label: this.bearingOnTyre ? 'ciągnie oponę z łożyskiem' : 'ciągnie oponę', rate: -this.towDrain });
+    if (this.repair > 0) f.push({ label: 'praca przy maszcie', rate: 0 });
+    if (this.charging) f.push({ label: 'postój (Q-1 się odnawia)', rate: RECHARGE });
+    if (!f.length) f.push({ label: this.battery >= 100 ? 'pełna' : 'czeka na postój', rate: 0 });
+    return f;
+  }
+
+  /** The station's own grid in W: sources and consumers, once Wolt has seen the fabricator. */
+  grid(): { sources: Flow[]; loads: Flow[]; balance: number } | null {
+    if (this.doorOpen < 1) return null;
+    const sources: Flow[] = [
+      { label: 'turbina na maszcie', rate: this.turbine && this.machinePowered ? TURBINE_POWER : 0, state: this.turbine ? (this.machinePowered ? 'on' : 'wait') : 'off' },
+      { label: `Wolt (Q-1, maks. ${WOLT_POWER} W)`, rate: 0, state: 'off' },
+    ];
+    const loads: Flow[] = [
+      { label: 'maszynownia', rate: this.machinePowered ? -MACHINE_POWER : 0, state: this.machinePowered ? 'on' : 'off' },
+      { label: 'fabrykator', rate: 0, state: this.machinePowered ? 'wait' : 'off' },
+    ];
+    const balance = [...sources, ...loads].reduce((a, x) => a + x.rate, 0);
+    return { sources, loads, balance };
   }
 
   hint(): StHint | null {
@@ -247,6 +282,11 @@ export class Station {
     this.idle = this.moving || this.repair > 0 ? 0 : this.idle + dt;
     this.charging = this.idle > 1 && this.battery < 100;
     if (this.charging) this.battery = Math.min(100, this.battery + RECHARGE * dt);
+    // what this frame cost, smoothed so the HUD numbers do not flicker
+    const k = Math.min(1, dt * 4), d = dt > 0 ? this.lastStep / dt : 0;
+    this.drive += (d * MOVE_COST - this.drive) * k;
+    this.towDrain += ((this.towing ? d * TOW_COST : 0) - this.towDrain) * k;
+    this.lastStep = 0;
     if (this.machinePowered && this.poweredT > POWERED_HOLD && !this.done) this.done = true;
   }
 
@@ -283,6 +323,7 @@ export class Station {
     }
     if (this.cableHeld) this.cable!.moveEnd(this.world, this.pos);
     const d = dist(before, this.pos);
+    this.lastStep = d;
     this.battery = Math.max(0, this.battery - d * (MOVE_COST + (this.towing ? TOW_COST : 0)));
     this.stepAcc += d;
     if (this.stepAcc > 0.8) { this.stepAcc = 0; this.events.push(this.towing && this.towTaut ? 'tow' : 'step'); }

@@ -70,6 +70,9 @@ export type ActionId = 'tow' | 'untow' | 'walk' | 'salvage' | 'grab' | 'plug' | 
 export interface Action { id: ActionId; label: string; ok: boolean; why?: string }
 interface Order { target: Target; action: ActionId; path: V2[]; last: V2 | null; stuck: number; working: boolean }
 
+/** One line of Wolt's energy balance: who takes or gives how much right now (Wh/s). */
+export interface Flow { label: string; rate: number }
+
 export interface Objective { text: string; done: boolean; active: boolean }
 
 export class Game {
@@ -102,6 +105,8 @@ export class Game {
   /** Current net energy flow in Wh/s (negative = draining), for the HUD. */
   energyRate = 0;
   energySource: 'rest' | 'port' | null = null;
+  /** The current energy balance line by line (consumers negative, sources positive). */
+  flows: Flow[] = [];
   light = true;
   stillT = 0;
   order: Order | null = null;
@@ -506,18 +511,20 @@ export class Game {
   private updateEnergy(dt: number, inp: Input) {
     const busy = this.moving || !!this.salvage || this.craftT > 0;
     this.stillT = busy ? 0 : this.stillT + dt;
-    let rate = -DRAIN.base;
-    if (this.moving) rate -= this.running ? DRAIN.run : DRAIN.walk;
-    if (this.salvage) rate -= DRAIN.salvage;
-    if (this.tow && this.moving) rate -= LOADS[this.tow.kind].drain;
-    if (this.light) rate -= DRAIN.light;
+    const f: Flow[] = [{ label: 'czuwanie (układy)', rate: -DRAIN.base }];
+    if (this.moving) f.push({ label: this.running ? 'bieg' : 'jazda', rate: this.running ? -DRAIN.run : -DRAIN.walk });
+    if (this.salvage) f.push({ label: 'rozbieranie', rate: -DRAIN.salvage });
+    if (this.tow && this.moving) f.push({ label: `ciągnie ${LOADS[this.tow.kind].name}`, rate: -LOADS[this.tow.kind].drain });
+    if (this.light) f.push({ label: 'światło', rate: -DRAIN.light });
     this.energySource = null;
     if (this.stillT >= REST_DELAY) {
       const live = this.ports.find(p => this.portLive(p.id) && dist(p.pos, this.pos) < PORT_CHARGE_RANGE);
       this.energySource = live ? 'port' : 'rest';
-      rate += live ? PORT_CHARGE : REST_CHARGE;
+      f.push(live ? { label: `ładowanie: ${live.name}`, rate: PORT_CHARGE } : { label: 'postój (Q-1 się odnawia)', rate: REST_CHARGE });
     }
     void inp;
+    const rate = f.reduce((a, x) => a + x.rate, 0);
+    this.flows = f;
     this.energyRate = rate;
     this.energy = Math.max(0, Math.min(WOLT_BATTERY, this.energy + rate * dt));
     if (this.empty() && this.light) { this.light = false; this.toast('Bateria Wolta pusta: światło zgasło. Postój albo port Stacji 2 go naładują.'); this.events.push('deny'); }

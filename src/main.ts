@@ -1,5 +1,7 @@
 import './style.css';
-import { Game, CABLE_WARN, REEL_HOLD, CRAFT_TIME, WOLT_BATTERY, LOW_ENERGY, Target, Action } from './sim/game';
+import { Game, CABLE_WARN, REEL_HOLD, CRAFT_TIME, WOLT_BATTERY, LOW_ENERGY, Target, Action, DRAIN, CABLE_RECIPE, CABLE_PER_CRAFT, CHARGE_SPEED, PORT_CHARGE } from './sim/game';
+import { LOADS } from './sim/tow';
+import type { Material } from './sim/world';
 import { level1 } from './sim/level';
 import { View } from './render/view';
 import { Sound } from './audio/ambient';
@@ -119,6 +121,61 @@ hotbar.innerHTML = ['chwytak', 'rozbier.', 'kabel', 'kołek', 'lampa', 'extender
   .map((s, i) => `<span class="slot ${i === 2 ? 'on' : 'off'}" id="slot${i}">${i + 1} ${s}</span>`).join('');
 let lastToastCount = 0;
 
+const MAT: Record<Material, string> = { iron: 'żelazo', copper: 'miedź', plastic: 'plastik', glass: 'szkło' };
+const MAT_USE: Record<Material, string> = {
+  copper: 'na kabel (fabrykator)', plastic: 'na izolację kabla (fabrykator)',
+  iron: 'na kołki i naprawy (później)', glass: 'na lampy (później)',
+};
+function clock(s: number): string {
+  if (s < 60) return `${Math.max(1, Math.round(s))} s`;
+  const m = Math.floor(s / 60);
+  return m < 60 ? `${m} min ${String(Math.round(s % 60)).padStart(2, '0')} s` : `${Math.floor(m / 60)} h ${m % 60} min`;
+}
+const n2 = (x: number, d = 1) => x.toFixed(d).replace('.', ',');
+/** The mouse-over card: what the thing is and what Wolt gets out of it. */
+function infoCard(t: Target): string {
+  switch (t.kind) {
+    case 'scrap': {
+      const o = t.o;
+      const time = game.salvageTime(o);
+      const loot = Object.entries(o.loot ?? {}) as [Material, number][];
+      return `<div class="h">${(o.name ?? targetName(t)).toUpperCase()}</div>` +
+        (o.desc ? `<div class="dim">${o.desc}</div>` : '') +
+        `<div class="sub">po rozebraniu</div>` +
+        loot.map(([k, n]) => `<div class="row"><span><b class="okc">+${n}</b> ${MAT[k]}</span><span class="dim">${MAT_USE[k]}</span></div>`).join('') +
+        `<div class="row cost"><span>czas ${n2(time)} s</span><span>bateria Wolta −${n2(time * DRAIN.salvage)} Wh</span></div>`;
+    }
+    case 'port': {
+      const p = game.ports.find(x => x.id === t.id)!;
+      const plugged = game.cables.some(c => c.from === p.id || c.to === p.id);
+      const live = game.portLive(p.id);
+      const what = p.id === 'station'
+        ? `stare panele słoneczne, dają ${game.level.stationOutput} W`
+        : game.batteryFull() ? 'bateria żaglowozu pełna' : `wejście baterii żaglowozu, przyjmie do ${game.level.stationOutput} W`;
+      return `<div class="h">${p.name.toUpperCase()}</div><div class="dim">${what}</div>` +
+        `<div class="row"><span>kabel</span><b class="${plugged ? 'okc' : 'dim'}">${plugged ? 'wpięty' : 'brak'}</b></div>` +
+        (live ? `<div class="row"><span>Wolt na postoju obok</span><b class="okc">+${n2(PORT_CHARGE, 1)} Wh/s</b></div>` : '');
+    }
+    case 'load': {
+      const l = game.loads.find(x => x.id === t.id)!;
+      const sp = LOADS[l.kind];
+      return `<div class="h">${targetName(t).toUpperCase()}</div><div class="dim">ładunek do ciągnięcia na haku</div>` +
+        `<div class="row"><span>spowalnia</span><b>${Math.round(sp.drag * 100)}%</b></div>` +
+        `<div class="row cost"><span>w ruchu</span><span>bateria Wolta −${n2(sp.drain, 2)} Wh/s</span></div>`;
+    }
+    case 'point': {
+      if (t.id === 'fabricator') {
+        const can = Math.min(Math.floor(game.inv.copper / CABLE_RECIPE.copper), Math.floor(game.inv.plastic / CABLE_RECIPE.plastic));
+        return `<div class="h">FABRYKATOR</div><div class="dim">${CABLE_RECIPE.copper} miedź + ${CABLE_RECIPE.plastic} plastik → ${CABLE_PER_CRAFT} m kabla, ${n2(CRAFT_TIME)} s</div>` +
+          `<div class="row"><span>z zapasu wyjdzie</span><b class="${can ? 'okc' : 'dim'}">${can * CABLE_PER_CRAFT} m</b></div>`;
+      }
+      return `<div class="h">STER</div><div class="dim">${game.batteryFull() ? 'bateria pełna, można ruszać' : 'odjazd dopiero z pełną baterią'}</div>`;
+    }
+    case 'self': return `<div class="h">WOLT</div><div class="dim">bateria ${Math.round(game.energy)}/${WOLT_BATTERY} Wh, bilans ${game.energyRate >= 0 ? '+' : '−'}${n2(Math.abs(game.energyRate), 2)} Wh/s</div>`;
+    default: return '';
+  }
+}
+
 let hoverKey = '';
 function hud() {
   // Wolt's battery
@@ -128,8 +185,13 @@ function hud() {
   en.className = game.energy < LOW_ENERGY ? 'low' : '';
   $('enNum').textContent = `${Math.round(game.energy)}/${WOLT_BATTERY} Wh`;
   const r = game.energyRate;
-  const why = game.energySource === 'port' ? 'ładowanie z portu' : game.energySource === 'rest' ? 'postój, ładuje się' : game.salvage ? 'rozbieranie' : game.moving ? (keys.has('ShiftLeft') || keys.has('ShiftRight') ? 'bieg' : 'marsz') : 'czuwanie';
-  $('enRate').innerHTML = `<span class="${r >= 0 ? 'okc' : r < -0.9 ? 'tense' : ''}">${r >= 0 ? '+' : '−'}${Math.abs(r).toFixed(2)} Wh/s</span> · ${why}<br>światło: ${game.light ? 'wł.' : 'wył.'} <span class="dim">(L)</span>`;
+  const fmt = (x: number, d = 2) => (x >= 0 ? '+' : '−') + Math.abs(x).toFixed(d).replace('.', ',');
+  const eta = r > 0.01 ? (WOLT_BATTERY - game.energy) / r : r < -0.01 ? game.energy / -r : Infinity;
+  const etaTxt = !isFinite(eta) ? '' : r > 0 ? (game.energy >= WOLT_BATTERY - 0.1 ? 'pełna' : `pełna za ${clock(eta)}`) : `pusta za ${clock(eta)}`;
+  $('enRate').innerHTML = `<div class="flows">` +
+    game.flows.map(f => `<div class="row"><span>${f.label}</span><b class="${f.rate > 0 ? 'okc' : ''}">${fmt(f.rate)}</b></div>`).join('') +
+    `<div class="row sum"><span>bilans</span><b class="${r >= 0 ? 'okc' : r < -0.9 ? 'tense' : ''}">${fmt(r)} Wh/s</b></div>` +
+    `<div class="row"><span class="dim">${etaTxt}</span><span class="dim">${game.light ? '' : 'światło wył. '}(L)</span></div></div>`;
   $('slot4').className = 'slot ' + (game.light ? 'on' : 'off');
 
   // what's under the cursor
@@ -137,15 +199,19 @@ function hud() {
   const ht = running && mouse && ctx().hidden ? view.pickTarget(mouse.x, mouse.y) : null;
   if (ht && ht.kind !== 'ground' && mouseScreen) {
     const acts = game.actionsFor(ht);
-    const key = targetName(ht) + acts.map(a => a.label + a.ok).join();
+    const key = targetName(ht) + acts.map(a => a.label + a.ok).join() + (ht.kind === 'scrap' ? ht.o.x + ',' + ht.o.y : '') + (ht.kind === 'self' ? Math.round(game.energy * 4) + n2(game.energyRate, 2) : '') + game.cables.length + ':' + game.inv.copper + ':' + game.inv.plastic + game.batteryFull();
     if (key !== hoverKey) {
       hoverKey = key;
-      hv.innerHTML = acts.length
-        ? `<span class="k">LPM</span>${acts[0].label}${acts[0].ok ? '' : ` <span class="limit">(${acts[0].why ?? 'niedostępne'})</span>`}${acts.length > 1 ? ` · <span class="k">PPM</span>więcej` : ''}`
-        : targetName(ht);
+      const act = acts.length
+        ? `<div class="act"><span class="k">LPM</span>${acts[0].label}${acts[0].ok ? '' : ` <span class="limit">(${acts[0].why ?? 'niedostępne'})</span>`}${acts.length > 1 ? ` · <span class="k">PPM</span>więcej` : ''}</div>`
+        : '';
+      hv.innerHTML = infoCard(ht) + act;
     }
     hv.hidden = false;
-    hv.style.left = mouseScreen.x + 'px'; hv.style.top = mouseScreen.y + 'px';
+    // keep the card on screen: flip to the other side of the cursor near the edges
+    const w = hv.offsetWidth + 20, hh = hv.offsetHeight + 14;
+    hv.style.left = (mouseScreen.x + w > innerWidth - 8 ? mouseScreen.x - w - 12 : mouseScreen.x) + 'px';
+    hv.style.top = (mouseScreen.y + hh > innerHeight - 8 ? mouseScreen.y - hh - 6 : mouseScreen.y) + 'px';
     document.body.style.cursor = 'pointer';
   } else { hv.hidden = true; hoverKey = ''; document.body.style.cursor = ''; }
 
@@ -169,10 +235,20 @@ function hud() {
   const np = $('netPanel');
   np.hidden = !(connected || overlay || game.battery > 0);
   if (!np.hidden) {
-    np.innerHTML = `<div class="lbl">ŻAGLOWÓZ</div>
+    const out = game.level.stationOutput;
+    const charging = connected && !game.batteryFull();
+    const take = charging ? out : 0;
+    const left = (game.level.yachtBattery - game.battery) / (out * CHARGE_SPEED);
+    np.innerHTML = `<div class="lbl">ŻAGLOWÓZ · SIEĆ</div>
       <div class="row"><span>bateria</span><b class="${game.batteryFull() ? 'okc' : ''}">${(game.battery / 1000).toFixed(2)} / ${(game.level.yachtBattery / 1000).toFixed(1)} kWh</b></div>
       <div class="meter"><i style="width:${game.batteryPct() * 100}%;background:#6fc4e6"></i></div>
-      <div class="row"><span>zasilanie</span><b class="${connected ? 'okc' : 'dim'}">${connected ? `Stacja 2, ${net.production} W` : 'brak'}</b></div>`;
+      <div class="sub">źródła</div>
+      <div class="row"><span>panele Stacji 2</span><b class="${connected ? 'okc' : 'dim'}">${connected ? `+${out} W` : `${out} W, bez kabla`}</b></div>
+      <div class="sub">odbiorniki</div>
+      <div class="row"><span>ładowanie baterii</span><b>${charging ? `−${take} W` : game.batteryFull() ? 'pełna' : '0 W'}</b></div>
+      <div class="row"><span>napęd, ster</span><b class="dim">wył.</b></div>
+      <div class="row sum"><span>bilans</span><b class="${connected ? 'okc' : 'dim'}">${connected ? `${out - take >= 0 ? '+' : '−'}${Math.abs(out - take)} W` : 'brak zasilania'}</b></div>
+      ${charging ? `<div class="dim">pełna za ok. ${clock(left)}</div>` : !connected ? `<div class="dim">połącz port Stacji 2 z portem żaglowozu</div>` : ''}`;
   }
 
   $('goals').innerHTML = `<div class="t">${game.level.name.toUpperCase()}</div>` +

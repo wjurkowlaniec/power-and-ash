@@ -1,5 +1,5 @@
 import { Ctx, Scene } from '../scene';
-import { Station, WOLT_POWER } from '../sim/station';
+import { Station, WOLT_POWER, FAB_POWER, TURBINE_POWER, MACHINE_POWER, Flow } from '../sim/station';
 import { StationView } from '../render/stationView';
 import { NOTES, journal, noteHtml, journalHtml } from '../notes';
 import { story } from '../state';
@@ -27,11 +27,11 @@ export class StationScene implements Scene {
     c.sound.muffle = 0; c.sound.wind = 1.1;
     this.el = document.createElement('div');
     this.el.innerHTML = `
-      <div class="vitals" id="sVitals"></div>
+      <div class="lcol"><div class="vitals" id="sVitals"></div><div class="goal" id="sGoal"></div></div>
+      <div class="grid" id="sGrid" hidden></div>
       <div class="htip" id="sTip" hidden></div>
       <div class="hmsg" id="sMsg" hidden></div>
       <div class="note" id="sNote" hidden></div>
-      <div class="goal" id="sGoal"></div>
       <div class="hkeys" id="sKeys"><b>WASD</b> ruch · <b>E</b> użyj · <b>J</b> archiwum</div>`;
     c.hud.appendChild(this.el);
   }
@@ -106,9 +106,23 @@ export class StationScene implements Scene {
     const st = this.st, $ = (id: string) => document.getElementById(id)!;
     $('sVitals').innerHTML = `<div class="lbl">Q-1 · ${WOLT_POWER} W</div>
       <div class="row"><span>energia${st.charging ? ' <em class="chg" title="Q-1 odzyskuje energię na postoju">▲</em>' : ''}</span><b>${st.battery.toFixed(1).replace('.', ',')}%</b></div><div class="bar"><i style="width:${st.battery}%"></i></div>
+      <div class="flows">${st.flows().map(f => `<div class="row"><span>${f.label}</span><b class="${f.rate > 0 ? 'pos' : f.rate < 0 ? 'neg' : 'dim'}">${pct(f.rate)}</b></div>`).join('')}</div>
       <div class="row"><span>temperatura</span><b>6°C</b></div>
       <div class="row"><span>wiatr</span><b>${st.turbine ? 'turbina ↻' : '4 m/s'}</b></div>`;
     $('sGoal').textContent = st.goal();
+    const g = st.grid(), gel = $('sGrid');
+    gel.hidden = !g;
+    if (g) {
+      const line = (f: Flow, need: number) => {
+        const v = f.state === 'on' ? `${f.rate > 0 ? '+' : '−'}${Math.abs(f.rate)} W`
+          : f.state === 'wait' ? (need ? `gotowy · ${need} W` : 'kręci się, brak odbioru') : need ? `${need} W · brak prądu` : 'wył.';
+        return `<div class="row"><span>${f.label}</span><b class="${f.state === 'on' ? (f.rate > 0 ? 'pos' : 'neg') : 'dim'}">${v}</b></div>`;
+      };
+      gel.innerHTML = `<div class="lbl">SIEĆ STACJI</div>
+        <div class="sub">źródła</div>${line(g.sources[0], 0)}${line(g.sources[1], 0)}
+        <div class="sub">odbiorniki</div>${line(g.loads[0], MACHINE_POWER)}${line(g.loads[1], FAB_POWER)}
+        <div class="row sum"><span>bilans</span><b class="${g.balance > 0 ? 'pos' : 'dim'}">${g.balance > 0 ? `+${g.balance} W zapasu` : st.turbine ? `turbina ${TURBINE_POWER} W czeka na kabel` : 'brak zasilania'}</b></div>`;
+    }
     $('sKeys').innerHTML = `<b>WASD</b> ruch · <b>E</b> użyj · <b>J</b> archiwum` + (st.towing ? ' · <b>Q</b> odczep oponę' : st.cableHeld ? ' · <b>Q</b> połóż kabel' : '');
     const hint = st.hint(), tip = $('sTip');
     tip.hidden = !hint;
@@ -131,4 +145,10 @@ export class StationScene implements Scene {
     } else note.hidden = true;
     $('sKeys').style.opacity = st.towing || st.cableHeld ? '0.7' : String(Math.max(0, 0.6 - st.t / 20));
   }
+}
+
+/** %/s with a sign and a Polish decimal comma. */
+function pct(x: number): string {
+  if (Math.abs(x) < 0.005) return '0';
+  return (x > 0 ? '+' : '−') + Math.abs(x).toFixed(2).replace('.', ',') + '%/s';
 }

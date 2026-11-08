@@ -7,6 +7,9 @@ export interface Obstacle {
   kind: ObstacleKind; x: number; y: number; w: number; h: number;
   /** Salvageable piles carry loot; the pile disappears after salvage. */
   loot?: Partial<Record<Material, number>>;
+  /** What the pile is, for the mouse-over card (salvageable piles only). */
+  name?: string;
+  desc?: string;
 }
 
 export type Material = 'iron' | 'copper' | 'plastic' | 'glass';
