@@ -48,12 +48,19 @@ Oznaczenia w SWIAT.md: **[ustalone]** to decyzja Wojtka, **[propozycja]** to szk
 | Bateria (AI) nie rozumie ludzkiego pisma. Notatki i książki na początku nic nie znaczą, ale warto je zbierać. Po zebraniu korpusu pismo jest odkodowywane etapami. Wcześniej podpowiadają rysunki i piktogramy, a logi maszyn są czytelne od razu. | [Notatki i archiwum](SWIAT.md#notatki-i-archiwum) |
 | Ładowanie nigdy nie jest indukcyjne. Wolt ma zawsze przy sobie mikrokabel (3 m) albo wpina się w port bezpośrednio ramieniem, przez bolec w nadgarstku (najszybciej, ale stoi i ma zajęte ramię). W bazie kołyska z pantografem. | [Ładowanie](SWIAT.md#ładowanie-zawsze-przez-fizyczne-połączenie) |
 | Zasada pracy: każda decyzja i każda zmiana trafia do dokumentacji w repo na bieżąco (ten plik, SWIAT.md, POCZATEK.md, PLAN.md, README), tak żeby projekt mógł przejąć inny agent albo człowiek. | ten plik |
+| Drugie tech demo „Warsztat” (`/demo-craft/`), osobne od „Rozruchu”: wytwarzanie, rozwój postaci, wszystkie etapy do przeklikania po kolei. „Zaszalej.” | [DEMO-WARSZTAT.md](DEMO-WARSZTAT.md) |
+| W demie: mały ekwipunek Wolta, który powiększa doczepiony wózek; rozbiórka i narzędzia; budowa kabli, rozgałęźników, maszyn i panelu słonecznego; drzewko technologii i progresja. | [DEMO-WARSZTAT.md: Co jest w demie](DEMO-WARSZTAT.md#co-jest-w-demie) |
+| Ulepszenia Wolta jako moduły do podpięcia: moduł AI, który „rozpoznaje więcej prądu”, radio, zdalne sterowanie, lepsze światło, antena i kontakt z innymi miejscami na Ziemi. | [DEMO-WARSZTAT.md](DEMO-WARSZTAT.md), [POMYSLY.md](POMYSLY.md) |
+| Agent: w demie drzewko technologii działa na obserwacjach (z rozbiórki) i obliczeniach Q-1 z nadwyżki baterii, czyli na zasadzie z SWIAT.md „Rozwój: obliczenia w tle”, tylko pokazanej jako drzewko. | [DEMO-WARSZTAT.md](DEMO-WARSZTAT.md), [SWIAT.md: Rozwój](SWIAT.md#rozwój-obliczenia-w-tle) |
+| Żadnych „biednych brył”: wszystko ma być porządnie zamodelowane w kierunku artystycznym gry. Jeśli brakuje modeli, agent mówi czego, a Wojtek ich poszuka. Demo używa paczek KayKit (CC0, klonowane z GitHuba) i szczegółowych modeli w kodzie. | [DEMO-WARSZTAT.md: Modele](DEMO-WARSZTAT.md#modele), [CREDITS.md](../CREDITS.md) |
+| Pomysły na później, bez implementacji: bardzo długi kabel z centralnej elektrowni, robot pomocnik (jeździ za Woltem, kładzie kable i drogi na zlecenie), możliwy zwrot w stronę „restoration”. | [POMYSLY.md](POMYSLY.md) |
 
 ## Czeka na decyzję
 
 - Czy popiół jako skutek katastrofy Q-2 jest OK.
 - Ślad na równinie i czy zadokowany wózek to ciało, czy osobny pojazd.
 - Mapa świata (później, Wojtek chce ją narysować sam).
+- Czy w grze jest crafting od zera (demo „Warsztat” go testuje, a SWIAT.md ustala „bez pełnego craftingu od zera”) i czy rozwój ma widoczne drzewko. [DEMO-WARSZTAT.md: Czeka na decyzję](DEMO-WARSZTAT.md#czeka-na-decyzję)
 - Pozostałe punkty w [Otwartych pytaniach](SWIAT.md#otwarte-pytania).
 
 ## Sposób pracy, technologia, styl i rozgrywka

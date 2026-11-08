@@ -7,7 +7,7 @@ import { tr } from '../i18n';
  * bricks. Pure logic, no rendering. A load sits on the ground as a circle, it does not
  * block tiles (A* and the cable ignore it), but Wolt bumps into loads that are not his.
  */
-export type LoadKind = 'tyre' | 'bricks';
+export type LoadKind = 'tyre' | 'bricks' | 'cart';
 
 export interface LoadSpec {
   name: string;      // as an object: Polish accusative ("doczep oponę"), English with "the"
@@ -21,6 +21,8 @@ export interface LoadSpec {
 export const LOADS: Record<LoadKind, LoadSpec> = {
   tyre: { name: tr('oponę', 'the tyre'), radius: 0.42, drag: 0.22, drain: 0.25 },
   bricks: { name: tr('sanki z cegłami', 'the brick sled'), radius: 0.48, drag: 0.45, drain: 0.6 },
+  // the service cart in the crafting demo (/demo-craft/): on wheels, so it rolls easily
+  cart: { name: tr('wózek', 'the cart'), radius: 0.7, drag: 0.15, drain: 0.2 },
 };
 
 export interface Load { id: string; kind: LoadKind; pos: V2; angle: number }
