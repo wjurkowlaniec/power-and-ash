@@ -205,11 +205,12 @@ Ulepszenia Wolta to zamienne moduły na ramie bazowej (patrz [Ciała i transfer]
 
 ## Ładowanie: zawsze przez fizyczne połączenie
 
-**[propozycja 2026-11-08, do akceptacji]** W tym świecie nie ma ładowania bezprzewodowego ani indukcyjnego. Prąd zawsze płynie przez kabel albo styk. To wzmacnia główny temat gry (kabel, sieć, połączenia) i daje animacje, które pokazują, co się dzieje.
+**[ustalone 2026-11-08]** W tym świecie nie ma ładowania bezprzewodowego ani indukcyjnego. Wolt ma zawsze przy sobie **mikrokabel** gotowy do podłączenia albo wpina się **bezpośrednio ramieniem** (decyzja Wojtka). Prąd zawsze płynie przez kabel albo styk. To wzmacnia główny temat gry (kabel, sieć, połączenia) i daje animacje, które pokazują, co się dzieje.
 
 | Sposób | Gdzie | Jak wygląda | Animacja |
 |---|---|---|---|
-| **Kabel własny Wolta (3 m)** | każdy port w terenie | wtyczka na krótkim przewodzie na bębenku przy ramie | Wolt staje przy porcie, ramię odwija wtyczkę, otwiera klapkę gniazda i wpina. Iskra, klik, dioda portu z czerwonej na bursztynową. Przewód leży naprężony między Woltem i portem, a odjazd ponad 3 m wyrywa wtyczkę. |
+| **Ramię jako wtyczka** | każdy port w terenie, gdy Wolt stoi tuż przy nim | w nadgarstku ramienia jest bolec stykowy, a chwytak odsłania go jak klapkę | Wolt podjeżdża bokiem, ramię otwiera klapkę gniazda i wsuwa nadgarstek. Najszybsze, ale Wolt musi stać nieruchomo, a ramię jest zajęte (nie podniesie niczego ani nie trzyma kabla). |
+| **Mikrokabel Wolta (3 m), zawsze pod ręką** | każdy port w terenie | wtyczka na krótkim przewodzie na bębenku przy ramie | Wolt staje przy porcie, ramię odwija wtyczkę, otwiera klapkę gniazda i wpina. Iskra, klik, dioda portu z czerwonej na bursztynową. Przewód leży naprężony między Woltem i portem, a odjazd ponad 3 m wyrywa wtyczkę. |
 | **Kołyska / stacja dokująca** | tylko w bazach (hala stacji, później żaglowóz) | niska stalowa rampa z dwiema miedzianymi szynami i ramieniem stykowym nad nią | Wolt wjeżdża kołem na rampę, a ramię stykowe opada jak pantograf tramwaju i dociska się do styków na ramie. Krótki trzask, potem ciche buczenie. |
 | **Kabel z nawijaka (20 m)** | między portami: stacja → pojazd, baza → baza | miedziany kabel z wtyczkami na obu końcach | jak w obecnej mechanice kabla |
 
@@ -485,7 +486,6 @@ Decyzja na końcu nie zamyka gry, tylko zmienia świat dalej.
 - Czy Popiół jako skutek katastrofy Q-2 jest OK? To mocno ustawia ton i stosunek ludzi do baterii.
 - Kto budzi Wolta i dlaczego teraz.
 - Ile umiejętności baterii i w jakiej kolejności.
-- Czy ładowanie zostaje tylko przez kabel i styk (bez indukcji).
 - Ile ciał i modułów, i które maszyny da się przejąć zdalnie.
 - Czy transfer do innego ciała jest od połowy gry, czy dopiero późno.
 - Ile notatek na obszar i jak bardzo mają prowadzić za rękę.
