@@ -18,7 +18,8 @@ const ASH = new THREE.Color(0xb9b2a5);
 
 export type Models = Map<string, THREE.Object3D>;
 
-function fade(m: THREE.Material, amount: number): THREE.Material {
+/** The ash fade for one material (exported for the crafting demo, which loads its own extra models). */
+export function fade(m: THREE.Material, amount: number): THREE.Material {
   const mm = (m as THREE.MeshStandardMaterial).clone();
   mm.onBeforeCompile = sh => {
     sh.uniforms.uFade = { value: amount };

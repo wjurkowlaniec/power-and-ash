@@ -40,6 +40,12 @@ export class World {
     this.computeCorners();
   }
 
+  /** A new block (something built on the grid). */
+  add(o: Obstacle) {
+    this.obstacles.push(o);
+    this.rebuild();
+  }
+
   remove(o: Obstacle) {
     const i = this.obstacles.indexOf(o);
     if (i >= 0) { this.obstacles.splice(i, 1); this.rebuild(); }
