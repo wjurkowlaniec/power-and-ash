@@ -22,6 +22,7 @@ odległy metal z pogłosem), robiony proceduralnie w Web Audio, bez plików audi
 | M7 | Sterowanie dotykowe i pad | ⏳ |
 | F1 | Feedback: pokład z europalet na stalowej ramie, bateria Wolta (zużycie, ładowanie na postoju i przy porcie), światło L, beczki do rozebrania, sterowanie myszą z menu kontekstowym, żagiel przezroczysty, gdy zasłania Wolta | ✅ |
 | W1 | Wolt-monocykl (etap 1 „Rdzeń”, `src/render/wolt.ts`): koło, kapsuła z ogniwem Q-1, ramię serwisowe od startu, bęben kabla z prowadnicą, hak. Balansowanie i przechył (zakręty, hamowanie, ciągnięcie kabla i ładunku), kabel wychodzi z bębna, bęben kręci się przy wydawaniu i zwijaniu, koło buksuje, gdy kabel albo ładunek trzyma. Holowanie (`src/sim/tow.ts`): opona i sanki z cegłami na linie 1,5 m, E doczep / odczep, spowolnienie i większy pobór energii, zaczepianie o przeszkody, ślady w popiele | ✅ |
+| A1 | Płynność (PR #32): model jazdy `src/sim/drive.ts` (obrót z ograniczeniem, przyspieszanie i hamowanie, stop na celu, bez ślizgu), zaczepiona opona trzyma Wolta na linie zamiast go zamrażać, buksowanie z pyłem, ciągłe ślady zależne od podłoża (`src/render/groundFx.ts`), płynne wstawanie i branie baterii w hali, wygaszanie między scenami. Szczegóły w [RUCH-I-ANIMACJA.md](RUCH-I-ANIMACJA.md) | ✅ |
 
 ## Zasady kabla (M2)
 
