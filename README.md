@@ -10,6 +10,7 @@ Top-down gra survivalowa w przeglądarce. Automat serwisowy Wolt ciągnie kable 
 Gra i demo są w jednym repo i dzielą kod silnika (`src/sim`, `src/render`, `src/audio`). Gra ma swoje wejście `index.html` → `src/game/main.ts`, demo `demo/index.html` → `src/main.ts`. W grze `?scene=hall` przeskakuje do wybranej sceny (do testów), a przytrzymana spacja pomija Scenę 0.
 
 - [Plan implementacji i kamienie milowe](docs/PLAN.md)
+- [Ruch, animacja i ślady Wolta](docs/RUCH-I-ANIMACJA.md) (model jazdy, holowanie, animator, ślady i pył, wstawanie i bateria w hali)
 - [Dokument projektowy](docs/design.html) (research gatunku, koncepcja, zasady kabli, wizualizacje)
 
 ## Sterowanie
@@ -46,7 +47,7 @@ npm run build:single # dist-single/index.html, jeden samodzielny plik
 
 Struktura:
 
-- `src/sim/` to logika gry w czystym TypeScripcie (siatka, kabel, sieć, stan gry), bez Three.js.
-- `src/render/` to scena Three.js, która czyta stan gry.
+- `src/sim/` to logika gry w czystym TypeScripcie (siatka, kabel, sieć, stan gry, model jazdy `drive.ts`, holowanie `tow.ts`), bez Three.js.
+- `src/render/` to scena Three.js, która czyta stan gry (wspólne: model i animator Wolta `wolt.ts`, ładunki `loads.ts`, ślady i pył `groundFx.ts`).
 - `src/audio/` to proceduralny dźwięk w Web Audio.
 - `test/` to testy logiki.
