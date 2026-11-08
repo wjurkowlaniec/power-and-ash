@@ -1,6 +1,7 @@
 import { V2, dist, len, scale } from '../../sim/vec';
 import { World, Obstacle } from '../../sim/world';
 import { Cable } from '../../sim/cable';
+import { tr } from '../../i18n';
 
 /**
  * Scene 1. Hala pomiarowa (docs/POCZATEK.md), pure logic. The player is the Q-1
@@ -145,19 +146,19 @@ export class Hall {
     const n = this.nearest();
     const L = layout;
     switch (n) {
-      case 'pipe': return { key: 'E', text: 'podnieś rurę (do podważenia dźwigni)', at: this.pipeDown!, ok: true };
+      case 'pipe': return { key: 'E', text: tr('podnieś rurę (do podważenia dźwigni)', 'pick up the pipe (to lever the handle)'), at: this.pipeDown!, ok: true };
       case 'lever':
         return this.hasPipe
-          ? { key: 'E', text: 'przytrzymaj: podważ dźwignię rurą', at: L.lever, ok: true, progress: this.pry / PRY_TIME }
-          : { key: 'E', text: 'dźwignia awaryjna', at: L.lever, ok: true };
-      case 'battery': return { key: 'E', text: 'weź baterię i wepnij w kasetę ramy', at: L.battery, ok: true };
+          ? { key: 'E', text: tr('przytrzymaj: podważ dźwignię rurą', 'hold: lever the handle with the pipe'), at: L.lever, ok: true, progress: this.pry / PRY_TIME }
+          : { key: 'E', text: tr('dźwignia awaryjna', 'emergency lever'), at: L.lever, ok: true };
+      case 'battery': return { key: 'E', text: tr('weź baterię i wepnij w kasetę ramy', 'take the battery and slot it into the frame'), at: L.battery, ok: true };
       case 'note': {
         const n = L.notes.find(q => q.id === this.noteAt)!;
-        return { key: 'E', text: this.notesRead.has(n.id) ? 'zeskanowana kartka (jeszcze raz)' : 'kartka: zeskanuj', at: n, ok: true };
+        return { key: 'E', text: this.notesRead.has(n.id) ? tr('zeskanowana kartka (jeszcze raz)', 'scanned sheet (again)') : tr('kartka: zeskanuj', 'sheet: scan'), at: n, ok: true };
       }
       case 'door': return this.powered
-        ? { key: 'E', text: 'pchnij drzwi', at: L.door, ok: true }
-        : { key: 'E', text: 'ciężkie drzwi', at: L.door, ok: true };
+        ? { key: 'E', text: tr('pchnij drzwi', 'push the door'), at: L.door, ok: true }
+        : { key: 'E', text: tr('ciężkie drzwi', 'heavy door'), at: L.door, ok: true };
     }
     return null;
   }
@@ -226,7 +227,7 @@ export class Hall {
     if (!this.world.circleBlocked(ty, PLAYER_R) && this.inside(ty) && this.tetherOk(ty)) this.pos = ty;
     this.tether?.moveEnd(this.world, this.pos);
     if (this.tether && this.tetherLength() > TETHER_MAX - 0.15 && this.t - (this.message?.t ?? -99) > 6)
-      this.say('Kabel diagnostyczny nie puści dalej. Ciało jest na smyczy komory.');
+      this.say(tr('Kabel diagnostyczny nie puści dalej. Ciało jest na smyczy komory.', "The diagnostic cable won't let go. The body is on the chamber's leash."));
     const d = dist(before, this.pos);
     this.walked += d;
     if (!this.powered) this.drain(d * RESERVE_PER_M);
@@ -259,7 +260,7 @@ export class Hall {
     if (!n) return;
     switch (n) {
       case 'pipe':
-        if (inp.usePressed) { this.hasPipe = true; this.pipeDown = null; this.events.push('pickup'); this.say('Rura. Może podważy dźwignię komory.'); }
+        if (inp.usePressed) { this.hasPipe = true; this.pipeDown = null; this.events.push('pickup'); this.say(tr('Rura. Może podważy dźwignię komory.', 'A pipe. It might lever the chamber handle.')); }
         break;
       case 'lever':
         if (this.hasPipe) {
@@ -275,7 +276,7 @@ export class Hall {
           this.denyT = 1.2;
           this.drain(RESERVE_STRAIN);
           this.events.push('strain');
-          this.say('Dźwignia ani drgnie. Za mało siły, potrzeba czegoś do podważenia.');
+          this.say(tr('Dźwignia ani drgnie. Za mało siły, potrzeba czegoś do podważenia.', "The lever won't budge. Not enough strength, something to pry with is needed."));
           this.leverTried = true;
         }
         break;
@@ -290,7 +291,7 @@ export class Hall {
         if (this.powered) { if (this.doorOpen === 0) { this.doorOpen = 0.001; this.events.push('door'); } }
         else if (this.denyT === 0) {
           this.denyT = 1.2; this.drain(RESERVE_STRAIN); this.events.push('strain');
-          this.say('Drzwi ledwo drgnęły. Za mało siły.');
+          this.say(tr('Drzwi ledwo drgnęły. Za mało siły.', 'The door barely moved. Not enough strength.'));
         }
         break;
     }

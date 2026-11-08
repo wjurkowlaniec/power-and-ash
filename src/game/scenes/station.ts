@@ -3,6 +3,7 @@ import { Station, WOLT_POWER } from '../sim/station';
 import { StationView } from '../render/stationView';
 import { NOTES, journal, noteHtml, journalHtml } from '../notes';
 import { story } from '../state';
+import { tr, num } from '../../i18n';
 
 /**
  * Scene 2. Martwa stacja: the first daylight. Glue between the Station logic, its
@@ -32,7 +33,7 @@ export class StationScene implements Scene {
       <div class="hmsg" id="sMsg" hidden></div>
       <div class="note" id="sNote" hidden></div>
       <div class="goal" id="sGoal"></div>
-      <div class="hkeys" id="sKeys"><b>WASD</b> ruch · <b>E</b> użyj · <b>J</b> archiwum</div>`;
+      <div class="hkeys" id="sKeys"></div>`;
     c.hud.appendChild(this.el);
   }
 
@@ -98,18 +99,18 @@ export class StationScene implements Scene {
       case 'grab': s.clank(1.2, 0.08); s.servo(0.6, 1.1); break;
       case 'drop': s.clank(0.7, 0.06); break;
       case 'connect': s.clank(2, 0.06); s.swell(); c.fx.static = 0.4; break;
-      case 'note': { const up = journal.add(this.st.reading!); this.justOpened = true; s.blip(1.3); if (up) { this.st.message = { text: `Korpus urósł. Odkodowano: ${up}. Stare zapisy w archiwum nabierają treści.`, t: this.st.t }; setTimeout(() => s.swell(), 400); } break; }
+      case 'note': { const up = journal.add(this.st.reading!); this.justOpened = true; s.blip(1.3); if (up) { this.st.message = { text: tr(`Korpus urósł. Odkodowano: ${up}. Stare zapisy w archiwum nabierają treści.`, `The corpus has grown. Decoded: ${up}. Old records in the archive start to make sense.`), t: this.st.t }; setTimeout(() => s.swell(), 400); } break; }
     }
   }
 
   private hud() {
     const st = this.st, $ = (id: string) => document.getElementById(id)!;
     $('sVitals').innerHTML = `<div class="lbl">Q-1 · ${WOLT_POWER} W</div>
-      <div class="row"><span>energia${st.charging ? ' <em class="chg" title="Q-1 odzyskuje energię na postoju">▲</em>' : ''}</span><b>${st.battery.toFixed(1).replace('.', ',')}%</b></div><div class="bar"><i style="width:${st.battery}%"></i></div>
-      <div class="row"><span>temperatura</span><b>6°C</b></div>
-      <div class="row"><span>wiatr</span><b>${st.turbine ? 'turbina ↻' : '4 m/s'}</b></div>`;
+      <div class="row"><span>${tr('energia', 'energy')}${st.charging ? ` <em class="chg" title="${tr('Q-1 odzyskuje energię na postoju', 'Q-1 recovers energy while resting')}">▲</em>` : ''}</span><b>${num(st.battery)}%</b></div><div class="bar"><i style="width:${st.battery}%"></i></div>
+      <div class="row"><span>${tr('temperatura', 'temperature')}</span><b>6°C</b></div>
+      <div class="row"><span>${tr('wiatr', 'wind')}</span><b>${st.turbine ? tr('turbina ↻', 'turbine ↻') : '4 m/s'}</b></div>`;
     $('sGoal').textContent = st.goal();
-    $('sKeys').innerHTML = `<b>WASD</b> ruch · <b>E</b> użyj · <b>J</b> archiwum` + (st.towing ? ' · <b>Q</b> odczep oponę' : st.cableHeld ? ' · <b>Q</b> połóż kabel' : '');
+    $('sKeys').innerHTML = tr('<b>WASD</b> ruch · <b>E</b> użyj · <b>J</b> archiwum', '<b>WASD</b> move · <b>E</b> use · <b>J</b> archive') + (st.towing ? tr(' · <b>Q</b> odczep oponę', ' · <b>Q</b> unhitch the tyre') : st.cableHeld ? tr(' · <b>Q</b> połóż kabel', ' · <b>Q</b> put the cable down') : '');
     const hint = st.hint(), tip = $('sTip');
     tip.hidden = !hint;
     if (hint) {

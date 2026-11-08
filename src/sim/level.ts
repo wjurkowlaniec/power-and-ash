@@ -1,6 +1,7 @@
 import { Obstacle } from './world';
 import { V2 } from './vec';
 import { LoadKind } from './tow';
+import { tr } from '../i18n';
 
 export interface PortDef {
   id: string;
@@ -78,15 +79,15 @@ export function level1(): LevelDef {
     { kind: 'pylon', x: 54, y: 24, w: 2, h: 2 },
   ];
   const ports: PortDef[] = [
-    { id: 'yacht', name: 'port żaglowozu', node: 'yacht', pos: { x: 16.45, y: 24.5 }, height: 1.0 },
-    { id: 'station', name: 'port Stacji 2', node: 'station', pos: { x: 33.55, y: 23.5 }, height: 0.75 },
+    { id: 'yacht', name: tr('port żaglowozu', 'the yacht port'), node: 'yacht', pos: { x: 16.45, y: 24.5 }, height: 1.0 },
+    { id: 'station', name: tr('port Stacji 2', 'the Station 2 port'), node: 'station', pos: { x: 33.55, y: 23.5 }, height: 0.75 },
   ];
   const points: StationPoint[] = [
-    { id: 'fabricator', name: 'fabrykator', pos: { x: 8.5, y: 19.55 } },
-    { id: 'helm', name: 'ster', pos: { x: 3.55, y: 23 } },
+    { id: 'fabricator', name: tr('fabrykator', 'fabricator'), pos: { x: 8.5, y: 19.55 } },
+    { id: 'helm', name: tr('ster', 'helm'), pos: { x: 3.55, y: 23 } },
   ];
   return {
-    name: 'Poziom 1 · Rozruch', width: 64, height: 48, obstacles: o, ports, points,
+    name: tr('Poziom 1 · Rozruch', 'Level 1 · Jump Start'), width: 64, height: 48, obstacles: o, ports, points,
     playerStart: { x: 9.5, y: 18.6 }, startReel: 0, yacht, station,
     stationOutput: 600, yachtBattery: 2000,
     loads: [

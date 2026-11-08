@@ -5,18 +5,22 @@ import { View } from './render/view';
 import { Sound } from './audio/ambient';
 import { dist } from './sim/vec';
 import { loadModels, Models } from './render/assets';
+import { tr, lang, langSwitch } from './i18n';
+import { localizeDemoPage } from './demoText';
+
+localizeDemoPage();
 
 const goBtn = document.getElementById('go') as HTMLButtonElement;
 goBtn.disabled = true;
-goBtn.textContent = 'Ładowanie modeli…';
+goBtn.textContent = tr('Ładowanie modeli…', 'Loading models…');
 let models: Models = new Map();
 try {
-  models = await loadModels((d, t) => { goBtn.textContent = `Ładowanie modeli… ${d}/${t}`; });
+  models = await loadModels((d, t) => { goBtn.textContent = tr(`Ładowanie modeli… ${d}/${t}`, `Loading models… ${d}/${t}`); });
 } catch (e) {
   console.warn('models failed, using simple shapes', e);
 }
 goBtn.disabled = false;
-goBtn.textContent = 'Zacznij (z dźwiękiem)';
+goBtn.textContent = tr('Zacznij (z dźwiękiem)', 'Start (with sound)');
 let game = new Game(level1());
 let view = new View(game, document.getElementById('app')!, models);
 const sound = new Sound();
@@ -55,12 +59,12 @@ function openMenu(x: number, y: number, t: Target, acts: Action[]) {
 }
 function targetName(t: Target): string {
   switch (t.kind) {
-    case 'ground': return 'teren';
+    case 'ground': return tr('teren', 'ground');
     case 'self': return 'Wolt';
-    case 'scrap': return t.o.kind === 'barrel' ? 'beczka' : 'złom';
+    case 'scrap': return t.o.kind === 'barrel' ? tr('beczka', 'barrel') : tr('złom', 'scrap');
     case 'port': return game.ports.find(p => p.id === t.id)!.name;
     case 'point': return game.points.find(p => p.id === t.id)!.name;
-    case 'load': return game.loads.find(l => l.id === t.id)!.kind === 'tyre' ? 'opona' : 'sanki z cegłami';
+    case 'load': return game.loads.find(l => l.id === t.id)!.kind === 'tyre' ? tr('opona', 'tyre') : tr('sanki z cegłami', 'brick sled');
   }
 }
 addEventListener('contextmenu', e => e.preventDefault());
@@ -101,6 +105,8 @@ addEventListener('pointermove', e => { mouse = ndc(e); mouseScreen = { x: e.clie
 
 const $ = (id: string) => document.getElementById(id)!;
 const startEl = $('start');
+startEl.querySelector('.card')!.appendChild(langSwitch());
+$('end').querySelector('.card')!.appendChild(langSwitch());
 let running = false;
 $('go').addEventListener('click', () => { startEl.hidden = true; running = true; sound.start(); });
 $('again').addEventListener('click', () => {
@@ -115,7 +121,7 @@ $('again').addEventListener('click', () => {
 
 // ---------- HUD
 const hotbar = $('hotbar');
-hotbar.innerHTML = ['chwytak', 'rozbier.', 'kabel', 'kołek', 'lampa', 'extender']
+hotbar.innerHTML = (lang === 'en' ? ['gripper', 'salvage', 'cable', 'stake', 'lamp', 'extender'] : ['chwytak', 'rozbier.', 'kabel', 'kołek', 'lampa', 'extender'])
   .map((s, i) => `<span class="slot ${i === 2 ? 'on' : 'off'}" id="slot${i}">${i + 1} ${s}</span>`).join('');
 let lastToastCount = 0;
 
@@ -128,8 +134,8 @@ function hud() {
   en.className = game.energy < LOW_ENERGY ? 'low' : '';
   $('enNum').textContent = `${Math.round(game.energy)}/${WOLT_BATTERY} Wh`;
   const r = game.energyRate;
-  const why = game.energySource === 'port' ? 'ładowanie z portu' : game.energySource === 'rest' ? 'postój, ładuje się' : game.salvage ? 'rozbieranie' : game.moving ? (keys.has('ShiftLeft') || keys.has('ShiftRight') ? 'bieg' : 'marsz') : 'czuwanie';
-  $('enRate').innerHTML = `<span class="${r >= 0 ? 'okc' : r < -0.9 ? 'tense' : ''}">${r >= 0 ? '+' : '−'}${Math.abs(r).toFixed(2)} Wh/s</span> · ${why}<br>światło: ${game.light ? 'wł.' : 'wył.'} <span class="dim">(L)</span>`;
+  const why = game.energySource === 'port' ? tr('ładowanie z portu', 'charging from the port') : game.energySource === 'rest' ? tr('postój, ładuje się', 'resting, recharging') : game.salvage ? tr('rozbieranie', 'salvaging') : game.moving ? (keys.has('ShiftLeft') || keys.has('ShiftRight') ? tr('bieg', 'running') : tr('marsz', 'walking')) : tr('czuwanie', 'idle');
+  $('enRate').innerHTML = `<span class="${r >= 0 ? 'okc' : r < -0.9 ? 'tense' : ''}">${r >= 0 ? '+' : '−'}${Math.abs(r).toFixed(2)} Wh/s</span> · ${why}<br>${tr('światło', 'light')}: ${game.light ? tr('wł.', 'on') : tr('wył.', 'off')} <span class="dim">(L)</span>`;
   $('slot4').className = 'slot ' + (game.light ? 'on' : 'off');
 
   // what's under the cursor
@@ -141,7 +147,7 @@ function hud() {
     if (key !== hoverKey) {
       hoverKey = key;
       hv.innerHTML = acts.length
-        ? `<span class="k">LPM</span>${acts[0].label}${acts[0].ok ? '' : ` <span class="limit">(${acts[0].why ?? 'niedostępne'})</span>`}${acts.length > 1 ? ` · <span class="k">PPM</span>więcej` : ''}`
+        ? `<span class="k">${tr('LPM', 'LMB')}</span>${acts[0].label}${acts[0].ok ? '' : ` <span class="limit">(${acts[0].why ?? tr('niedostępne', 'unavailable')})</span>`}${acts.length > 1 ? ` · <span class="k">${tr('PPM', 'RMB')}</span>${tr('więcej', 'more')}` : ''}`
         : targetName(ht);
     }
     hv.hidden = false;
@@ -149,19 +155,19 @@ function hud() {
     document.body.style.cursor = 'pointer';
   } else { hv.hidden = true; hoverKey = ''; document.body.style.cursor = ''; }
 
-  $('clock').innerHTML = `<span>13:40</span><span class="dim">wiatr ${game.wind.arrow()} ${game.wind.strength.toFixed(0)} m/s${game.wind.gust > 0.4 ? ' · podmuch' : ''}</span>`;
+  $('clock').innerHTML = `<span>13:40</span><span class="dim">${tr('wiatr', 'wind')} ${game.wind.arrow()} ${game.wind.strength.toFixed(0)} m/s${game.wind.gust > 0.4 ? tr(' · podmuch', ' · gust') : ''}</span>`;
   const st = game.cableState();
   const l = game.heldLength();
   const max = game.segmentMax();
   const cls = st === 'limit' ? 'limit' : st === 'tense' ? 'tense' : '';
   const reelPct = game.reelHold / REEL_HOLD;
   $('cablePanel').innerHTML = game.held
-    ? `<div class="row"><span>KABEL · odcinek</span><b class="${cls}">${l.toFixed(1)} / ${max.toFixed(0)} m</b></div>
+    ? `<div class="row"><span>${tr('KABEL · odcinek', 'CABLE · segment')}</span><b class="${cls}">${l.toFixed(1)} / ${max.toFixed(0)} m</b></div>
        <div class="meter"><i style="width:${Math.min(100, l / max * 100)}%;background:${st === 'none' || st === 'held' ? '' : st === 'tense' ? 'var(--warn)' : 'var(--limit)'}"></i><b style="left:${CABLE_WARN / max * 100}%"></b></div>
-       <div class="dim">${st === 'limit' ? 'kabel napięty do końca, wróć albo obejdź inaczej' : st === 'tense' ? 'kabel się napina, Wolt zwalnia' : `zapas na nawijaku: ${game.reelLeft().toFixed(0)} m`}</div>
+       <div class="dim">${st === 'limit' ? tr('kabel napięty do końca, wróć albo obejdź inaczej', 'cable fully taut, go back or take another way round') : st === 'tense' ? tr('kabel się napina, Wolt zwalnia', 'the cable is getting taut, Wolt slows down') : `${tr('zapas na nawijaku', 'left on the reel')}: ${game.reelLeft().toFixed(0)} m`}</div>
        ${reelPct > 0 ? `<div class="meter"><i style="width:${reelPct * 100}%"></i></div>` : ''}`
-    : `<div class="row"><span>KABEL</span><span class="dim">zwinięty</span></div>
-       <div class="dim">zapas na nawijaku: ${game.reelLeft().toFixed(0)} m</div>
+    : `<div class="row"><span>${tr('KABEL', 'CABLE')}</span><span class="dim">${tr('zwinięty', 'reeled in')}</span></div>
+       <div class="dim">${tr('zapas na nawijaku', 'left on the reel')}: ${game.reelLeft().toFixed(0)} m</div>
        ${reelPct > 0 ? `<div class="meter"><i style="width:${reelPct * 100}%"></i></div>` : ''}`;
 
   const net = game.networks.get('yacht')!;
@@ -169,16 +175,16 @@ function hud() {
   const np = $('netPanel');
   np.hidden = !(connected || overlay || game.battery > 0);
   if (!np.hidden) {
-    np.innerHTML = `<div class="lbl">ŻAGLOWÓZ</div>
-      <div class="row"><span>bateria</span><b class="${game.batteryFull() ? 'okc' : ''}">${(game.battery / 1000).toFixed(2)} / ${(game.level.yachtBattery / 1000).toFixed(1)} kWh</b></div>
+    np.innerHTML = `<div class="lbl">${tr('ŻAGLOWÓZ', 'LAND YACHT')}</div>
+      <div class="row"><span>${tr('bateria', 'battery')}</span><b class="${game.batteryFull() ? 'okc' : ''}">${(game.battery / 1000).toFixed(2)} / ${(game.level.yachtBattery / 1000).toFixed(1)} kWh</b></div>
       <div class="meter"><i style="width:${game.batteryPct() * 100}%;background:#6fc4e6"></i></div>
-      <div class="row"><span>zasilanie</span><b class="${connected ? 'okc' : 'dim'}">${connected ? `Stacja 2, ${net.production} W` : 'brak'}</b></div>`;
+      <div class="row"><span>${tr('zasilanie', 'power')}</span><b class="${connected ? 'okc' : 'dim'}">${connected ? `${tr('Stacja 2', 'Station 2')}, ${net.production} W` : tr('brak', 'none')}</b></div>`;
   }
 
   $('goals').innerHTML = `<div class="t">${game.level.name.toUpperCase()}</div>` +
     game.objectives().map(o => `<div class="obj ${o.done ? 'done' : o.active ? 'active' : ''}">${o.text}</div>`).join('');
   const inv = game.inv;
-  $('inv').innerHTML = `<span>miedź <b>${inv.copper}</b></span><span>plastik <b>${inv.plastic}</b></span><span>żelazo <b>${inv.iron}</b></span><span>szkło <b>${inv.glass}</b></span><span>kabel <b>${game.reelOwned} m</b></span>`;
+  $('inv').innerHTML = `<span>${tr('miedź', 'copper')} <b>${inv.copper}</b></span><span>${tr('plastik', 'plastic')} <b>${inv.plastic}</b></span><span>${tr('żelazo', 'iron')} <b>${inv.iron}</b></span><span>${tr('szkło', 'glass')} <b>${inv.glass}</b></span><span>${tr('kabel', 'cable')} <b>${game.reelOwned} m</b></span>`;
 
   const h = game.hint();
   const tip = $('tip');
@@ -201,7 +207,9 @@ function showEnd() {
   running = false;
   const m = Math.floor(game.time / 60), sec = Math.floor(game.time % 60);
   const total = game.level.obstacles.filter(o => o.loot).length;
-  $('endStats').textContent = `Czas: ${m}:${String(sec).padStart(2, '0')}. Rozebrany złom: ${total - game.scrapLeft().length} z ${total}. Kabel: ${game.reelOwned} m. Żaglowóz z pełną baterią jedzie dalej przez popiół.`;
+  $('endStats').textContent = tr(
+    `Czas: ${m}:${String(sec).padStart(2, '0')}. Rozebrany złom: ${total - game.scrapLeft().length} z ${total}. Kabel: ${game.reelOwned} m. Żaglowóz z pełną baterią jedzie dalej przez popiół.`,
+    `Time: ${m}:${String(sec).padStart(2, '0')}. Scrap salvaged: ${total - game.scrapLeft().length} of ${total}. Cable: ${game.reelOwned} m. The land yacht rolls on through the ash on a full battery.`);
   $('end').hidden = false;
 }
 
