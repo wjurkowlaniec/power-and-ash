@@ -1,6 +1,7 @@
-import { V2, dist, len, scale } from '../../sim/vec';
+import { V2, dist, len } from '../../sim/vec';
 import { World, Obstacle } from '../../sim/world';
 import { Cable } from '../../sim/cable';
+import { drive, settle, turnTowards } from '../../sim/drive';
 
 /**
  * Scene 1. Hala pomiarowa (docs/POCZATEK.md), pure logic. The player is the Q-1
@@ -27,12 +28,17 @@ export const SPEED_RESERVE = 1.6;  // m/s
 export const SPEED_POWERED = 2.6;   // m/s
 export const RUN_MULT = 1.6;
 export const PRY_TIME = 1.6;        // s holding E with the pipe
-export const INSERT_TIME = 2.6;     // s of taking the battery and putting it in
-export const WAKE_TIME = 2.2;       // s of standing up from the cradle
+export const INSERT_TIME = 3.6;     // s of taking the battery and putting it in
+export const WAKE_TIME = 3.0;       // s of standing up from the cradle
 export const BATTERY_CHARGE = 58;   // % in the Q-1 when found
 export const BATTERY_POWER = 200;   // W it can give at once
 export const TETHER_MAX = 9;        // m of diagnostic cable from the chamber
 export const TETHER_WARN = 7.5;     // m: the cable starts to pull
+
+/** m Wolt rolls towards the chamber to take the battery. */
+export const INSERT_APPROACH = 0.3;
+/** On 4% reserve the body is sluggish: slow to start, slow to turn. */
+const RESERVE_DRIVE = { accel: 3.5, brake: 8, turn: 4.5 };
 
 export type HallPoint = 'pipe' | 'lever' | 'battery' | 'door' | 'note';
 export type HallEvent = 'stand' | 'step' | 'strain' | 'pickup' | 'pry' | 'open' | 'take' | 'insert' | 'log' | 'door' | 'exit' | 'deny' | 'note';
@@ -81,6 +87,8 @@ export class Hall {
   tether: Cable | null = new Cable(layout.tether, layout.start);
   pos: V2 = { ...layout.start };
   facing = Math.PI; // looking west at first, lying in the cradle
+  /** Forward speed along `facing`, m/s. */
+  speed = 0;
   moving = false;
   t = 0;
   /** 0..1 standing up from the cradle; 1 = up. */
@@ -110,7 +118,7 @@ export class Hall {
   reading: string | null = null;
   notesRead = new Set<string>();
 
-  speed(): number {
+  topSpeed(): number {
     // reserve mode is slow but steady: the falling percentage is the pressure, not a crawl
     return this.powered ? SPEED_POWERED : SPEED_RESERVE;
   }
@@ -189,9 +197,22 @@ export class Hall {
     }
 
     if (this.insertT > 0) {
-      this.moving = false;
       this.insertT += dt;
-      this.facing = Math.atan2(layout.battery.y - this.pos.y, layout.battery.x - this.pos.x);
+      // face the chamber and roll up to its open front while the rig presents the cell
+      const B = layout.battery, U = layout.batteryUse;
+      const at = { x: U.x, y: U.y - INSERT_APPROACH };
+      const k = this.insertT / INSERT_TIME;
+      const target = k < 0.55 ? Math.atan2(B.y - this.pos.y, B.x - this.pos.x) : this.facing;
+      const left = turnTowards(this, target, dt);
+      // roll straight along the heading (no steering on the last few centimetres)
+      const fwd = k < 0.55 && Math.abs(left) < 0.4 ? (at.x - this.pos.x) * Math.cos(this.facing) + (at.y - this.pos.y) * Math.sin(this.facing) : 0;
+      const want = Math.max(-0.7, Math.min(0.7, fwd * 3));
+      this.speed += Math.max(-4 * dt, Math.min(4 * dt, want - this.speed));
+      const before = { ...this.pos };
+      const c = { x: this.pos.x + Math.cos(this.facing) * this.speed * dt, y: this.pos.y + Math.sin(this.facing) * this.speed * dt };
+      if (!this.world.circleBlocked(c, PLAYER_R)) this.pos = c; else this.speed = 0;
+      this.moving = dist(before, this.pos) > 1e-5;
+      if (this.moving) this.tether?.moveEnd(this.world, this.pos);
       if (this.insertT >= INSERT_TIME) {
         this.insertT = 0; this.powered = true; this.tether = null; this.events.push('insert');
       }
@@ -199,7 +220,7 @@ export class Hall {
     }
     if (this.powered && !this.logShown && this.poweredT > 3) { this.logShown = true; this.events.push('log'); }
 
-    if (this.reading) { this.moving = false; return; }
+    if (this.reading) { this.moving = false; this.speed = 0; return; }
     this.move(dt, inp);
     this.use(dt, inp);
 
@@ -208,26 +229,25 @@ export class Hall {
   }
 
   private move(dt: number, inp: HallInput) {
-    const m = len(inp.move);
-    this.moving = m > 0.01 && this.pry === 0;
-    if (!this.moving) return;
-    const dir = m > 1 ? scale(inp.move, 1 / m) : inp.move;
-    this.facing = Math.atan2(dir.y, dir.x);
-    let sp = this.speed() * (this.powered && inp.run ? RUN_MULT : 1);
+    const want = len(inp.move) > 0.01 && this.pry === 0;
+    let sp = this.topSpeed() * (this.powered && inp.run ? RUN_MULT : 1);
     // the cable pulls back near its end
     if (this.tether && this.tetherLength() > TETHER_WARN) sp *= 0.6;
-    // reserve mode: motion comes in weak jerks
-    if (!this.powered) sp *= 0.7 + 0.3 * Math.abs(Math.sin(this.t * 5.5));
-    const step = scale(dir, sp * dt);
+    // reserve mode: the body surges and sags as the weak current comes and goes
+    if (!this.powered) sp *= 0.82 + 0.18 * Math.sin(this.t * 2.3) * Math.sin(this.t * 0.9 + 1);
+    const step = drive(this, dt, want ? inp.move : { x: 0, y: 0 }, sp, this.powered ? undefined : RESERVE_DRIVE);
     const before = { ...this.pos };
     const tx = { x: this.pos.x + step.x, y: this.pos.y };
     if (!this.world.circleBlocked(tx, PLAYER_R) && this.inside(tx) && this.tetherOk(tx)) this.pos = tx;
     const ty = { x: this.pos.x, y: this.pos.y + step.y };
     if (!this.world.circleBlocked(ty, PLAYER_R) && this.inside(ty) && this.tetherOk(ty)) this.pos = ty;
+    const d = dist(before, this.pos);
+    settle(this, d, dt);
+    this.moving = d > 1e-5;
+    if (!this.moving) return;
     this.tether?.moveEnd(this.world, this.pos);
     if (this.tether && this.tetherLength() > TETHER_MAX - 0.15 && this.t - (this.message?.t ?? -99) > 6)
       this.say('Kabel diagnostyczny nie puści dalej. Ciało jest na smyczy komory.');
-    const d = dist(before, this.pos);
     this.walked += d;
     if (!this.powered) this.drain(d * RESERVE_PER_M);
     this.stepAcc += d;

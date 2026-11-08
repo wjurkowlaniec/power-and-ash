@@ -1,7 +1,8 @@
 import { Cable } from '../../sim/cable';
-import { V2, dist, len, scale, sub } from '../../sim/vec';
+import { V2, dist, len, sub } from '../../sim/vec';
 import { World, Obstacle } from '../../sim/world';
-import { Load, LOADS, towStep, hitchOf, TOW_RANGE } from '../../sim/tow';
+import { Load, LOADS, towDrive, TOW_RANGE } from '../../sim/tow';
+import { drive, settle } from '../../sim/drive';
 
 /**
  * Scene 2. Martwa stacja (docs/POCZATEK.md), part one, pure logic. Wolt leaves the hall
@@ -124,7 +125,11 @@ export class Station {
   readonly world = new World(ST_W, ST_H, stationObstacles());
   pos: V2 = { ...P.start };
   facing = 0;
+  /** Forward speed along `facing`, m/s. */
+  speed = 0;
   moving = false;
+  /** Driving but held back (a snagged tyre): the wheel spins. */
+  strain = false;
   t = 0;
   battery: number;
   doorOpen = 0;       // 0..1
@@ -238,7 +243,7 @@ export class Station {
     }
     if (this.turbine) this.turbineT += dt;
     if (this.machinePowered) this.poweredT += dt;
-    if (this.reading) { this.moving = false; return; }
+    if (this.reading) { this.moving = false; this.speed = 0; return; }
     if (inp.drop && this.towing) { this.towing = false; this.towTaut = false; this.events.push('unhook'); }
     else if (inp.drop && this.cableHeld) { this.cableHeld = false; this.events.push('drop'); }
     this.move(dt, inp);
@@ -251,38 +256,39 @@ export class Station {
   }
 
   private move(dt: number, inp: { move: V2; run: boolean }) {
-    const m = len(inp.move);
-    this.moving = m > 0.01 && this.repair === 0;
-    if (!this.moving) { this.towTaut = false; return; }
-    const dir = m > 1 ? scale(inp.move, 1 / m) : inp.move;
-    this.facing = Math.atan2(dir.y, dir.x);
+    const want = len(inp.move) > 0.01 && this.repair === 0;
     let sp = SPEED * (inp.run ? RUN_MULT : 1);
     if (this.cableHeld && this.cableLength() > CABLE_WARN) sp *= 0.6;
     if (this.towing) sp *= 1 - LOADS.tyre.drag * (this.bearingOnTyre ? 2.2 : 1);
     if (this.battery < 5) sp *= 0.5;
-    const step = scale(dir, sp * dt);
+    const step = drive(this, dt, want ? inp.move : { x: 0, y: 0 }, sp);
+    const intended = len(step);
+    this.strain = false;
+    if (intended < 1e-6) { this.moving = false; if (!want) this.towTaut = false; return; }
     const before = { ...this.pos };
+    const free = (c: V2) => !this.world.circleBlocked(c, PLAYER_R) && (this.towing || dist(c, this.tyre.pos) >= PLAYER_R + LOADS.tyre.radius);
+    let cand = { ...this.pos };
     for (const s of [{ x: step.x, y: 0 }, { x: 0, y: step.y }]) {
-      const c = { x: this.pos.x + s.x, y: this.pos.y + s.y };
-      if (this.world.circleBlocked(c, PLAYER_R)) continue;
-      if (!this.towing && dist(c, this.tyre.pos) < PLAYER_R + LOADS.tyre.radius) continue;
+      const c = { x: cand.x + s.x, y: cand.y + s.y };
+      if (!free(c)) continue;
       if (this.cableHeld && !this.cableOk(c)) {
         if (this.denyT === 0) { this.denyT = 3; this.say(`Kabel się skończył (${CABLE_MAX} m). Poprowadź go krótszą drogą.`); }
         continue;
       }
-      if (this.towing) {
-        const ts = towStep(this.world, this.tyre, hitchOf(c, this.facing));
-        if (ts.blocked) {
-          if (dist(c, this.tyre.pos) < dist(this.pos, this.tyre.pos)) { this.pos = c; this.towTaut = false; }
-          else if (this.denyT === 0) { this.denyT = 2; this.say('Opona o coś zaczepiła. Podjedź bliżej albo odczep ją (Q).'); }
-          continue;
-        }
-        this.tyre.pos = ts.pos; this.tyre.angle = ts.angle; this.towTaut = ts.taut;
-      }
-      this.pos = c;
+      cand = c;
     }
+    if (this.towing) {
+      const r = towDrive(this.world, this.tyre, this.pos, cand, this.facing, free);
+      this.tyre.pos = r.step.pos; this.tyre.angle = r.step.angle; this.towTaut = r.step.taut;
+      if (r.step.blocked && dist(r.pos, before) < intended * 0.35 && this.denyT === 0) { this.denyT = 2; this.say('Opona o coś zaczepiła. Objedź przeszkodę albo odczep oponę (Q).'); }
+      cand = r.pos;
+    }
+    this.pos = cand;
     if (this.cableHeld) this.cable!.moveEnd(this.world, this.pos);
     const d = dist(before, this.pos);
+    settle(this, d, dt);
+    this.moving = d > 1e-5;
+    this.strain = want && d < intended * 0.35;
     this.battery = Math.max(0, this.battery - d * (MOVE_COST + (this.towing ? TOW_COST : 0)));
     this.stepAcc += d;
     if (this.stepAcc > 0.8) { this.stepAcc = 0; this.events.push(this.towing && this.towTaut ? 'tow' : 'step'); }

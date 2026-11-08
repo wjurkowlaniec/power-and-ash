@@ -25,7 +25,7 @@ export interface WoltMono {
   guide: THREE.Group;     // cable guide, turns towards the cable
   cableExit: THREE.Object3D;
   hitch: THREE.Object3D;
-  arm: { shoulder: THREE.Group; elbow: THREE.Group; fingers: THREE.Mesh[] };
+  arm: { shoulder: THREE.Group; elbow: THREE.Group; wrist: THREE.Group; fingers: THREE.Mesh[] };
 }
 
 export function woltMonoModel(): WoltMono {
@@ -101,10 +101,10 @@ export function woltMonoModel(): WoltMono {
   spot.position.set(0, 0.02, 0.42); spot.castShadow = false;
   const tgt = new THREE.Object3D(); tgt.position.set(0, -0.9, 5); body.add(tgt); spot.target = tgt; body.add(spot);
 
-  return { group, balance, body, wheel, head, spot, cell, reel, guide, cableExit, hitch, arm: { shoulder, elbow, fingers } };
+  return { group, balance, body, wheel, head, spot, cell, reel, guide, cableExit, hitch, arm: { shoulder, elbow, wrist, fingers } };
 }
 
-export type ArmPose = 'rest' | 'work' | 'reach' | 'back';
+export type ArmPose = 'rest' | 'work' | 'reach' | 'back' | 'stow';
 
 /** One frame of what the animation needs, in Three's world space (x, z ground plane). */
 export interface WoltFrame {
@@ -116,7 +116,7 @@ export interface WoltFrame {
   yawRate: number;
   /** Forward acceleration in m/s². */
   accel: number;
-  /** Driving but not getting anywhere: the cable or a snagged load holds Wolt back. */
+  /** Driving but not getting anywhere: the cable or a snagged load holds Wolt back, the wheel spins. */
   strain: boolean;
   /** Where the held cable leaves towards (world x/z), or null with no cable. */
   cableTo: THREE.Vector3 | null;
@@ -144,6 +144,7 @@ const POSES: Record<ArmPose, [number, number, number, number]> = {
   work: [-0.9, 0.2, 0.6, 0.45], // down in front, into the scrap
   reach: [-1.6, 0.1, 0.4, 0.55], // forward at socket height
   back: [0.9, 0.15, -0.6, 0.6],  // behind and down, to the hitch
+  stow: [-2.5, 0.35, 1.9, 0.15], // gripper held over the top of the capsule (putting something in)
 };
 
 /** Balance, wheel, reel, cable guide and arm. Keeps its own springs between frames. */
@@ -154,9 +155,16 @@ export class WoltAnimator {
   private arm = [...POSES.rest];
   private guideYaw = 0;
   private look = 0;
+  private slipK = 0;
   private tmp = new THREE.Vector3();
 
   constructor(private m: WoltMono) {}
+
+  /** 0..1 how hard the wheel is spinning in place right now (for dust and marks). */
+  get slip() { return this.slipK; }
+
+  /** A jolt: rolling off a ledge, a clunk inside the body. Rad/s added to the lean springs. */
+  kick(pitch: number, roll = 0) { this.pitchV += pitch; this.rollV += roll; }
 
   update(f: WoltFrame) {
     const { dt, time: t } = f;
@@ -178,14 +186,19 @@ export class WoltAnimator {
       tp += lz * f.tension * 0.2;
       tr += -lx * f.tension * 0.14;
     }
-    if (f.strain) tp += 0.14 + Math.sin(t * 31) * 0.02; // digging in against the pull
+    // the wheel spins up and winds down instead of switching on and off
+    this.slipK += ((f.strain ? 1 : 0) - this.slipK) * Math.min(1, dt * (f.strain ? 4 : 2.5));
+    const sk = this.slipK;
+    // digging in against the pull, shivering as the tyre fights for grip
+    tp += sk * (0.13 + (Math.sin(t * 17) * 0.6 + Math.sin(t * 26 + 2) * 0.4) * 0.018);
+    tr += sk * Math.sin(t * 11 + 1) * 0.02;
     const k = 70, c = 11;
     this.pitchV += ((tp - this.pitch) * k - this.pitchV * c) * dt; this.pitch += this.pitchV * dt;
     this.rollV += ((tr - this.roll) * k - this.rollV * c) * dt; this.roll += this.rollV * dt;
     m.balance.rotation.set(this.pitch, 0, this.roll);
 
     // ---- wheel: rolls with the ground, plus the balancing nudges; spins in place on strain
-    this.wheelA += (f.speed / WHEEL_R) * dt + this.pitchV * dt * 0.8 + (f.strain ? dt * 9 : 0);
+    this.wheelA += (f.speed / WHEEL_R) * dt + this.pitchV * dt * 0.8 + sk * 16 * dt;
     m.wheel.rotation.x = this.wheelA;
 
     // ---- the capsule swivels on the fork towards the cursor; the wheel stays where it rolled

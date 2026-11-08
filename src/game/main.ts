@@ -46,6 +46,9 @@ const scenes: Record<string, () => Scene> = {
 // ?scene=hall jumps straight to a scene (testing)
 const startId = new URLSearchParams(location.search).get('scene') ?? 'darkness';
 let scene: Scene | null = null;
+/** Leaving a scene: it keeps running under a short fade to black, so cuts never jump. */
+let leaving: { to: string; t: number } | null = null;
+const FADE_OUT = 0.8;
 
 function go(id: string) {
   scene?.exit?.(ctx);
@@ -67,7 +70,12 @@ function loop(now: number) {
   last = now;
   if (scene) {
     scene.update(dt, ctx);
-    if (scene.next) go(scene.next);
+    if (scene.next && !leaving) leaving = { to: scene.next, t: 0 };
+    if (leaving) {
+      leaving.t += dt;
+      ctx.fx.black = Math.max(ctx.fx.black, Math.min(1, leaving.t / FADE_OUT));
+      if (leaving.t >= FADE_OUT) { const to = leaving.to; leaving = null; go(to); }
+    }
   }
   input.pressed.clear();
   ctx.sound.update(dt);
