@@ -124,6 +124,8 @@ Późniejszy etap: bateria fizycznie przenosi się do innego ciała. Kasetę prz
 
 **[ustalone 2026-11-06]** Bateria zostaje kwantowa. Historię opowiadają **znajdowane notatki**, w klimacie archiwum z Control: urzędowe raporty z testów, notatki służbowe, prywatne zapiski. Różne historie różnych ludzi, a w notatkach są też **wskazówki, jak coś zrobić**.
 
+**[ustalone 2026-11-08]** Bateria to obca inteligencja, która **nie rozumie ludzkiego pisma**. Na początku każda kartka i książka to dla niej ciąg znaków bez znaczenia. Mimo to warto je zbierać: gdy zbierze się ich wystarczająco dużo, pismo da się **odkodować**. Notatki to więc najpierw kolekcja zagadek, a dopiero później historie i wskazówki.
+
 Dzięki temu bateria nie jest „magią”, tylko projektem badawczym, który miał swoje procedury, spory, błędy i ludzi. Gracz składa obraz z dokumentów, a nie z narratora.
 
 ### Rodzaje notatek **[propozycja]**
@@ -140,11 +142,16 @@ Dzięki temu bateria nie jest „magią”, tylko projektem badawczym, który mi
 
 ### Zasady **[propozycja]**
 
-- **Notatki są przedmiotami w świecie**, nie ikonkami do zbierania: kartka na biurku, podkładka na drzwiach, naklejka na szafie. Wolt podnosi i czyta, a kopia trafia do **Archiwum** w jego pamięci.
+- **Notatki są przedmiotami w świecie**, nie ikonkami do zbierania: kartka na biurku, podkładka na drzwiach, naklejka na szafie, książka na półce. Wolt podnosi je i skanuje, a kopia trafia do **Archiwum** w jego pamięci, na początku jako nieczytelne znaki.
 - **Archiwum** porządkuje notatki według ludzi, miejsc i wątków. Zebrane notatki jednego wątku układają się w historię.
-- **Pismo vs mowa:** Wolt od początku czyta dokumenty misji (techniczny język, który zna). Odręczne pismo ludzi z bunkrów i ich gwara są na początku nieczytelne i odszumiają się razem ze słownikiem. Ta sama kartka czytana rok później mówi więcej.
+- **Odkodowywanie pisma [ustalone 2026-11-08, szczegóły to propozycja]:** każda zeskanowana kartka i książka dokłada tekst do **korpusu**. System uczący się (sama bateria, patrz [Rozwój](#rozwój-obliczenia-w-tle)) mieli go w tle, gdy ma nadwyżkę prądu. Po przekroczeniu kolejnych progów pismo się odszumia, a wszystkie zebrane wcześniej notatki od razu zyskują znaczenie. Ta sama kartka czytana później mówi więcej.
+  - Książki są cenne: jedna książka to tyle tekstu, co kilkadziesiąt kartek. Szczególnie słowniki, podręczniki i instrukcje.
+  - Progi (orientacyjnie): najpierw liczby, jednostki i znaki ostrzegawcze; potem częste słowa i druk techniczny (raporty, instrukcje); potem zwykły druk; na końcu odręczne pismo i gwara bunkrów.
+  - Odszumianie wygląda jak w słowniku mowy: znaki w tekście płynnie zmieniają się w litery, słowo po słowie. Najpierw czytelne są pojedyncze słowa, więc gracz zgaduje resztę.
+  - Mowa ludzi i pismo to dwa osobne, ale powiązane postępy: słowa poznane w rozmowie pomagają w piśmie i odwrotnie.
 - **Zaczernienia:** część raportów ma zaczernione fragmenty. Pełne wersje odblokowuje analiza baterii (obliczenia w tle) albo znalezienie innej kopii tego samego dokumentu w innej bazie.
-- **Wskazówki zamiast samouczka:** dużo podpowiedzi rozgrywkowych przychodzi z notatek technika, a nie z okienek UI. Notatka z instrukcją liczy się też jako obserwacja dla systemu uczącego się, więc przyspiesza analizę danego urządzenia.
+- **Wskazówki na początku są obrazkowe:** skoro tekstu nie da się przeczytać, wczesne podpowiedzi niosą rysunki, schematy, strzałki, piktogramy i liczby na kartkach (np. szkic portu ze strzałką „w lewo”, rysunek łożyska i półki). Pełna treść wskazówki staje się czytelna dopiero po odkodowaniu. Wtedy stare kartki zdradzają skróty i przepisy, których gracz wcześniej nie zauważył.
+- Notatka z instrukcją liczy się też jako obserwacja dla systemu uczącego się, więc przyspiesza analizę danego urządzenia, nawet zanim da się ją przeczytać.
 - **Bez przymusu:** fabułę da się przejść, nie czytając wszystkiego. Notatki nagradzają ciekawość: skrótem, przepisem, zrozumieniem.
 
 ### Wątki historii **[propozycja]**
@@ -159,6 +166,8 @@ Dzięki temu bateria nie jest „magią”, tylko projektem badawczym, który mi
 | **Strażnicy** | ludzie z Klasztoru | dlaczego pilnują laboratorium i czego się boją | Cerkwiska |
 
 ### Przykłady
+
+Tak notatki wyglądają **po odkodowaniu**. Przed odkodowaniem gracz widzi ten sam układ (nagłówek, tabelki, podpis, rysunki), ale tekst to nieczytelne znaki.
 
 > **PROGRAM ZORZA · RAPORT Z TESTU 4411**
 > Prototyp Q-1, stanowisko polowe Olszanka.
