@@ -1,5 +1,6 @@
 import { V2, add, sub, scale, len, dist } from './vec';
 import { World } from './world';
+import { tr } from '../i18n';
 
 /**
  * Loose things Wolt can hook onto his hitch and drag behind him: an old tyre, a sled of
@@ -9,7 +10,7 @@ import { World } from './world';
 export type LoadKind = 'tyre' | 'bricks';
 
 export interface LoadSpec {
-  name: string;      // Polish, in the accusative ("doczep oponę")
+  name: string;      // as an object: Polish accusative ("doczep oponę"), English with "the"
   radius: number;    // m
   /** 0..1, how much the load slows Wolt down while towed. */
   drag: number;
@@ -18,8 +19,8 @@ export interface LoadSpec {
 }
 
 export const LOADS: Record<LoadKind, LoadSpec> = {
-  tyre: { name: 'oponę', radius: 0.42, drag: 0.22, drain: 0.25 },
-  bricks: { name: 'sanki z cegłami', radius: 0.48, drag: 0.45, drain: 0.6 },
+  tyre: { name: tr('oponę', 'the tyre'), radius: 0.42, drag: 0.22, drain: 0.25 },
+  bricks: { name: tr('sanki z cegłami', 'the brick sled'), radius: 0.48, drag: 0.45, drain: 0.6 },
 };
 
 export interface Load { id: string; kind: LoadKind; pos: V2; angle: number }

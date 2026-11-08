@@ -45,3 +45,4 @@ canvas { display: block; }
 .note .undecoded { color: #8a2a1ebb; }
 .note .bar { height: 3px; background: #26292b22; margin-top: 8px; }
 .note .bar i { display: block; height: 100%; background: #3a7a52; }
+.wake-lang { position: absolute; top: calc(16px + env(safe-area-inset-top, 0px)); right: max(16px, env(safe-area-inset-right, 0px)); color: #ffffff77; }

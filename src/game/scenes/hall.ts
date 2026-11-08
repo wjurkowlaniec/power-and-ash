@@ -3,8 +3,9 @@ import { Hall, BATTERY_POWER } from '../sim/hall';
 import { HallView } from '../render/hallView';
 import { NOTES, journal, noteHtml, journalHtml } from '../notes';
 import { story } from '../state';
+import { tr, num } from '../../i18n';
 
-const LOG = '…TEST 4411…\n…STABILNY…\nNIE ODŁĄCZAĆ OD…';
+const LOG = tr('…TEST 4411…\n…STABILNY…\nNIE ODŁĄCZAĆ OD…', '…TEST 4411…\n…STABLE…\nDO NOT DISCONNECT FR…');
 
 /**
  * Scene 1. Hala pomiarowa: glue between the Hall logic, its 3D view, sound and HUD.
@@ -37,7 +38,7 @@ export class HallScene implements Scene {
       <div class="htip" id="hTip" hidden></div>
       <div class="hmsg" id="hMsg" hidden></div>
       <div class="note" id="hNote" hidden></div>
-      <div class="hkeys" id="hKeys"><b>WASD</b> ruch · <b>E</b> użyj · <b>J</b> archiwum</div>`;
+      <div class="hkeys" id="hKeys">${tr('<b>WASD</b> ruch · <b>E</b> użyj · <b>J</b> archiwum', '<b>WASD</b> move · <b>E</b> use · <b>J</b> archive')}</div>`;
     c.hud.appendChild(this.el);
   }
 
@@ -114,7 +115,7 @@ export class HallScene implements Scene {
       case 'log': this.logT = 0; s.blip(0.8); setTimeout(() => s.blip(0.6), 180); break;
       case 'door': s.creak(1); s.clank(0.6, 0.12); break;
       case 'exit': story.battery = this.hall.battery; this.next = 'station'; break;
-      case 'note': { const up = journal.add(this.hall.reading!); this.justOpened = true; s.blip(1.3); if (up) { this.hall.message = { text: `Korpus urósł. Odkodowano: ${up}. Stare zapisy w archiwum nabierają treści.`, t: this.hall.t }; setTimeout(() => s.swell(), 400); } break; }
+      case 'note': { const up = journal.add(this.hall.reading!); this.justOpened = true; s.blip(1.3); if (up) { this.hall.message = { text: tr(`Korpus urósł. Odkodowano: ${up}. Stare zapisy w archiwum nabierają treści.`, `The corpus has grown. Decoded: ${up}. Old records in the archive start to make sense.`), t: this.hall.t }; setTimeout(() => s.swell(), 400); } break; }
     }
   }
 
@@ -122,16 +123,16 @@ export class HallScene implements Scene {
     const h = this.hall, $ = (id: string) => document.getElementById(id)!;
     const res = $('hReserve');
     res.hidden = h.powered || !h.awake && h.wake === 0 && h.t < 1;
-    res.textContent = `REZERWA ${h.reserve.toFixed(1).replace('.', ',')}%`;
+    res.textContent = `${tr('REZERWA', 'RESERVE')} ${num(h.reserve)}%`;
     res.style.opacity = String(0.5 + Math.random() * 0.4);
     const v = $('hVitals');
     v.hidden = !h.powered || h.poweredT < 1.5;
     if (!v.hidden) {
       v.style.opacity = String(Math.min(1, (h.poweredT - 1.5) / 1.5));
       v.innerHTML = `<div class="lbl">Q-1 · ${BATTERY_POWER} W</div>
-        <div class="row"><span>energia</span><b>${h.battery.toFixed(0)}%</b></div><div class="bar"><i style="width:${h.battery}%"></i></div>
-        <div class="row"><span>temperatura</span><b>9°C</b></div>
-        <div class="row"><span>wilgotność</span><b>64%</b></div>`;
+        <div class="row"><span>${tr('energia', 'energy')}</span><b>${h.battery.toFixed(0)}%</b></div><div class="bar"><i style="width:${h.battery}%"></i></div>
+        <div class="row"><span>${tr('temperatura', 'temperature')}</span><b>9°C</b></div>
+        <div class="row"><span>${tr('wilgotność', 'humidity')}</span><b>64%</b></div>`;
     }
     const hint = h.hint();
     const tip = $('hTip');
