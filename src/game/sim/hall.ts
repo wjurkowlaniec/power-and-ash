@@ -153,7 +153,7 @@ export class Hall {
       case 'battery': return { key: 'E', text: 'weź baterię i wepnij w kasetę ramy', at: L.battery, ok: true };
       case 'note': {
         const n = L.notes.find(q => q.id === this.noteAt)!;
-        return { key: 'E', text: this.notesRead.has(n.id) ? 'przeczytaj jeszcze raz' : 'przeczytaj', at: n, ok: true };
+        return { key: 'E', text: this.notesRead.has(n.id) ? 'zeskanowana kartka (jeszcze raz)' : 'kartka: zeskanuj', at: n, ok: true };
       }
       case 'door': return this.powered
         ? { key: 'E', text: 'pchnij drzwi', at: L.door, ok: true }

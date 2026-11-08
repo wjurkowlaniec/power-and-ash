@@ -56,6 +56,7 @@ export const P = {
   fabricator: { x: 11, y: 6 },
   drawer: { x: 20, y: 5.2 },
   wallMap: { x: 17.6, y: 6.5 },
+  books: { x: 20.3, y: 9.5 },          // a shelf of books in the duty room: lots of text for the corpus
   shelf: { x: 26, y: 5.2 },            // second shelf: grease and the bearing
   machineDoor: { x: 33, y: 12.5 },     // blocked by a fallen cabinet (next part)
   mast: { x: 22, y: 21 },
@@ -93,6 +94,7 @@ export function stationObstacles(): Obstacle[] {
   add('crate', 13, 4, 2, 1);            // workbench
   // duty room: desk with the drawer
   add('crate', 19, 4, 2, 1);
+  add('crate', 21, 8, 1, 3);            // bookshelf
   // storage: shelves along the north wall, crates
   add('crate', 23, 4, 6, 1);
   add('crate', 23, 9, 2, 2);
@@ -116,7 +118,7 @@ export function stationObstacles(): Obstacle[] {
 export interface StHint { key: string; text: string; at: V2; ok: boolean; progress?: number }
 export type StEvent = 'grab' | 'drop' | 'connect' | 'step' | 'plug' | 'door' | 'deny' | 'pickup' | 'hook' | 'unhook' | 'load' | 'repair' | 'turbine' | 'note' | 'tow';
 
-type Target = 'junction' | 'cableEnd' | 'socket' | 'port' | 'door' | 'doorNote' | 'fabricator' | 'drawer' | 'wallMap' | 'shelf' | 'tyre' | 'mast' | 'machineDoor';
+type Target = 'books' | 'junction' | 'cableEnd' | 'socket' | 'port' | 'door' | 'doorNote' | 'fabricator' | 'drawer' | 'wallMap' | 'shelf' | 'tyre' | 'mast' | 'machineDoor';
 
 export class Station {
   readonly world = new World(ST_W, ST_H, stationObstacles());
@@ -164,7 +166,7 @@ export class Station {
   }
 
   nearest(): Target | null {
-    const on: Target[] = ['port', 'doorNote', 'drawer', 'wallMap', 'machineDoor', 'mast'];
+    const on: Target[] = ['port', 'doorNote', 'drawer', 'wallMap', 'books', 'machineDoor', 'mast'];
     if (this.doorOpen >= 1) on.push('fabricator'); else on.push('door');
     if (!this.shelfTaken) on.push('shelf');
     if (!this.turbine) on.push('tyre');
@@ -203,6 +205,7 @@ export class Station {
       case 'fabricator': return { key: 'E', text: 'fabrykator', at, ok: true };
       case 'drawer': return { key: 'E', text: this.notesRead.has('notatkaKierowniczki') ? 'szuflada (jeszcze raz)' : 'otwórz szufladę', at, ok: true };
       case 'wallMap': return { key: 'E', text: 'mapa na ścianie', at, ok: true };
+      case 'books': return { key: 'E', text: this.notesRead.has('slownik') ? 'książki (zeskanowane)' : this.notesRead.has('podrecznik') ? 'zeskanuj drugą książkę' : 'półka z książkami: zeskanuj', at, ok: true };
       case 'shelf': return { key: 'E', text: this.items.has('grease') ? (this.towing ? 'połóż łożysko na oponie' : 'łożysko: za ciężkie, by nieść') : 'druga półka: smar i łożysko', at, ok: true };
       case 'tyre': return this.towing
         ? { key: 'E', text: 'odczep oponę', at, ok: true }
@@ -327,6 +330,9 @@ export class Station {
         break;
       case 'drawer':
         if (pressed) this.read('notatkaKierowniczki');
+        break;
+      case 'books':
+        if (pressed) this.read(this.notesRead.has('podrecznik') ? 'slownik' : 'podrecznik');
         break;
       case 'wallMap':
         if (pressed) { this.mapSeen = true; this.read('mapaSieci'); }

@@ -39,3 +39,9 @@ canvas { display: block; }
 .note .small { color: #26292b88; margin-top: 14px; }
 .vitals .chg { font-style: normal; color: #7fd99a; font-size: 10px; margin-left: 4px; }
 .goal { position: absolute; left: max(18px, env(safe-area-inset-left, 0px)); top: calc(128px + env(safe-area-inset-top, 0px)); max-width: 260px; font-size: 11px; line-height: 1.45; color: #e8e3d8; background: rgba(20,22,24,.55); padding: 6px 9px; border-left: 2px solid #7fd99a; }
+.note .sketch { margin: 4px 0 12px; padding: 6px; border: 1px dashed #26292b33; }
+.note .sketch svg { width: 100%; height: auto; display: block; }
+.note .body.hand { font-family: 'Segoe Print', 'Bradley Hand', cursive; }
+.note .undecoded { color: #8a2a1ebb; }
+.note .bar { height: 3px; background: #26292b22; margin-top: 8px; }
+.note .bar i { display: block; height: 100%; background: #3a7a52; }
