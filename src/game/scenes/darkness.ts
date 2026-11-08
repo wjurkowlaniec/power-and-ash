@@ -1,4 +1,5 @@
 import { Ctx, Scene } from '../scene';
+import { tr } from '../../i18n';
 
 /**
  * Scene 0. Ciemność (docs/POCZATEK.md). Black screen, wind, metal, dripping water and a
@@ -54,7 +55,7 @@ export class Darkness implements Scene {
       c.sound.staticBurst(0.9, 0.14);
       c.fx.static = 1.4;
       this.readout.hidden = false;
-      this.readout.textContent = 'REZERWA 4%';
+      this.readout.textContent = tr('REZERWA 4%', 'RESERVE 4%');
     }
     if (this.eyesOn) {
       c.fx.grain = 0.6;

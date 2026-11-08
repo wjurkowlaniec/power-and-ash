@@ -7,6 +7,7 @@ import { Todo } from './scenes/todo';
 import { HallScene } from './scenes/hall';
 import { StationScene } from './scenes/station';
 import { loadModels, Models } from '../render/assets';
+import { tr, lang, langSwitch } from '../i18n';
 
 /**
  * The game: the story from docs/POCZATEK.md, scene by scene. The tech demo (level
@@ -14,6 +15,9 @@ import { loadModels, Models } from '../render/assets';
  */
 const $ = (id: string) => document.getElementById(id)!;
 const wake = $('wake'), wakeText = $('wakeText');
+if (lang === 'en') { document.title = 'Ash and Power'; $('skip').textContent = 'hold space to skip'; }
+// PL / EN switch on the click-to-start screen (switching reloads the page)
+const sw = langSwitch(); sw.classList.add('wake-lang'); wake.appendChild(sw);
 
 let models: Models = new Map();
 try {
@@ -22,7 +26,7 @@ try {
   console.warn('models failed, using simple shapes', e);
 }
 wake.classList.remove('loading');
-wakeText.innerHTML = 'najlepiej w słuchawkach<br><b>kliknij</b>';
+wakeText.innerHTML = tr('najlepiej w słuchawkach<br><b>kliknij</b>', 'best with headphones<br><b>click</b>');
 
 const input = { keys: new Set<string>(), pressed: new Set<string>(), mouse: null as { x: number; y: number } | null };
 addEventListener('keydown', e => {
@@ -41,7 +45,7 @@ const scenes: Record<string, () => Scene> = {
   darkness: () => new Darkness(),
   hall: () => new HallScene(),
   station: () => new StationScene(),
-  crane: () => new Todo('crane', 'Scena 2 · Suwnica w maszynowni'),
+  crane: () => new Todo('crane', tr('Scena 2 · Suwnica w maszynowni', 'Scene 2 · Gantry crane in the machine room')),
 };
 // ?scene=hall jumps straight to a scene (testing)
 const startId = new URLSearchParams(location.search).get('scene') ?? 'darkness';

@@ -70,10 +70,20 @@ canvas { display: block; }
 .tip .prog > i { display: block; height: 100%; background: var(--warn); }
 @media (max-width: 640px) { .goals { width: 200px; font-size: 11px; } }
 
-#vitals { width: 190px; }
+#vitals { width: 220px; }
 #en { background: #e3c27a; transition: width .2s; }
 #en.low { background: var(--limit); }
 .hover { position: absolute; transform: translate(16px, 10px); background: #141618d9; border: 1px solid var(--line); border-radius: 3px; padding: 3px 7px; white-space: nowrap; font-size: 11px; }
+.hover { white-space: normal; width: max-content; max-width: 280px; padding: 6px 9px; line-height: 1.45; pointer-events: none; z-index: 4; }
+.hover .h { font-size: 10px; letter-spacing: .12em; color: var(--ink); margin-bottom: 2px; }
+.hover .sub, #netPanel .sub { font-size: 9px; letter-spacing: .14em; color: var(--dim); text-transform: uppercase; margin-top: 6px; }
+.hover .row { display: flex; justify-content: space-between; gap: 14px; }
+.hover .row > span:first-child { white-space: nowrap; }
+.hover .cost { margin-top: 4px; color: var(--warn); }
+.hover .act { margin-top: 6px; padding-top: 5px; border-top: 1px solid var(--line); }
+.flows { margin-top: 4px; font-size: 11px; line-height: 1.5; }
+.flows .row, #netPanel .row { display: flex; justify-content: space-between; gap: 14px; }
+.flows .sum, #netPanel .sum { border-top: 1px solid var(--line); margin-top: 3px; padding-top: 3px; color: var(--ink); }
 .hover .k, .ctx .k { color: var(--warn); margin-right: 6px; }
 .ctx { position: absolute; pointer-events: auto; background: #141618f2; border: 1px solid var(--warn); border-radius: 4px; padding: 4px; min-width: 190px; display: grid; gap: 2px; z-index: 5; }
 .ctx .h { font-size: 10px; letter-spacing: .12em; color: var(--dim); padding: 4px 8px 2px; }
@@ -81,3 +91,5 @@ canvas { display: block; }
 .ctx button:hover, .ctx button:focus-visible { background: #ffffff14; }
 .ctx button[disabled] { cursor: default; color: var(--dim); }
 .ctx button small { color: var(--limit); }
+#start .card, #end .card { position: relative; }
+.card .lang-switch { position: absolute; top: 14px; right: 14px; color: var(--dim); }
