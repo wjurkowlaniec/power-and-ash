@@ -252,6 +252,8 @@ Etapy **[propozycja]**:
 | 3 | **Żaglowóz**: kadłub z ładownią, fabrykator na pokładzie, turbina, panele, nawijak kabli | prawdziwa ruchoma baza, wyprawy na wiele dni |
 | 4 | Żaglowóz rozbudowany: napęd elektryczny na bezwietrzne odcinki, kotwica i wyciągarka, izolacja, grzałki, powłoka | góry, mokradła, zima |
 
+**Napędy w czasie** **[propozycja na podstawie luźnych myśli Wojtka, 2026-11-08]**: żagiel jest napędem początku, nie całej gry. Pod piasek i lód trzeba wymieniać koła na płozy (część zużywalna i decyzja przed wyprawą). Później przychodzą inne technologie (napęd elektryczny, potem coś, czego ludzie nie zdążyli zbudować), a na końcu np. **kwantowy poduszkowiec**, który nie potrzebuje ani wiatru, ani podłoża. Rytm podróży: na żaglu przejazd jest wolny, więc co 15–30 s gracz ma mieć coś do zrobienia (zbieranie po drodze, postoje, korekta żagla, omijanie przeszkód), a nie tylko patrzeć.
+
 ![Bojerek z żaglem z balonu meteo](img/koncepty/bojerek.jpg)
 
 **Części zużywalne** **[propozycja]**:
@@ -458,6 +460,8 @@ Szkic układu **[propozycja]**:
 
 Kierunek: nieoczywiste połączenia i europejski krajobraz. Pomysły do rozmowy: zalane kopalnie z podziemnym jeziorem, wydmy nadmorskie z wrakami, torfowiska, miasto na stokach przecięte autostradą.
 
+**[propozycja 2026-11-08, do oceny przez Wojtka]** Na interaktywnej mapie świata (https://claude.ai/artifact/3Z4w4jbwc3H2CXB8BAyHtW) są trzy kandydaty: **Mierzeja Wraków** (nadmorskie wydmy z wrakami), **Miasto Tarasów** (miasto na stokach, ludzie żyją wśród martwych maszyn), **Zatopione Szyby** (zalane kopalnie z podziemnym jeziorem, Głębinowcy).
+
 ## Łuk fabularny
 
 **[propozycja]** Fabuła jest otwarta, ale ma oś. Każdy rozdział to mniej więcej jeden rok gry.
@@ -469,6 +473,14 @@ Kierunek: nieoczywiste połączenia i europejski krajobraz. Pomysły do rozmowy:
 5. **Zorza** (później): Cerkwiska, strażnicy, laboratorium. Prawda o Popiele i decyzja: odtworzyć baterię w większej skali (ryzyko), oddać ją ludziom, czy zostawić w sobie i budować sieć powoli.
 
 Decyzja na końcu nie zamyka gry, tylko zmienia świat dalej.
+
+### Ironia losu **[propozycja na podstawie luźnych myśli Wojtka, 2026-11-08, nie dosłownie]**
+
+Świat się poddał. Po katastrofie i zmianach klimatu ludzie cofnęli się w rozwoju, a jedyną rzeczą, która jeszcze ulepsza technologię, jest jeden robot. Wolt powoli wyprowadza ludzi z powrotem, mimo że bywają oporni.
+
+- **Ironia podwójna:** Popiół spowodowała technologia z tej samej rodziny co bateria (Q-2), więc ludzi ratuje dokładnie to, czego się boją.
+- **Cofnięcie bez jaskiń:** nie dosłowna epoka kamienia, tylko życie wśród martwych maszyn, których nikt już nie rozumie (np. Tarasowi, Głębinowcy).
+- **„Dzikie technologie”:** Wolt (system uczący się) wymyśla rzeczy, których ludziom zabrakło, gdy zmienił się klimat, i w końcu przywraca dobre warunki. Kandydaci, głównie po fabule: **Wiązacz Popiołu** (oswojone mikroboty robią z popiołu glebę), łapacze mgły, siewnik chmur na wieży radiolinii, ogrody poza Kopułą.
 
 ## Gra po fabule
 
