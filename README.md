@@ -9,10 +9,15 @@ Top-down gra survivalowa w przeglądarce. Automat serwisowy Wolt ciągnie kable 
 
 Gra i demo są w jednym repo i dzielą kod silnika (`src/sim`, `src/render`, `src/audio`). Gra ma swoje wejście `index.html` → `src/game/main.ts`, demo `demo/index.html` → `src/main.ts`. W grze `?scene=hall` przeskakuje do wybranej sceny (do testów), a przytrzymana spacja pomija Scenę 0.
 
-- [Plan implementacji i kamienie milowe](docs/PLAN.md)
+- [Świat i fabuła](docs/SWIAT.md), [pierwszy rozdział scena po scenie](docs/POCZATEK.md)
+- [Kod gry: architektura, stan scen, decyzje](docs/GRA.md)
+- [Instrukcje dla agentów i zasady pracy](CLAUDE.md)
+- [Plan implementacji tech demo i kamienie milowe](docs/PLAN.md)
 - [Dokument projektowy](docs/design.html) (research gatunku, koncepcja, zasady kabli, wizualizacje)
 
 ## Sterowanie
+
+Poniżej sterowanie tech demo. Sterowanie gry jest w [docs/GRA.md](docs/GRA.md#sterowanie-w-grze).
 
 | Klawisz | Akcja |
 |---|---|
