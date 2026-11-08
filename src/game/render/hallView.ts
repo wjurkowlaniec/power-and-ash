@@ -1,4 +1,5 @@
 import * as THREE from 'three';
+import { cableTube } from './cableTube';
 import { mat, mesh, box } from '../../render/models';
 import { woltMonoModel, WoltMono, WoltAnimator, ArmPose } from '../../render/wolt';
 import { Models, fit } from '../../render/assets';
@@ -380,8 +381,7 @@ export class HallView {
           v.push(new THREE.Vector3(a.x + (b.x - a.x) * 0.85, 0.03, a.y + (b.y - a.y) * 0.85));
         }
       }
-      const curve = new THREE.CatmullRomCurve3(v, false, 'centripetal');
-      const geo = new THREE.TubeGeometry(curve, Math.max(12, v.length * 8), 0.03, 6);
+      const geo = cableTube(v, 0.03);
       if (!this.tetherMesh) {
         this.tetherMesh = mesh(geo, new THREE.MeshStandardMaterial({ color: 0x141616, roughness: 0.7, emissive: Q_GREEN, emissiveIntensity: 0 }), 0, 0, 0, false);
         this.scene.add(this.tetherMesh);
