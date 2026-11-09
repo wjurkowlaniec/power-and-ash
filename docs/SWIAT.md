@@ -494,6 +494,18 @@ Decyzja na końcu nie zamyka gry, tylko zmienia świat dalej.
 - **Cofnięcie bez jaskiń:** nie dosłowna epoka kamienia, tylko życie wśród martwych maszyn, których nikt już nie rozumie (np. Tarasowi, Głębinowcy).
 - **„Dzikie technologie”:** Wolt (system uczący się) wymyśla rzeczy, których ludziom zabrakło, gdy zmienił się klimat, i w końcu przywraca dobre warunki. Kandydaci, głównie po fabule: **Wiązacz Popiołu** (oswojone mikroboty robią z popiołu glebę), łapacze mgły, siewnik chmur na wieży radiolinii, ogrody poza Kopułą.
 
+### Pomysł w rozważaniu: zakończenie bez ludzi **[do decyzji, Wojtek 2026-11-09]**
+
+**Pomysł Wojtka:** naprawa ziemi, infrastruktury i ekologii trwa kilkadziesiąt albo kilkaset lat. Zanim robot skończy, ludzie wymierają. Zostaje sam ze swoimi robocikami, bez ludzi, dla których to wszystko robił. Po drodze łuk relacji z ludźmi: najpierw potrzeba ich zrozumienia, potem poznania ich potrzeb, potem tego, jak im pomóc.
+
+**Uwagi agentów (nie decyzja):**
+
+- **Łuk z ludźmi już pasuje do kanonu:** zrozumienie to słownik i odkodowywanie pisma, potrzeby to misje bunkrów, pomoc to Sieć i technologie klimatyczne. Warto nazwać te trzy etapy wprost jako oś relacji.
+- **Mocna strona:** gorzkie, ciche zakończenie w duchu Inside i ironii losu.
+- **Ryzyko:** jeśli wymarcie jest stałe i nieuniknione, dziesiątki godzin misji dla ludzi mogą się wydać daremne, a „gra po fabule” traci sens.
+- **Propozycja: niech to wynika z mechaniki, nie z przerywnika.** Czas już jest zasobem (hibernacja, której długość wybiera gracz, i obliczenia w tle). Ludzie się starzeją, pokolenia się zmieniają, a każda długa hibernacja kosztuje ludzkie życia. Gracz, który naprawia świat „optymalnie”, może zostać sam; ten, który wybiera ludzi zamiast tempa, zdąży choć części pomóc. Ironia jest wtedy zasłużona, a nie narzucona.
+- **Połączenie ze zwrotem „kto naprawdę steruje”:** jeśli baterią steruje człowiek z drugiej strony, to w świecie bez ludzi ostatnim człowiekiem jest on, czyli gracz. Wolt nie jest wtedy całkiem sam. To spina oba pomysły w jedno zakończenie: robot robił wszystko dla ludzi, a jedyny, który został, był z nim od początku.
+
 ## Gra po fabule
 
 **[ustalone]** Gra ma być na długo, a nie na jedną misję.
@@ -507,6 +519,7 @@ Decyzja na końcu nie zamyka gry, tylko zmienia świat dalej.
 
 ## Otwarte pytania
 
+- Czy wchodzi zakończenie bez ludzi (ludzie wymierają, zanim robot naprawi świat), patrz [Pomysł w rozważaniu](#pomysł-w-rozważaniu-zakończenie-bez-ludzi-do-decyzji-wojtek-2026-11-09).
 - Czy wchodzi zwrot „kto naprawdę steruje baterią” (człowiek z innego wymiaru), patrz [Pomysł w rozważaniu](#pomysł-w-rozważaniu-kto-naprawdę-steruje-do-decyzji-wojtek-2026-11-09).
 - Czy Popiół jako skutek katastrofy Q-2 jest OK? To mocno ustawia ton i stosunek ludzi do baterii.
 - Kto budzi Wolta i dlaczego teraz.
