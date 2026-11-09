@@ -56,31 +56,26 @@ function child(ox,oy,s){
   wob(circ(ox-170*s,oy-120*s,22*s,16),4*s,3*s,ch,0.8);
   for(let k=0;k<8;k++){const t=k/8*6.283;wob([[ox-170*s+Math.cos(t)*30*s,oy-120*s+Math.sin(t)*30*s],[ox-170*s+Math.cos(t)*44*s,oy-120*s+Math.sin(t)*44*s]],2*s,2.5*s,ch,0.8)}
 }
-// 2. middle generation sign: ochre paint, simplified figure inside a ring
+// 2. middle generation sign: ochre paint, wheel + box + arm (Wojtek: kółko, prostokąt, ręka)
 function sign(ox,oy,s){
   const col='#b5874a';
-  g.save();g.strokeStyle=col;g.lineWidth=13*s;g.lineCap='round';
-  g.beginPath();g.arc(ox,oy+70*s,42*s,0,7);g.stroke();                // wheel
-  g.beginPath();g.moveTo(ox,oy+28*s);g.lineTo(ox,oy-60*s);g.stroke();   // body
-  g.beginPath();g.moveTo(ox,oy-60*s);g.quadraticCurveTo(ox+10*s,oy-125*s,ox+70*s,oy-120*s);g.stroke(); // boom
-  g.fillStyle=col;g.beginPath();g.arc(ox+70*s,oy-92*s,15*s,0,7);g.fill(); // lamp
-  g.lineWidth=5*s;g.globalAlpha=0.8;
-  for(const a of [-0.5,0,0.5]){g.beginPath();g.moveTo(ox+70*s+Math.sin(a)*24*s,oy-92*s+Math.cos(a)*24*s);g.lineTo(ox+70*s+Math.sin(a)*48*s,oy-92*s+Math.cos(a)*48*s);g.stroke()}
+  g.save();g.strokeStyle=col;g.fillStyle=col;g.lineWidth=12*s;g.lineCap='round';g.lineJoin='round';
+  g.beginPath();g.arc(ox,oy+80*s,40*s,0,7);g.stroke();                       // koło
+  g.strokeRect(ox-38*s,oy-50*s,76*s,88*s);                                  // prostokąt ciała
+  g.fillRect(ox-16*s,oy-28*s,32*s,9*s);                                      // okienko
+  g.beginPath();g.moveTo(ox+38*s,oy-5*s);g.lineTo(ox+95*s,oy-35*s);g.lineTo(ox+120*s,oy-10*s);g.stroke(); // ramię z łokciem
+  g.lineWidth=7*s;g.beginPath();g.moveTo(ox+120*s,oy-10*s);g.lineTo(ox+135*s,oy-18*s);g.moveTo(ox+120*s,oy-10*s);g.lineTo(ox+128*s,oy+6*s);g.stroke(); // chwytak
   g.restore();
-  // drips
   g.save();g.strokeStyle=col;g.globalAlpha=0.75;g.lineCap='round';
-  for(const [x,y,l] of [[ox-42*s,oy+75*s,50],[ox+2*s,oy+112*s,70],[ox+70*s,oy-78*s,40],[ox+40*s,oy+80*s,30]]){g.lineWidth=(3+R()*3)*s;g.beginPath();g.moveTo(x,y);g.lineTo(x+R()*2,y+l*s);g.stroke()}
+  for(const [x,y,l] of [[ox-38*s,oy+40*s,50],[ox+2*s,oy+122*s,70],[ox+38*s,oy+40*s,30],[ox+95*s,oy-30*s,45]]){g.lineWidth=(3+R()*3)*s;g.beginPath();g.moveTo(x,y);g.lineTo(x+R()*2,y+l*s);g.stroke()}
   g.restore();
-  // tally marks under it (votive, people counting visits)
-  wob([[ox-80*s,oy+150*s],[ox-80*s,oy+180*s]],2,4*s,'rgba(30,28,25,0.7)');wob([[ox-68*s,oy+150*s],[ox-68*s,oy+180*s]],2,4*s,'rgba(30,28,25,0.7)');wob([[ox-56*s,oy+150*s],[ox-56*s,oy+180*s]],2,4*s,'rgba(30,28,25,0.7)');wob([[ox-86*s,oy+175*s],[ox-48*s,oy+155*s]],2,4*s,'rgba(30,28,25,0.7)');
 }
-// 3. final pictogram: ring + vertical stroke + hook with dot. Rust red, worn
+// 3. final pictogram: ring, box on top, one stroke for the arm. Rust red, worn
 function picto(ox,oy,s,col='#8e3b2a',a=1){
-  g.save();g.globalAlpha=a;g.strokeStyle=col;g.fillStyle=col;g.lineWidth=16*s;g.lineCap='round';g.lineJoin='round';
-  g.beginPath();g.arc(ox,oy+50*s,40*s,0,7);g.stroke();                       // koło
-  g.beginPath();g.moveTo(ox,oy+10*s);g.lineTo(ox,oy-60*s);g.quadraticCurveTo(ox+2*s,oy-95*s,ox+45*s,oy-95*s);g.stroke(); // wysięgnik
-  g.lineWidth=6*s;g.beginPath();g.moveTo(ox+45*s,oy-95*s);g.lineTo(ox+45*s,oy-72*s);g.stroke(); // zawieszenie
-  g.beginPath();g.arc(ox+45*s,oy-58*s,14*s,0,7);g.fill();                    // lampa
+  g.save();g.globalAlpha=a;g.strokeStyle=col;g.fillStyle=col;g.lineWidth=16*s;g.lineCap='butt';g.lineJoin='miter';
+  g.beginPath();g.arc(ox,oy+62*s,36*s,0,7);g.stroke();                       // koło
+  g.fillRect(ox-34*s,oy-52*s,68*s,72*s);                                     // pełny prostokąt
+  g.beginPath();g.moveTo(ox+34*s,oy-20*s);g.lineTo(ox+90*s,oy-46*s);g.stroke(); // ręka
   g.restore();
 }
 function wear(x,y,w,h,amt){g.save();g.globalCompositeOperation='source-atop';for(let k=0;k<w*h*amt/40;k++){const px=x+R()*w,py=y+R()*h,r=1+R()*4;g.fillStyle='rgba(112,106,98,'+(0.5+R()*0.5)+')';g.beginPath();g.ellipse(px,py,r*1.8,r,R()*3,0,7);g.fill()}g.restore()}
@@ -96,7 +91,10 @@ g=L.getContext('2d');
 if(mode==='sciana'){
   child(330,430,1.15); wear(80,200,520,420,0.12);
   sign(810,420,1.25); wear(640,220,340,420,0.22);
-  picto(1300,440,1.45); wear(1180,280,260,330,0.30);
+  {const ox=810,oy=420,s=1.25;
+  const tc='rgba(30,28,25,0.7)';
+  wob([[ox-90*s,oy+150*s],[ox-90*s,oy+180*s]],0.5,4*s,tc);wob([[ox-78*s,oy+150*s],[ox-78*s,oy+180*s]],0.5,4*s,tc);wob([[ox-66*s,oy+150*s],[ox-66*s,oy+180*s]],0.5,4*s,tc);wob([[ox-96*s,oy+175*s],[ox-58*s,oy+155*s]],0.5,4*s,tc);}
+  picto(1300,440,1.45); wear(1180,280,280,330,0.16);
   // small labels (scratched numerals, as if years)
   g.font='italic 22px Georgia';g.fillStyle='rgba(225,220,205,0.55)';
   g.fillText('I',330,720);g.fillText('II',800,720);g.fillText('III',1290,720);
