@@ -3,6 +3,7 @@ import { V2, dist, len, sub } from '../../sim/vec';
 import { World, Obstacle } from '../../sim/world';
 import { Load, LOADS, towDrive, TOW_RANGE } from '../../sim/tow';
 import { drive, settle } from '../../sim/drive';
+import { bodyOk, guardTurn } from '../../sim/footprint';
 import { tr, num } from '../../i18n';
 
 /**
@@ -302,12 +303,18 @@ export class Station {
     if (this.cableHeld && this.cableLength() > CABLE_WARN) sp *= 0.6;
     if (this.towing) sp *= 1 - LOADS.tyre.drag * (this.bearingOnTyre ? 2.2 : 1);
     if (this.battery < 5) sp *= 0.5;
-    const step = drive(this, dt, want ? inp.move : { x: 0, y: 0 }, sp);
+    const f0 = this.facing;
+    let step = drive(this, dt, want ? inp.move : { x: 0, y: 0 }, sp);
+    const tyreOk = (c: V2) => this.towing || dist(c, this.tyre.pos) >= PLAYER_R + LOADS.tyre.radius;
+    // the nose and the reel must not swing into a wall (src/sim/footprint.ts)
+    const g = guardTurn(this.world, this.pos, f0, this.facing, PLAYER_R, c => tyreOk(c) && (!this.cableHeld || this.cableOk(c)));
+    if (g.facing !== this.facing) { this.facing = g.facing; step = { x: Math.cos(this.facing) * this.speed * dt, y: Math.sin(this.facing) * this.speed * dt }; }
+    if (g.pos !== this.pos) { this.pos = g.pos; if (this.cableHeld) this.cable!.moveEnd(this.world, this.pos); }
     const intended = len(step);
     this.strain = false;
     if (intended < 1e-6) { this.moving = false; if (!want) this.towTaut = false; return; }
     const before = { ...this.pos };
-    const free = (c: V2) => !this.world.circleBlocked(c, PLAYER_R) && (this.towing || dist(c, this.tyre.pos) >= PLAYER_R + LOADS.tyre.radius);
+    const free = (c: V2) => bodyOk(this.world, this.pos, this.facing, c, this.facing, PLAYER_R) && tyreOk(c);
     let cand = { ...this.pos };
     for (const s of [{ x: step.x, y: 0 }, { x: 0, y: step.y }]) {
       const c = { x: cand.x + s.x, y: cand.y + s.y };

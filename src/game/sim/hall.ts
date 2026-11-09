@@ -2,6 +2,7 @@ import { V2, dist, len } from '../../sim/vec';
 import { World, Obstacle } from '../../sim/world';
 import { Cable } from '../../sim/cable';
 import { drive, settle, turnTowards } from '../../sim/drive';
+import { bodyOk, guardTurn } from '../../sim/footprint';
 import { tr } from '../../i18n';
 
 /**
@@ -204,14 +205,16 @@ export class Hall {
       const at = { x: U.x, y: U.y - INSERT_APPROACH };
       const k = this.insertT / INSERT_TIME;
       const target = k < 0.55 ? Math.atan2(B.y - this.pos.y, B.x - this.pos.x) : this.facing;
+      const f0 = this.facing;
       const left = turnTowards(this, target, dt);
+      this.facing = guardTurn(this.world, this.pos, f0, this.facing, PLAYER_R).facing;
       // roll straight along the heading (no steering on the last few centimetres)
       const fwd = k < 0.55 && Math.abs(left) < 0.4 ? (at.x - this.pos.x) * Math.cos(this.facing) + (at.y - this.pos.y) * Math.sin(this.facing) : 0;
       const want = Math.max(-0.7, Math.min(0.7, fwd * 3));
       this.speed += Math.max(-4 * dt, Math.min(4 * dt, want - this.speed));
       const before = { ...this.pos };
       const c = { x: this.pos.x + Math.cos(this.facing) * this.speed * dt, y: this.pos.y + Math.sin(this.facing) * this.speed * dt };
-      if (!this.world.circleBlocked(c, PLAYER_R)) this.pos = c; else this.speed = 0;
+      if (bodyOk(this.world, this.pos, this.facing, c, this.facing, PLAYER_R)) this.pos = c; else this.speed = 0;
       this.moving = dist(before, this.pos) > 1e-5;
       if (this.moving) this.tether?.moveEnd(this.world, this.pos);
       if (this.insertT >= INSERT_TIME) {
@@ -236,12 +239,18 @@ export class Hall {
     if (this.tether && this.tetherLength() > TETHER_WARN) sp *= 0.6;
     // reserve mode: the body surges and sags as the weak current comes and goes
     if (!this.powered) sp *= 0.82 + 0.18 * Math.sin(this.t * 2.3) * Math.sin(this.t * 0.9 + 1);
-    const step = drive(this, dt, want ? inp.move : { x: 0, y: 0 }, sp, this.powered ? undefined : RESERVE_DRIVE);
+    const f0 = this.facing;
+    let step = drive(this, dt, want ? inp.move : { x: 0, y: 0 }, sp, this.powered ? undefined : RESERVE_DRIVE);
     const before = { ...this.pos };
+    // the nose and the reel must not swing into a wall (src/sim/footprint.ts)
+    const g = guardTurn(this.world, this.pos, f0, this.facing, PLAYER_R, c => this.inside(c) && this.tetherOk(c));
+    if (g.facing !== this.facing) { this.facing = g.facing; step = { x: Math.cos(this.facing) * this.speed * dt, y: Math.sin(this.facing) * this.speed * dt }; }
+    this.pos = g.pos;
+    const free = (c: V2) => bodyOk(this.world, this.pos, this.facing, c, this.facing, PLAYER_R) && this.inside(c) && this.tetherOk(c);
     const tx = { x: this.pos.x + step.x, y: this.pos.y };
-    if (!this.world.circleBlocked(tx, PLAYER_R) && this.inside(tx) && this.tetherOk(tx)) this.pos = tx;
+    if (free(tx)) this.pos = tx;
     const ty = { x: this.pos.x, y: this.pos.y + step.y };
-    if (!this.world.circleBlocked(ty, PLAYER_R) && this.inside(ty) && this.tetherOk(ty)) this.pos = ty;
+    if (free(ty)) this.pos = ty;
     const d = dist(before, this.pos);
     settle(this, d, dt);
     this.moving = d > 1e-5;

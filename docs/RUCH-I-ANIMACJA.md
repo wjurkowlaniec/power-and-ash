@@ -57,6 +57,16 @@ Klasa `GroundFx` należy do sceny. Każdy widok co klatkę woła `wheel(...)` dl
 - **Bateria** (`INSERT_TIME = 3,6 s`, faza `u = insertT / INSERT_TIME`): Wolt obraca się do komory i podjeżdża 0,3 m (symulacja). Teleskopowy pręt ramienia komory wysuwa ogniwo przez otwarty front (`u` 0,04–0,38). Chwytak je przejmuje (0,40–0,52). Ogniwo zostaje przeniesione nad kapsułę i zmniejsza się do rozmiaru kasety (0,5–0,8), po czym wsuwa się w korpus (0,74–0,97). Okienko ogniwa rozjaśnia się płynnie.
 - Migotania (oczy, poświata, licznik rezerwy) to gładki szum z rzadkimi przygaśnięciami, a nie nowy `Math.random()` co klatkę.
 
+## Kolizje korpusu (`src/sim/footprint.ts`)
+
+Zgłoszenie Wojtka z 2026-11-09 („clipping”, zrzut z hali): Wolt wjeżdżał nosem w szkło komory i ściany. Kolizja była liczona tylko okręgiem koła (promień 0,3 m), a kapsuła z lampą sięga ok. 0,42 m do przodu, a szpula z prowadnicą kabla ok. 0,55 m do tyłu.
+
+- Obrys to trzy okręgi wzdłuż kursu: koło (promień sceny, 0,3 albo 0,32 m), nos (`NOSE`: 0,24 m przed kołem, r 0,18) i szpula (`TAIL`: 0,32 m za kołem, r 0,18). Końce są trochę mniejsze niż rysunek, żeby obrót w miejscu mieścił się w korytarzu szerokości 1 m (promień zamiatania 0,5 m).
+- Ruch: `bodyOk` przepuszcza krok, jeśli koło jest wolne, a nos i szpula nie wchodzą głębiej w ścianę niż przed krokiem. Ciało, które jakoś utknęło, zawsze może się wycofać, nigdy wbić dalej.
+- Obrót: `drive` obraca kurs, potem `guardTurn` sprawdza, czy nos albo szpula nie wjadą w ścianę. Jeśli tak, odsuwa koło o kilka centymetrów (do 0,24 m) od ściany, a gdy nic w pobliżu nie pasuje, cofa obrót. Scena dokłada własne warunki (długość kabla w hali i na stacji, otwarte drzwi hali, opona).
+- Ładunki na haku i kabel dalej liczą się od koła i haka, jak wcześniej.
+- Testy: `test/footprint.test.ts` (nos przy ścianie, obrót przy ścianie, wjazd w szkło komory w hali, jazda po ścianach stacji).
+
 ## Przejścia między scenami (`src/game/main.ts`)
 
 Kiedy scena ustawia `next`, jeszcze przez 0,8 s działa pod wygaszeniem do czerni (`FADE_OUT`) i dopiero wtedy przełącza się na następną. Nowa scena robi własne rozjaśnienie.

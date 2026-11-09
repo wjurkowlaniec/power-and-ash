@@ -8,6 +8,7 @@ import { HallScene } from './scenes/hall';
 import { StationScene } from './scenes/station';
 import { loadModels, Models } from '../render/assets';
 import { tr, lang, langSwitch } from '../i18n';
+import { menuHtml, onMenu } from './menu';
 
 /**
  * The game: the story from docs/POCZATEK.md, scene by scene. The tech demo (level
@@ -26,7 +27,18 @@ try {
   console.warn('models failed, using simple shapes', e);
 }
 wake.classList.remove('loading');
-wakeText.innerHTML = tr('najlepiej w słuchawkach<br><b>kliknij</b>', 'best with headphones<br><b>click</b>');
+// ?scene=hall jumps straight to a scene (testing links): one click starts it.
+// Without it the start screen is the main menu: new game, a scene, or a tech demo.
+const jump = new URLSearchParams(location.search).get('scene');
+if (jump) wakeText.innerHTML = tr('najlepiej w słuchawkach<br><b>kliknij</b>', 'best with headphones<br><b>click</b>');
+else {
+  wakeText.remove();
+  wake.classList.add('main-menu');
+  const m = document.createElement('div');
+  m.innerHTML = menuHtml(false);
+  wake.appendChild(m);
+  onMenu(m, p => { if ('scene' in p) start(p.scene); });
+}
 
 const input = { keys: new Set<string>(), pressed: new Set<string>(), mouse: null as { x: number; y: number } | null };
 addEventListener('keydown', e => {
@@ -47,8 +59,6 @@ const scenes: Record<string, () => Scene> = {
   station: () => new StationScene(),
   crane: () => new Todo('crane', tr('Scena 2 · Suwnica w maszynowni', 'Scene 2 · Gantry crane in the machine room')),
 };
-// ?scene=hall jumps straight to a scene (testing)
-const startId = new URLSearchParams(location.search).get('scene') ?? 'darkness';
 let scene: Scene | null = null;
 /** Leaving a scene: it keeps running under a short fade to black, so cuts never jump. */
 let leaving: { to: string; t: number } | null = null;
@@ -61,18 +71,45 @@ function go(id: string) {
   $('skip').hidden = scene.id !== 'darkness';
 }
 
-wake.addEventListener('click', () => {
-  if (wake.classList.contains('loading')) return;
+function start(id: string) {
   wake.remove();
   ctx.sound.start();
-  go(startId);
-}, { once: false });
+  go(id);
+}
+wake.addEventListener('click', () => {
+  if (wake.classList.contains('loading') || !jump) return;
+  start(jump);
+});
+
+/** Pause menu on Esc (unless a note or the archive is open: Esc closes those first). */
+const pause = document.createElement('div');
+pause.id = 'pause'; pause.hidden = true;
+document.body.appendChild(pause);
+onMenu(pause, p => {
+  setPaused(false);
+  if ('scene' in p) { leaving = null; go(p.scene); }
+  else if (p.act === 'restart' && scene) { leaving = null; go(scene.id); }
+});
+function setPaused(on: boolean) {
+  pause.hidden = !on;
+  if (on) {
+    pause.innerHTML = menuHtml(true, scene?.id);
+    pause.querySelector<HTMLElement>('button')?.focus();
+  }
+  input.keys.clear();
+}
+addEventListener('keydown', e => {
+  if (e.code !== 'Escape' || e.repeat || !scene || wake.isConnected) return;
+  if (!pause.hidden) { setPaused(false); return; }
+  if (scene.modal?.() || leaving) return;
+  setPaused(true);
+});
 
 let last = performance.now();
 function loop(now: number) {
   const dt = Math.min(0.05, (now - last) / 1000);
   last = now;
-  if (scene) {
+  if (scene && pause.hidden) {
     scene.update(dt, ctx);
     if (scene.next && !leaving) leaving = { to: scene.next, t: 0 };
     if (leaving) {

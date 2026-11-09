@@ -7,6 +7,7 @@ import { Wind } from './wind';
 import { findPath } from './path';
 import { Load, LOADS, towDrive, TOW_RANGE } from './tow';
 import { drive, settle, turnTowards } from './drive';
+import { bodyOk, guardTurn } from './footprint';
 import { tr } from '../i18n';
 
 export const CABLE_MAX = 20;      // m per segment
@@ -367,7 +368,7 @@ export class Game {
       if (o.action === 'salvage' && o.target.kind === 'scrap') {
         o.working = true;
         const c = this.goalOf(o.target);
-        if (this.speed < 0.3) turnTowards(this, Math.atan2(c.y - this.pos.y, c.x - this.pos.x), dt);
+        if (this.speed < 0.3) { const f0 = this.facing; turnTowards(this, Math.atan2(c.y - this.pos.y, c.x - this.pos.x), dt); this.facing = guardTurn(this.world, this.pos, f0, this.facing, PLAYER_RADIUS, () => false).facing; }
         return null;
       }
       this.order = null;
@@ -471,7 +472,12 @@ export class Game {
     if (this.empty()) max *= EMPTY_SPEED;
     if (this.held && this.heldLength() >= CABLE_WARN) max *= TENSION_SLOW;
     if (this.tow) max *= 1 - LOADS[this.tow.kind].drag;
-    const step = drive(this, dt, want ? inp.move : { x: 0, y: 0 }, max, undefined, this.stopIn);
+    const f0 = this.facing;
+    let step = drive(this, dt, want ? inp.move : { x: 0, y: 0 }, max, undefined, this.stopIn);
+    // the nose and the reel must not swing into a wall (src/sim/footprint.ts)
+    const g = guardTurn(this.world, this.pos, f0, this.facing, PLAYER_RADIUS, p => !this.bumps(p));
+    if (g.facing !== this.facing) { this.facing = g.facing; step = { x: Math.cos(this.facing) * this.speed * dt, y: Math.sin(this.facing) * this.speed * dt }; }
+    if (g.pos !== this.pos) { this.pos = this.held ? this.constrainByCable(g.pos) : g.pos; }
     const intended = len(step);
     if (intended < 1e-6) { this.moving = false; this.stepTow(this.pos, false); return; }
 
@@ -494,7 +500,7 @@ export class Game {
 
   /** Walls, rocks, and loads that are not on the hitch. */
   private bumps(p: V2): boolean {
-    if (this.world.circleBlocked(p, PLAYER_RADIUS)) return true;
+    if (!bodyOk(this.world, this.pos, this.facing, p, this.facing, PLAYER_RADIUS)) return true;
     for (const l of this.loads) {
       if (l === this.tow) continue;
       const r = LOADS[l.kind].radius * LOAD_BUMP + PLAYER_RADIUS;
@@ -551,7 +557,7 @@ export class Game {
     const r = max - t.baseLength();
     if (r > 0.05) {
       const slid = add(t.last, scale(norm(sub(cand, t.last)), r - 1e-3));
-      if (!this.world.circleBlocked(slid, PLAYER_RADIUS)) {
+      if (bodyOk(this.world, this.pos, this.facing, slid, this.facing, PLAYER_RADIUS)) {
         const t2 = h.cable.clone();
         t2.moveEnd(this.world, slid);
         if (t2.length() <= max + 1e-3) { h.cable = t2; return slid; }
