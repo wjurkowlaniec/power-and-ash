@@ -1,0 +1,64 @@
+name: Błąd
+description: Coś nie działa, zacina się, wygląda źle albo jest niezrozumiałe.
+title: "[Błąd] "
+labels: ["bug"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Dzięki za test! Wystarczy krótko. Jeden błąd = jedno zgłoszenie.
+        Zanim zgłosisz: odśwież stronę z Ctrl+Shift+R (na Macu Cmd+Shift+R), bo może to była stara wersja.
+  - type: dropdown
+    id: wersja
+    attributes:
+      label: Gdzie
+      description: Którą wersję testowałaś/testowałeś?
+      options:
+        - Gra (https://wjurkowlaniec.github.io/power-and-ash/)
+        - Tech demo „Rozruch” (/demo/)
+        - Tech demo „Warsztat” (/demo-craft/)
+        - Inne (napisz niżej)
+    validations:
+      required: true
+  - type: input
+    id: link
+    attributes:
+      label: Link z paska adresu
+      description: Skopiuj cały adres, bo pokazuje scenę albo etap (np. ?scene=station, ?stage=4).
+      placeholder: https://wjurkowlaniec.github.io/power-and-ash/?scene=station
+  - type: textarea
+    id: co-zrobilam
+    attributes:
+      label: Co robiłaś/robiłeś
+      description: Kroki po kolei, tak żeby dało się to powtórzyć.
+      placeholder: |
+        1. Weszłam do hali
+        2. Wzięłam oponę
+        3. Pojechałam w stronę drzwi
+    validations:
+      required: true
+  - type: textarea
+    id: co-sie-stalo
+    attributes:
+      label: Co się stało
+      description: A czego się spodziewałaś/spodziewałeś?
+    validations:
+      required: true
+  - type: textarea
+    id: zrzut
+    attributes:
+      label: Zrzut ekranu albo nagranie
+      description: Przeciągnij plik tutaj (obrazek, gif, krótkie wideo). Bardzo pomaga.
+  - type: input
+    id: sprzet
+    attributes:
+      label: Przeglądarka i komputer
+      placeholder: np. Chrome na Macu, Safari na iPhonie
+  - type: dropdown
+    id: jak-bardzo
+    attributes:
+      label: Jak bardzo przeszkadza
+      options:
+        - Drobiazg
+        - Przeszkadza, ale da się grać dalej
+        - Blokuje, nie da się grać dalej

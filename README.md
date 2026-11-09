@@ -17,7 +17,38 @@ Gra i demo są w jednym repo i dzielą kod silnika (`src/sim`, `src/render`, `sr
 - [Rejestr decyzji](docs/DECYZJE.md) (co Wojtek ustalił, kiedy i co odrzucono; każda nowa decyzja trafia tam i do dokumentu, którego dotyczy)
 - [Ruch, animacja i ślady Wolta](docs/RUCH-I-ANIMACJA.md) (model jazdy, holowanie, animator, ślady i pył, wstawanie i bateria w hali)
 - [Pomysły na później](docs/POMYSLY.md) (myśli Wojtka jeszcze nie do zrobienia)
+- [Jak testować i zgłaszać błędy oraz pomysły](#jak-testować) (dla testerów)
 - [Dokument projektowy](docs/design.html) (research gatunku, koncepcja, zasady kabli, wizualizacje)
+
+## Jak testować
+
+Wszystko działa w przeglądarce, bez instalowania. Najlepiej Chrome albo Firefox na komputerze, z dźwiękiem. Po każdej zmianie strona aktualizuje się sama w kilka minut; jeśli coś wygląda na starą wersję, odśwież z Ctrl+Shift+R (Mac: Cmd+Shift+R).
+
+### Co jest do przetestowania
+
+| Wersja | Link | Co to jest |
+|---|---|---|
+| **Gra** | https://wjurkowlaniec.github.io/power-and-ash/ | Prawdziwa gra od początku: ciemność, hala, martwa stacja. Przytrzymana spacja pomija pierwszą scenę. |
+| Gra od hali | https://wjurkowlaniec.github.io/power-and-ash/?scene=hall | Skok do Sceny 1 (Wolt budzi się w hali). |
+| Gra od stacji | https://wjurkowlaniec.github.io/power-and-ash/?scene=station | Skok do Sceny 2 (martwa stacja, turbina, kabel do maszynowni). |
+| **Tech demo „Rozruch”** | https://wjurkowlaniec.github.io/power-and-ash/demo/ | Poligon mechanik: kable, złom, fabrykator, ładowanie Żaglowozu, odjazd. |
+| **Tech demo „Warsztat”** | https://wjurkowlaniec.github.io/power-and-ash/demo-craft/ | Wytwarzanie, ekwipunek, wózek, rozbiórka, sieć, drzewko technologii. 12 etapów, `?stage=0` … `?stage=11` otwiera wybrany. |
+| Wersja angielska | dopisz `?lang=en` do linku (np. https://wjurkowlaniec.github.io/power-and-ash/demo/?lang=en) | Ta sama gra po angielsku, przydatne do sprawdzania tłumaczeń. |
+| Dokument projektowy | https://wjurkowlaniec.github.io/power-and-ash/docs/design.html | Koncepcja i wizualizacje, do czytania. |
+
+Sterowanie jest niżej w sekcji [Sterowanie](#sterowanie), a w grze pod klawiszem H.
+
+### Gdzie zgłaszać
+
+Wszystko trafia do [GitHub Issues](https://github.com/wjurkowlaniec/power-and-ash/issues). Potrzebne jest konto na GitHubie; Wojtek dodaje testerów jako współpracowników repo (Settings → Collaborators), wtedy dostają też powiadomienia o odpowiedziach.
+
+1. Wejdź na [New issue](https://github.com/wjurkowlaniec/power-and-ash/issues/new/choose).
+2. Wybierz formularz:
+   - **Błąd** (etykieta `bug`): coś nie działa, zacina się, wygląda źle albo jest niezrozumiałe. Formularz pyta o link z paska adresu, kroki, co się stało i zrzut ekranu.
+   - **Pomysł** (etykieta `pomysł`): pomysł albo zwykłe wrażenie z gry („tu się nudziłam”, „nie wiedziałam, co dalej”). Nie musi być dopracowany.
+3. Jedno zgłoszenie = jedna sprawa. Zrzuty ekranu i krótkie nagrania przeciąga się prosto do pola tekstowego.
+
+Co dalej: agent (Claude) i Wojtek czytają zgłoszenia, błędy naprawiają w PR z dopiskiem `Fixes #numer` (zgłoszenie zamyka się samo, gdy poprawka jest na Pages), a pomysły po decyzji Wojtka trafiają do [docs/POMYSLY.md](docs/POMYSLY.md) albo do planu. Etykieta `do-decyzji` znaczy, że sprawa czeka na Wojtka.
 
 ## Sterowanie
 

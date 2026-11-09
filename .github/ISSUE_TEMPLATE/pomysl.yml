@@ -1,0 +1,37 @@
+name: Pomysł
+description: Pomysł na grę, świat, wygląd, dźwięk albo sterowanie. Też luźna myśl albo wrażenie z gry.
+title: "[Pomysł] "
+labels: ["pomysł"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Każdy pomysł się przyda, nawet nieskończony. Nie trzeba pisać ładnie ani dokładnie.
+  - type: dropdown
+    id: dotyczy
+    attributes:
+      label: Czego dotyczy
+      options:
+        - Rozgrywka i zadania
+        - Świat i fabuła
+        - Wygląd
+        - Dźwięk
+        - Sterowanie
+        - Coś innego
+  - type: textarea
+    id: pomysl
+    attributes:
+      label: Pomysł
+      description: Co by było fajnie mieć albo zmienić?
+    validations:
+      required: true
+  - type: textarea
+    id: dlaczego
+    attributes:
+      label: Skąd pomysł / dlaczego
+      description: Co poczułaś/poczułeś w grze, co Cię zainspirowało (gra, film, miejsce)?
+  - type: textarea
+    id: obrazki
+    attributes:
+      label: Szkic, zdjęcie, link
+      description: Opcjonalnie. Przeciągnij plik tutaj albo wklej link.

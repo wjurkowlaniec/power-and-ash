@@ -10,3 +10,4 @@ Pełne zasady pracy są w [CLAUDE.md](CLAUDE.md) i obowiązują każdego agenta,
 4. **Każda zmiana idzie na GitHub Pages do testu:** PR, zielone CI (`npm test`, `npm run build`), squash-merge do `main`, deploy rusza sam.
 5. **Logika bez Three.js i z testami, teksty przez `tr('pl', 'en')`**, wspólny silnik nie może zepsuć ani gry, ani tech demo.
 6. Dokumenty, commity i PR-y po polsku, komentarze w kodzie po angielsku.
+7. **Zgłoszenia testerów są w GitHub Issues** (etykiety `bug`, `pomysł`, `do-decyzji`, formularze w `.github/ISSUE_TEMPLATE/`). Poprawka błędu idzie w PR z `Fixes #numer`; pomysł trafia do dokumentów dopiero po decyzji Wojtka. Linki dla testerów utrzymuj w README, w sekcji „Jak testować” (nowa wersja albo scena na Pages = nowy wiersz).

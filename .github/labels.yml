@@ -1,0 +1,10 @@
+# Etykiety zgłoszeń. Workflow .github/workflows/labels.yml zakłada je w repo (albo poprawia kolor/opis).
+- name: bug
+  color: d73a4a
+  description: Coś nie działa (zgłoszenie z testów)
+- name: pomysł
+  color: 7ac70c
+  description: Pomysł albo wrażenie z gry
+- name: do-decyzji
+  color: fbca04
+  description: Czeka na decyzję Wojtka

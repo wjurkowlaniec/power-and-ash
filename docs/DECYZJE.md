@@ -96,6 +96,7 @@ Decyzje z rozmów o prototypie, tech demo i grze (wątki: research, prototyp, wy
 | 2026-11-08 | Wojtek wrzuca myśli losowo i w dowolnym miejscu, a agent je porządkuje i rozdziela na zadania. Ten sposób pracy jest akceptowany („10 na 10”). | |
 | 2026-11-08 | **Stała zasada dokumentacji:** każda decyzja i myśl Wojtka (może być sparafrazowana) trafia do repo, nie tylko do pamięci agenta. Repo ma być samowystarczalne: aktualne dokumenty, rejestr decyzji, instrukcje dla agentów, opis architektury, porządek w kodzie. Każdy PR aktualizuje dokumentację, której dotyczy. | [AGENTS.md](../AGENTS.md), [CLAUDE.md](../CLAUDE.md) |
 | 2026-11-08 | Priorytet: najpierw dopracować bazę (płynne animacje, precyzyjny ruch robota, ślady zależne od podłoża). Gdy baza będzie dobra, Wojtek sam rysuje mapę. | [RUCH-I-ANIMACJA.md](RUCH-I-ANIMACJA.md) |
+| 2026-11-09 | Testerzy spoza projektu (na początek dziewczyna Wojtka) współpracują przez **GitHub Issues** w tym repo: konto na GitHubie, Wojtek dodaje ich jako współpracowników. Błędy formularzem „Błąd” (etykieta `bug`), pomysły i wrażenia formularzem „Pomysł” (etykieta `pomysł`); `do-decyzji` = czeka na Wojtka. W README jest przewodnik testowania z linkami do wszystkich wersji na Pages. | [README.md: Jak testować](../README.md#jak-testować), [.github/ISSUE_TEMPLATE](../.github/ISSUE_TEMPLATE), [AGENTS.md](../AGENTS.md) |
 
 ### Technologia
 
