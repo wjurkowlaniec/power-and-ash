@@ -9,8 +9,8 @@ import { tr } from '../i18n';
 
 // ---------------------------------------------------------------- items
 
-export type MaterialId = 'iron' | 'copper' | 'plastic' | 'glass' | 'electronics' | 'cells' | 'bearings' | 'silicon' | 'scrapmix';
-export type PartId = 'cable' | 'circuit' | 'motor' | 'pvcell' | 'frame' | 'cellpack';
+export type MaterialId = 'iron' | 'copper' | 'plastic' | 'glass' | 'electronics' | 'cells' | 'bearings' | 'silicon' | 'scrapmix' | 'sailcloth';
+export type PartId = 'cable' | 'circuit' | 'motor' | 'pvcell' | 'frame' | 'cellpack' | 'yachtmast' | 'sail' | 'runners';
 export type ToolId = 'wrench' | 'cutter' | 'solder' | 'meter';
 export type BuildingId = 'splitter' | 'lamp' | 'solar' | 'wind' | 'battery' | 'charger' | 'recycler' | 'mast';
 export type ModuleId = 'm_lamp' | 'm_arm' | 'm_cells' | 'm_radio' | 'm_remote' | 'm_ai';
@@ -40,6 +40,7 @@ export const ITEMS: Record<ItemId, ItemDef> = {
   bearings: I('bearings', 'material', 20, tr('łożyska', 'bearings'), tr('z kół i silników', 'from wheels and motors')),
   silicon: I('silicon', 'material', 20, tr('krzem', 'silicon'), tr('płytki z rozbitych paneli', 'wafers from broken panels')),
   scrapmix: I('scrapmix', 'material', 20, tr('złom mieszany', 'mixed scrap'), tr('wszystkiego po trochu, do przetwórni', 'a bit of everything, for the recycler')),
+  sailcloth: I('sailcloth', 'material', 10, tr('powłoka balonu', 'balloon skin'), tr('lekka, szczelna tkanina z balonu meteo', 'light, airtight fabric from a weather balloon')),
 
   cable: I('cable', 'part', 40, tr('kabel', 'cable'), tr('metry kabla miedzianego w izolacji', 'metres of insulated copper cable')),
   circuit: I('circuit', 'part', 10, tr('płytka sterująca', 'control board'), tr('serce każdej maszyny', 'the heart of every machine')),
@@ -47,6 +48,9 @@ export const ITEMS: Record<ItemId, ItemDef> = {
   pvcell: I('pvcell', 'part', 10, tr('moduł PV', 'PV module'), tr('sklejone ogniwa fotowoltaiczne', 'bonded photovoltaic cells')),
   frame: I('frame', 'part', 5, tr('rama stalowa', 'steel frame'), tr('spawana konstrukcja nośna', 'a welded load-bearing frame')),
   cellpack: I('cellpack', 'part', 5, tr('pakiet ogniw', 'cell pack'), tr('ogniwa w obudowie z zabezpieczeniem', 'cells in a casing with protection')),
+  yachtmast: I('yachtmast', 'part', 1, tr('maszt z bomem', 'mast and boom'), tr('rura na 3 m, bom i wanty: do wózka', 'a 3 m pipe, a boom and shrouds: for the cart'), true),
+  sail: I('sail', 'part', 1, tr('żagiel', 'sail'), tr('uszyty z powłoki balonu meteo, z linami', 'sewn from weather balloon skin, with lines')),
+  runners: I('runners', 'part', 1, tr('płozy', 'runners'), tr('trzy płozy na belce: po popiele zamiast kół', 'three runners on a plank: for ash instead of wheels'), true),
 
   wrench: I('wrench', 'tool', 1, tr('klucz nasadowy', 'socket wrench'), tr('odkręca śruby: beczki, kontenery, panele', 'undoes bolts: barrels, bins, panels')),
   cutter: I('cutter', 'tool', 1, tr('przecinarka', 'cutter'), tr('tnie blachę: wraki aut, latarnie. Ciągnie prąd z Wolta', 'cuts sheet metal: car wrecks, lamp posts. Draws on Wolt\'s battery')),
@@ -72,7 +76,7 @@ export const ITEMS: Record<ItemId, ItemDef> = {
 
 // ---------------------------------------------------------------- recipes
 
-export type TechId = 'hand' | 'tools' | 'bench' | 'grid' | 'solar' | 'storage' | 'wind' | 'recycle' | 'modules' | 'cells' | 'radio' | 'remote' | 'ai' | 'mast';
+export type TechId = 'hand' | 'tools' | 'bench' | 'grid' | 'solar' | 'storage' | 'wind' | 'recycle' | 'modules' | 'cells' | 'radio' | 'remote' | 'ai' | 'mast' | 'sailing';
 
 export type Bag = Partial<Record<ItemId, number>>;
 
@@ -114,6 +118,10 @@ export const RECIPES: Recipe[] = [
   { out: 'm_remote', n: 1, in: { circuit: 2, electronics: 2 }, time: 6, where: 'bench', tool: 'solder', tech: 'remote' },
   { out: 'm_ai', n: 1, in: { circuit: 3, electronics: 3, copper: 2 }, time: 8, where: 'bench', tool: 'solder', tech: 'ai' },
   { out: 'mast', n: 1, in: { frame: 3, circuit: 2, copper: 4, cable: 10 }, time: 12, where: 'bench', tech: 'mast' },
+  // the land yacht (Żaglowóz): parts fitted onto the service cart
+  { out: 'yachtmast', n: 1, in: { frame: 1, iron: 3 }, time: 6, where: 'bench', tech: 'sailing' },
+  { out: 'sail', n: 1, in: { sailcloth: 3, cable: 6 }, time: 6, where: 'bench', tech: 'sailing' },
+  { out: 'runners', n: 1, in: { frame: 1, iron: 4 }, time: 6, where: 'bench', tech: 'sailing' },
 ];
 
 // ---------------------------------------------------------------- observations and technologies
@@ -123,7 +131,7 @@ export const RECIPES: Recipe[] = [
  * computing time; that keeps to the decision "development comes from observations and
  * background computing on surplus power" (docs/SWIAT.md, Rozwój), shown here as a tree.
  */
-export type ObsId = 'scrap' | 'tools' | 'pv' | 'car_battery' | 'motor' | 'lamp' | 'radio' | 'ai_chip' | 'buried';
+export type ObsId = 'scrap' | 'tools' | 'pv' | 'car_battery' | 'motor' | 'lamp' | 'radio' | 'ai_chip' | 'buried' | 'iceyacht' | 'balloon';
 
 export const OBS: Record<ObsId, string> = {
   scrap: tr('budowa złomu: blachy, śruby, druty', 'how scrap is built: sheet, bolts, wire'),
@@ -135,6 +143,8 @@ export const OBS: Record<ObsId, string> = {
   radio: tr('stara radiostacja', 'an old radio set'),
   ai_chip: tr('układ obliczeniowy serwera', 'a server\'s compute chip'),
   buried: tr('zakopana linia kablowa', 'a buried cable line'),
+  iceyacht: tr('rama starego bojerka: płozy, maszt, wanty', 'an old ice yacht\'s frame: runners, mast, shrouds'),
+  balloon: tr('powłoka balonu meteo: lekka i szczelna', 'a weather balloon\'s skin: light and airtight'),
 };
 
 export interface TechDef {
@@ -170,11 +180,12 @@ export const TECHS: Record<TechId, TechDef> = {
   remote: T('remote', 5, 1, ['radio'], [], 100, tr('Zdalne sterowanie', 'Remote control'), tr('Sterowanie maszynami przez radio i sieć.', 'Run machines over radio and the grid.'), 1),
   ai: T('ai', 4, 3, ['modules'], ['ai_chip'], 150, tr('Rozpoznawanie prądu', 'Current sensing'), tr('Moduł AI II: Q-1 widzi przepływy, zakopane kable i liczy szybciej.', 'AI II module: Q-1 sees flows and buried cables and computes faster.')),
   mast: T('mast', 5, 0, ['radio', 'solar'], [], 150, tr('Maszt antenowy', 'Radio mast'), tr('Maszt na 12 m: nasłuch innych miejsc na Ziemi.', 'A 12 m mast: listening for other places on Earth.')),
+  sailing: T('sailing', 3, 3, ['bench'], ['iceyacht', 'balloon'], 60, tr('Żegluga lądowa', 'Land sailing'), tr('Maszt, żagiel i płozy na wózek: Żaglowóz jedzie na wietrze, nie na baterii.', 'A mast, a sail and runners for the cart: the land yacht runs on the wind, not the battery.')),
 };
 
 // ---------------------------------------------------------------- scrap
 
-export type ScrapKind = 'pile' | 'crate' | 'barrel' | 'car' | 'solarwreck' | 'dumpster' | 'streetlight' | 'server' | 'radiobox' | 'buried' | 'bearingbox';
+export type ScrapKind = 'pile' | 'crate' | 'barrel' | 'car' | 'solarwreck' | 'dumpster' | 'streetlight' | 'server' | 'radiobox' | 'buried' | 'bearingbox' | 'iceyacht' | 'balloon';
 
 export interface ScrapDef {
   name: string;
@@ -203,6 +214,8 @@ export const SCRAP: Record<ScrapKind, ScrapDef> = {
   streetlight: { name: tr('przewrócona latarnia', 'fallen lamp post'), desc: tr('słup do pocięcia, oprawa ze szkłem', 'a pole to cut up, a fitting with glass'), tool: 'cutter', time: 4, rounds: 1, loot: { iron: 3, copper: 2, glass: 1, electronics: 1 }, obs: ['lamp'], w: 3, h: 1 },
   server: { name: tr('szafa serwerowa', 'server cabinet'), desc: tr('przewrócona, pełna płyt', 'toppled, full of boards'), tool: 'wrench', time: 5, rounds: 2, loot: { electronics: 3, copper: 1, plastic: 1 }, obs: ['ai_chip'], w: 1, h: 1 },
   radiobox: { name: tr('skrzynka radiowa', 'radio box'), desc: tr('przemiennik na słupku, antena urwana', 'a repeater on a post, the aerial snapped off'), tool: 'wrench', time: 4, rounds: 1, loot: { electronics: 2, copper: 2 }, obs: ['radio'], w: 1, h: 1 },
+  iceyacht: { name: tr('wrak bojerka', 'ice yacht wreck'), desc: tr('rama na trzech płozach, maszt złamany', 'a frame on three runners, the mast snapped'), tool: 'wrench', time: 4, rounds: 1, loot: { runners: 1, iron: 3 }, obs: ['iceyacht'], w: 3, h: 2 },
+  balloon: { name: tr('balon meteo', 'weather balloon'), desc: tr('spadł z nieba lata temu, powłoka jeszcze cała', 'fell from the sky years ago, the skin still whole'), time: 3, rounds: 2, loot: { sailcloth: 2, electronics: 1 }, obs: ['balloon'], w: 2, h: 2 },
   buried: { name: tr('zakopany kabel', 'buried cable'), desc: tr('Q-1 czuje w nim resztkę prądu', 'Q-1 senses a trace of current in it'), time: 6, rounds: 1, loot: { copper: 8, cable: 10 }, obs: ['buried'], w: 1, h: 4, hidden: true },
 };
 

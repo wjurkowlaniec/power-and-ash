@@ -3,6 +3,7 @@ import { Inventory, Pool } from '../src/craft/sim/inventory';
 import { CraftGame } from '../src/craft/sim/craftGame';
 import { STAGES, yardAtStage, stageDone } from '../src/craft/sim/stages';
 import { RECIPES, ITEMS, TECHS, TechId } from '../src/craft/data';
+import { newSail, sailStep, SAIL } from '../src/craft/sim/sailing';
 
 const still = { x: 0, y: 0 };
 const run = (g: CraftGame, s: number, use = false) => { for (let t = 0; t < s; t += 0.05) g.update(0.05, still, false, use); };
@@ -109,5 +110,57 @@ describe('crafting demo', () => {
       if (r.tech) expect(TECHS[r.tech]).toBeTruthy();
     }
     for (const t of Object.values(TECHS)) for (const n of t.needs) expect(TECHS[n as TechId]).toBeTruthy();
+  });
+});
+
+describe('land yacht (Żaglowóz)', () => {
+  const wind = { dir: Math.PI, strength: 8 }; // blowing towards −x
+  const sailFor = (heading: number, secs: number, runners = true, auto = true) => {
+    const s = newSail(heading); s.auto = auto;
+    let d = 0;
+    for (let t = 0; t < secs; t += 0.05) d += sailStep(s, 0.05, wind, { steer: 0, sheet: 0, brake: false }, runners);
+    return { s, d };
+  };
+
+  it('a beam reach is fast, straight into the wind goes nowhere', () => {
+    const beam = sailFor(Math.PI / 2, 15);
+    expect(beam.s.v).toBeGreaterThan(5);
+    const head = sailFor(0, 15); // heading +x, the wind comes from +x
+    expect(head.s.v).toBe(0);
+    expect(head.s.fill).toBeLessThan(0.05);
+  });
+
+  it('runners beat wheels in the ash, and it points upwind at an angle', () => {
+    expect(sailFor(Math.PI / 2, 15, true).s.v).toBeGreaterThan(sailFor(Math.PI / 2, 15, false).s.v * 1.5);
+    // 65° off the wind: close-hauled still moves
+    const close = sailFor(65 * Math.PI / 180, 20);
+    expect(close.s.v).toBeGreaterThan(2);
+    expect(close.s.betaTrue).toBeLessThan(SAIL.upwind);
+  });
+
+  it('a sheet in too tight or too loose pulls less than the trimmed one', () => {
+    const best = sailFor(Math.PI / 2, 10).s.v;
+    const tight = newSail(Math.PI / 2); tight.sheet = SAIL.sheetMin;
+    for (let t = 0; t < 10; t += 0.05) sailStep(tight, 0.05, wind, { steer: 0, sheet: 0, brake: false }, true);
+    expect(tight.v).toBeLessThan(best * 0.6);
+  });
+
+  it('builds on the cart, sails in the yard and steps off', () => {
+    const g = yardAtStage(STAGES.findIndex(s => s.id === 'yacht'));
+    g.sandbox = true;
+    g.cart.pos = { x: 52.5, y: 22.5 }; g.cart.angle = g.wind.dir + Math.PI / 2; g.hitched = false;
+    for (const a of ['rigMast', 'rigSail', 'rigRunners'] as const) g.doAction({ kind: 'cart' }, a);
+    expect(g.cart.rig).toEqual({ mast: true, sail: true, runners: true });
+    g.doAction({ kind: 'cart' }, 'board');
+    expect(g.aboard).toBe(true);
+    g.yacht.auto = true;
+    const e0 = g.energy;
+    for (let t = 0; t < 8; t += 0.05) g.update(0.05, still, false, false);
+    expect(g.sailed.dist).toBeGreaterThan(10);
+    expect(g.energy).toBeGreaterThan(e0 - 2); // the wind does the work
+    for (let t = 0; t < 6; t += 0.05) g.update(0.05, still, false, false, true);
+    expect(g.yacht.v).toBeLessThan(0.6);
+    expect(g.leave()).toBe(true);
+    expect(g.aboard).toBe(false);
   });
 });

@@ -23,7 +23,7 @@ export class Sail {
   private side = 1;
   private phase = 0;
 
-  constructor(readonly foot = 5, readonly height = 8.4) {
+  constructor(readonly foot = 5, readonly height = 8.4, map: THREE.Texture = sailTexture()) {
     const nu = 22, nv = 34;
     const pos: number[] = [], uv: number[] = [], idx: number[] = [];
     for (let j = 0; j <= nv; j++) {
@@ -45,7 +45,6 @@ export class Sail {
     geo.setIndex(idx);
     geo.computeVertexNormals();
 
-    const map = sailTexture();
     const mat = new THREE.MeshStandardMaterial({ map, side: THREE.DoubleSide, roughness: 1, alphaTest: 0.5, flatShading: true });
     const depth = new THREE.MeshDepthMaterial({ depthPacking: THREE.RGBADepthPacking, map, alphaTest: 0.5, side: THREE.DoubleSide });
     for (const m of [mat, depth]) m.onBeforeCompile = sh => this.inject(sh, m === mat);
@@ -104,11 +103,13 @@ export class Sail {
     this.fade.value += (want - this.fade.value) * Math.min(1, dt * 6);
   }
 
-  update(dt: number, t: number, windLocal: number, strength: number) {
+  /** `sheet` (rad), when given, stops the boom that far off the centre line (the land yacht in /demo-craft/). */
+  update(dt: number, t: number, windLocal: number, strength: number, sheet?: number) {
     // boom points downwind but stays aft (its rest direction is -x): clamp to ±75°
     const wx = Math.cos(windLocal), wz = Math.sin(windLocal);
     let target = Math.atan2(-wz, -wx); // angle from -x towards the wind vector
     target = THREE.MathUtils.clamp(-target, -1.3, 1.3);
+    if (sheet !== undefined) target = THREE.MathUtils.clamp(target, -sheet, sheet);
     // a damped spring: the boom swings and settles when the wind shifts
     const k = 3 + strength * 0.4;
     this.angVel += ((target - this.angle) * k - this.angVel * 2.2) * dt;

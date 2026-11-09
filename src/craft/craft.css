@@ -73,5 +73,14 @@
 
 .slotmenu { min-width: 200px; }
 .tip { pointer-events: none; }
+/* the land yacht's compass and trim (while aboard) */
+.sailp { right: max(16px, env(safe-area-inset-right, 0px)); bottom: calc(250px + env(safe-area-inset-bottom, 0px)); width: 300px; pointer-events: none; display: grid; gap: 4px; }
+.sailp .lbl { display: flex; justify-content: space-between; font-size: 10px; letter-spacing: .12em; color: var(--dim); }
+.sailp .lbl span:last-child { color: var(--ink); font-size: 13px; letter-spacing: 0; }
+.sailp .cmp { display: grid; grid-template-columns: 120px 1fr; gap: 8px; align-items: center; }
+.sailp .rd .row { font-size: 11px; }
+.sailp .trim { font-size: 11px; min-height: 16px; }
+.sailp .keys, .sailp .legend { font-size: 10px; line-height: 1.5; }
+.sailp .legend i { display: inline-block; width: 8px; height: 3px; margin: 0 3px 2px 6px; vertical-align: middle; }
 @media (max-width: 900px) { .side { width: calc(100vw - 32px); top: auto; bottom: 150px; max-height: 45vh; } .stages { width: 220px; } }
 @media (max-width: 640px) { .stages { display: none; } .sl { width: 40px; height: 40px; } .sl img { width: 34px; height: 34px; } .slots.cart { max-width: 220px; } }

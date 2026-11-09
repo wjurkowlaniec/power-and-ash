@@ -12,6 +12,7 @@ import {
 } from '../data';
 import { Inventory, Pool, Stack } from './inventory';
 import { YARD, START, CART_AT, FIXED, SCRAP_AT, BLOCKS } from './yard';
+import { SailState, newSail, sailStep, steerTowards, SAIL } from './sailing';
 
 // ---------------------------------------------------------------- tuning
 
@@ -32,6 +33,8 @@ export const REST_CHARGE = 0.6;     // Wh/s standing still (Q-1 recovers)
 export const CRADLE_CHARGE = 5;     // Wh/s on a powered charging cradle
 export const COMPUTE_MIN = 0.5;     // Wolt computes only above this battery fraction
 export const RECYCLE_TIME = 5;      // s per mixed scrap
+export const YACHT_R = { wheels: 0.75, runners: 1.05 }; // m: the land yacht's bump circle
+export const AUTO_TRIM = 0.1;       // Wh/s: Q-1 trimming the sheet
 
 // ---------------------------------------------------------------- state types
 
@@ -59,7 +62,9 @@ export interface Building {
 export interface Link { id: string; a: string; b: string; cable: Cable; metres: number }
 export interface Held { from: string; cable: Cable }
 export interface Drop { id: string; pos: V2; items: Stack[] }
-export interface Cart extends Load { repaired: boolean; inv: Inventory }
+/** What is fitted onto the cart to make it a land yacht (Żaglowóz). */
+export interface Rig { mast: boolean; sail: boolean; runners: boolean }
+export interface Cart extends Load { repaired: boolean; inv: Inventory; rig: Rig }
 
 export type Target =
   | { kind: 'ground'; at: V2 }
@@ -70,11 +75,12 @@ export type Target =
   | { kind: 'self' };
 
 export type ActionId = 'walk' | 'salvage' | 'grab' | 'plug' | 'unplug' | 'cancelCable' | 'toggle' | 'pickup' | 'repair' | 'hitch' | 'unhitch'
-  | 'bench' | 'feed' | 'dock' | 'listen' | 'take' | 'light';
+  | 'bench' | 'feed' | 'dock' | 'listen' | 'take' | 'light'
+  | 'rigMast' | 'rigSail' | 'rigRunners' | 'patch' | 'board' | 'leave';
 export interface Action { id: ActionId; label: string; ok: boolean; why?: string }
 export interface Flow { label: string; rate: number }
 export interface Toast { text: string; t: number }
-export type GameEvent = 'salvage' | 'craft' | 'deny' | 'grab' | 'plug' | 'unplug' | 'build' | 'research' | 'hook' | 'unhook' | 'light' | 'charged' | 'radio' | 'module' | 'reel';
+export type GameEvent = 'salvage' | 'craft' | 'deny' | 'grab' | 'plug' | 'unplug' | 'build' | 'research' | 'hook' | 'unhook' | 'light' | 'charged' | 'radio' | 'module' | 'reel' | 'board' | 'bump';
 
 export interface NetInfo extends NetworkState {
   id: number;
@@ -118,8 +124,14 @@ export class CraftGame {
   energyRate = 0;
 
   readonly inv = new Inventory(WOLT_SLOTS);
-  readonly cart: Cart = { id: 'cart', kind: 'cart', pos: { ...CART_AT }, angle: 0.4, repaired: false, inv: new Inventory(CART_SLOTS, true) };
+  readonly cart: Cart = { id: 'cart', kind: 'cart', pos: { ...CART_AT }, angle: 0.4, repaired: false, inv: new Inventory(CART_SLOTS, true), rig: { mast: false, sail: false, runners: false } };
   hitched = false;
+  /** Wolt is docked on the land yacht's deck and sails it. */
+  aboard = false;
+  yacht: SailState = newSail();
+  /** Where a click on the ground told the yacht to steer. */
+  yachtAim: V2 | null = null;
+  sailed = { dist: 0, top: 0, upwind: 0 };
   private towTaut = false;
 
   scrap: Scrap[] = [];
@@ -485,6 +497,95 @@ export class CraftGame {
   }
   unhitch() { this.hitched = false; this.events.push('unhook'); }
 
+  // ---------------------------------------------------------------- the land yacht (Żaglowóz)
+
+  /** Fit a part onto the cart: the mast first, then the sail; runners any time. */
+  rig(part: keyof Rig) {
+    const r = this.cart.rig;
+    if (r[part] || !this.cart.repaired) return;
+    const item: ItemId = part === 'mast' ? 'yachtmast' : part;
+    if (part === 'sail' && !r.mast) { this.deny(tr('Najpierw maszt.', 'The mast first.')); return; }
+    if (!this.sandbox && this.have(item) < 1) { this.deny(tr(`Brak: ${ITEMS[item].name}. Zrób przy stole (C).`, `Missing: ${ITEMS[item].name}. Make it at the bench (C).`)); return; }
+    if (!this.sandbox) this.pool().take({ [item]: 1 });
+    r[part] = true;
+    if (part === 'sail') this.yacht.wear = 0;
+    this.events.push('build');
+    this.toast(part === 'mast' ? tr('Maszt stoi na wózku, wanty napięte.', 'The mast stands on the cart, shrouds set up.')
+      : part === 'sail' ? tr('Żagiel z balonu meteo na bomie.', 'The weather balloon sail is on the boom.')
+        : tr('Płozy pod wózkiem: po popiele sunie zamiast grzęznąć.', 'Runners under the cart: it glides over the ash instead of sinking.'));
+    if (r.mast && r.sail && (part === 'mast' || part === 'sail')) this.toast(tr('Żaglowóz gotowy. Kliknij go: Wsiądź i żegluj.', 'The land yacht is ready. Click it: Board and sail.'));
+  }
+
+  patchSail() {
+    if (!this.cart.rig.sail || this.yacht.wear <= 0.05) return;
+    if (!this.sandbox && this.have('sailcloth') < 1) { this.deny(tr('Do łaty potrzebna powłoka balonu.', 'A patch needs balloon skin.')); return; }
+    if (!this.sandbox) this.pool().take({ sailcloth: 1 });
+    this.yacht.wear = Math.max(0, this.yacht.wear - 0.5);
+    this.events.push('craft');
+    this.toast(tr('Żagiel załatany.', 'The sail is patched.'));
+  }
+
+  /** Wolt rolls up onto the deck, his wheel locks into the socket and the yacht is his body. */
+  board() {
+    const r = this.cart.rig;
+    if (!r.mast || !r.sail) { this.deny(tr('Żaglowóz nie ma jeszcze masztu i żagla.', 'The land yacht has no mast and sail yet.')); return; }
+    if (this.held) { this.deny(tr('Ramię trzyma kabel.', 'The arm holds a cable.')); return; }
+    this.hitched = false; this.aboard = true;
+    this.order = null; this.salvage = null; this.docked = false; this.placing = null; this.yachtAim = null;
+    this.yacht.heading = this.cart.angle; this.yacht.v = 0;
+    this.pos = { ...this.cart.pos }; this.facing = this.cart.angle; this.speed = 0;
+    this.events.push('board');
+    this.toast(tr('Na pokładzie. A/D ster (albo LPM w kierunek), W/S wybierz / luzuj szot, Spacja hamulec, F Q-1 trymuje, E zejście.',
+      'Aboard. A/D steer (or LMB a direction), W/S haul in / ease the sheet, Space brake, F Q-1 trims, E step off.'));
+  }
+
+  leave(): boolean {
+    if (!this.aboard) return false;
+    if (this.yacht.v > 0.6) { this.deny(tr('Najpierw zwolnij (Spacja).', 'Slow down first (Space).')); return false; }
+    const h = this.yacht.heading, c = this.cart.pos, d = (this.cart.rig.runners ? YACHT_R.runners : 0.7) + RADIUS + 0.25;
+    const spot = [h + Math.PI / 2, h - Math.PI / 2, h + Math.PI, h].map(a => ({ x: c.x + Math.cos(a) * d, y: c.y + Math.sin(a) * d }))
+      .find(p => !this.world.circleBlocked(p, RADIUS + 0.05));
+    if (!spot) { this.deny(tr('Nie ma gdzie zejść.', 'Nowhere to step off.')); return false; }
+    this.aboard = false; this.yacht.v = 0; this.yachtAim = null;
+    this.pos = spot; this.facing = h; this.speed = 0;
+    this.events.push('unhook');
+    return true;
+  }
+
+  toggleTrim() {
+    this.yacht.auto = !this.yacht.auto;
+    this.toast(this.yacht.auto ? tr(`Q-1 trymuje żagiel (${num(AUTO_TRIM, 1)} Wh/s).`, `Q-1 trims the sail (${num(AUTO_TRIM, 1)} Wh/s).`) : tr('Szot w rękach: W wybierz, S luzuj.', 'The sheet is yours: W haul in, S ease out.'));
+  }
+
+  private sail(dt: number, move: V2, brake: boolean) {
+    const y = this.yacht, c = this.cart;
+    let steer = move.x;
+    if (Math.abs(steer) > 0.01) this.yachtAim = null;
+    else if (this.yachtAim) {
+      steer = steerTowards(y, c.pos, this.yachtAim);
+      if (dist(c.pos, this.yachtAim) < 2.5) this.yachtAim = null;
+    }
+    if (y.auto && this.empty()) { y.auto = false; this.deny(tr('Bateria pusta: Q-1 puszcza szot.', 'Battery empty: Q-1 lets go of the sheet.')); }
+    const run = sailStep(y, dt, { dir: this.wind.dir, strength: this.wind.strength }, { steer, sheet: move.y, brake }, c.rig.runners);
+    const r = c.rig.runners ? YACHT_R.runners : YACHT_R.wheels;
+    let cand = { ...c.pos };
+    const tx = { x: cand.x + Math.cos(y.heading) * run, y: cand.y };
+    if (!this.world.circleBlocked(tx, r)) cand = tx;
+    const ty = { x: cand.x, y: cand.y + Math.sin(y.heading) * run };
+    if (!this.world.circleBlocked(ty, r)) cand = ty;
+    const moved = dist(cand, c.pos);
+    if (run > 1e-4 && moved < run * 0.6) {
+      // ran into something: a jolt, and a hard one tears the sail a little
+      if (y.v > 2.5) { this.events.push('bump'); this.deny(tr('Bum! Żaglowóz wjechał w przeszkodę.', 'Bang! The land yacht hit something.')); y.wear = Math.min(1, y.wear + 0.03); }
+      y.v *= 0.3;
+    }
+    c.pos = cand; c.angle = y.heading;
+    this.pos = { ...cand }; this.facing = y.heading; this.speed = y.v;
+    this.sailed.dist += moved;
+    this.sailed.top = Math.max(this.sailed.top, y.v);
+    if (y.betaTrue < SAIL.upwind && y.v > 2) this.sailed.upwind += dt;
+  }
+
   // ---------------------------------------------------------------- targets and actions
 
   targetAt(p: V2): Target {
@@ -516,7 +617,16 @@ export class CraftGame {
       }
       case 'cart': {
         if (!this.cart.repaired) return [A('repair', tr('Napraw wózek (2 łożyska, 2 żelaza)', 'Fix the cart (2 bearings, 2 iron)'), this.sandbox || new Pool([this.inv]).has({ bearings: 2, iron: 2 }) ? null : tr('brakuje części', 'missing parts'))];
-        return [this.hitched ? A('unhitch', tr('Odczep wózek', 'Unhitch the cart')) : A('hitch', tr('Doczep wózek', 'Hitch the cart'))];
+        if (this.aboard) return [A('leave', tr('Zejdź z pokładu', 'Step off the deck'), this.yacht.v > 0.6 ? tr('najpierw zwolnij (Spacja)', 'slow down first (Space)') : null)];
+        const rig = this.cart.rig, list: Action[] = [];
+        const need = (id: ItemId) => this.sandbox || this.have(id) > 0 ? null : tr(`brak: ${ITEMS[id].name}`, `missing: ${ITEMS[id].name}`);
+        if (rig.mast && rig.sail) list.push(A('board', tr('Wsiądź i żegluj', 'Board and sail'), this.held ? tr('ramię trzyma kabel', 'the arm holds a cable') : null));
+        if (!rig.mast) list.push(A('rigMast', tr('Postaw maszt na wózku', 'Step the mast on the cart'), need('yachtmast')));
+        else if (!rig.sail) list.push(A('rigSail', tr('Załóż żagiel', 'Bend on the sail'), need('sail')));
+        if (!rig.runners) list.push(A('rigRunners', tr('Załóż płozy zamiast kół', 'Fit runners instead of wheels'), need('runners')));
+        if (rig.sail && this.yacht.wear > 0.05) list.push(A('patch', tr(`Załataj żagiel (przetarty w ${Math.round(this.yacht.wear * 100)}%)`, `Patch the sail (${Math.round(this.yacht.wear * 100)}% frayed)`), need('sailcloth')));
+        list.push(this.hitched ? A('unhitch', tr('Odczep wózek', 'Unhitch the cart')) : A('hitch', tr('Doczep wózek', 'Hitch the cart')));
+        return list;
       }
       case 'build': {
         const b = t.b, d = BUILD[b.kind];
@@ -542,6 +652,13 @@ export class CraftGame {
     if (a === 'light') { this.toggleLight(); return; }
     // remote control: switch machines without driving there
     if (a === 'toggle' && t.kind === 'build' && this.canRemote(t.b)) { this.doAction(t, a); return; }
+    if (this.aboard) {
+      // on the deck a click on the ground is where to steer; the cart is stepping off
+      if (t.kind === 'ground') { this.yachtAim = t.at; return; }
+      if (t.kind === 'cart') { this.doAction(t, a); return; }
+      this.deny(tr('Najpierw zejdź z pokładu (E).', 'Step off the deck first (E).'));
+      return;
+    }
     const goal = this.goalOf(t);
     const path = findPath(this.world, this.pos, goal, RADIUS) ?? [goal];
     this.order = { target: t, action: a, path, working: false, stuck: 0, last: null };
@@ -619,6 +736,12 @@ export class CraftGame {
         return;
       case 'hitch': this.hitch(); return;
       case 'unhitch': this.unhitch(); return;
+      case 'rigMast': this.rig('mast'); return;
+      case 'rigSail': this.rig('sail'); return;
+      case 'rigRunners': this.rig('runners'); return;
+      case 'patch': this.patchSail(); return;
+      case 'board': this.board(); return;
+      case 'leave': this.leave(); return;
       default: break;
     }
     if (t.kind !== 'build') return;
@@ -690,16 +813,19 @@ export class CraftGame {
 
   // ---------------------------------------------------------------- simulation
 
-  update(dt: number, move: V2, run: boolean, use: boolean) {
+  update(dt: number, move: V2, run: boolean, use: boolean, brake = false) {
     const sdt = dt * this.timeScale;
     this.time += dt;
     this.day = (this.day + sdt / DAY_LENGTH) % 1;
     this.wind.update(dt);
     this.stopIn = Infinity;
     let m = move;
-    if (len(m) > 0.01) { this.order = null; this.docked = false; }
-    else if (this.order) m = this.followOrder(dt) ?? { x: 0, y: 0 };
-    this.drive(dt, m, run);
+    if (this.aboard) { this.order = null; this.moving = false; this.strain = false; this.sail(dt, m, brake); }
+    else {
+      if (len(m) > 0.01) { this.order = null; this.docked = false; }
+      else if (this.order) m = this.followOrder(dt) ?? { x: 0, y: 0 };
+      this.drive(dt, m, run);
+    }
     if (this.docked && !this.onCradle()) this.docked = false;
     this.updateSalvage(dt, use);
     this.updateCraft(sdt);
@@ -746,7 +872,7 @@ export class CraftGame {
   private bumps(p: V2): boolean {
     if (this.world.circleBlocked(p, RADIUS)) return true;
     if (!this.hitched) {
-      const r = 0.7 + RADIUS;
+      const r = (this.cart.rig.runners ? YACHT_R.runners : 0.7) + RADIUS;
       if (dist(p, this.cart.pos) < r && dist(p, this.cart.pos) < dist(this.pos, this.cart.pos)) return true;
     }
     return false;
@@ -756,7 +882,7 @@ export class CraftGame {
     let s: Scrap | null = null;
     const o = this.order;
     if (o && o.working && o.action === 'salvage' && o.target.kind === 'scrap') s = o.target.s;
-    else if (use && !this.held) s = this.nearestScrap();
+    else if (use && !this.held && !this.aboard) s = this.nearestScrap();
     if (s) {
       const d = SCRAP[s.kind];
       if (d.tool && !this.hasTool(d.tool)) { this.deny(tr(`Do tego potrzebne: ${ITEMS[d.tool].name}.`, `This needs: ${ITEMS[d.tool].name}.`)); s = null; if (o?.working) this.order = null; }
@@ -881,11 +1007,15 @@ export class CraftGame {
     }
     if (this.craftJob && !(this.craftJob.r.where === 'bench' && this.benchPowered())) f.push({ label: tr('wytwarzanie (ramię)', 'crafting (arm)'), rate: -DRAIN.craft });
     if (this.light) f.push({ label: this.hasModule('m_lamp') ? tr('reflektor', 'floodlight') : tr('światło', 'light'), rate: -DRAIN.light * (this.hasModule('m_lamp') ? 1.5 : 1) });
+    if (this.aboard) {
+      f.push({ label: tr('żagiel (koło stoi w gnieździe)', 'sail (the wheel rests in its socket)'), rate: 0 });
+      if (this.yacht.auto) f.push({ label: tr('Q-1 trymuje żagiel', 'Q-1 trims the sail'), rate: -AUTO_TRIM });
+    }
     if (this.computeRate > 0) f.push({ label: tr('obliczenia Q-1', 'Q-1 computing'), rate: -this.computeRate / (this.sandbox ? 10 : 1) });
     if (this.docked) {
       const cr = this.buildings.find(b => b.kind === 'charger' && dist(this.pos, { x: b.x + 1, y: b.y + 1 }) < 0.8);
       if (cr && this.powered(cr)) f.push({ label: tr('kołyska ładująca', 'charging cradle'), rate: CRADLE_CHARGE });
-    } else if (this.stillT > 1) f.push({ label: tr('postój (Q-1 się odnawia)', 'resting (Q-1 recovers)'), rate: REST_CHARGE });
+    } else if (this.stillT > 1) f.push({ label: this.aboard ? tr('na żaglu (Q-1 się odnawia)', 'under sail (Q-1 recovers)') : tr('postój (Q-1 się odnawia)', 'resting (Q-1 recovers)'), rate: REST_CHARGE });
     const rate = f.reduce((s, x) => s + x.rate, 0);
     this.flows = f; this.energyRate = rate;
     const before = this.energy;

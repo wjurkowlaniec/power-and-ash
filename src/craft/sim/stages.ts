@@ -4,6 +4,7 @@ import { findPath } from '../../sim/path';
 import { dist } from '../../sim/vec';
 import { ItemId, TechId, ObsId, ModuleId, BuildingId, TECHS, Bag, SCRAP } from '../data';
 import { CraftGame, Building } from './craftGame';
+import { YACHT_AT } from './yard';
 
 /**
  * The demo is a walk through stages, one system at a time. Each stage has goals you can
@@ -230,7 +231,40 @@ export const STAGES: Stage[] = [
     },
   },
   {
-    id: 'sandbox', name: tr('12. Piaskownica', '12. Sandbox'),
+    id: 'yacht', name: tr('12. Żaglowóz: budowa', '12. Land yacht: building'),
+    intro: tr('Na równinie na wschód od warsztatu leżą balony meteo i wrak starego bojerka. Z powłoki balonu uszyjesz żagiel, z bojerka zdejmiesz płozy, maszt zrobisz z ramy. Wszystko montuje się na wózku: tak powstaje pierwszy Żaglowóz.',
+      'Out on the plain east of the workshop lie weather balloons and an old ice yacht wreck. The balloon skin makes a sail, the wreck gives runners, the mast comes from a frame. It all goes onto the cart: that is the first land yacht.'),
+    goals: [
+      { text: tr('Rozbierz balon meteo (powłoka na żagiel)', 'Take a weather balloon apart (skin for the sail)'), done: g => g.obs.has('balloon') },
+      { text: tr('Rozbierz kluczem wrak bojerka (płozy)', 'Take the ice yacht wreck apart with the wrench (runners)'), done: g => g.obs.has('iceyacht') },
+      { text: tr('Policz: Żegluga lądowa', 'Compute: Land sailing'), done: g => g.techs.has('sailing') },
+      { text: tr('Zrób maszt i żagiel przy stole', 'Make a mast and a sail at the bench'), done: g => (has(g, 'yachtmast') || g.cart.rig.mast) && (has(g, 'sail') || g.cart.rig.sail) },
+      { text: tr('Postaw maszt i załóż żagiel na wózku', 'Step the mast and bend on the sail on the cart'), done: g => g.cart.rig.mast && g.cart.rig.sail },
+      { text: tr('Załóż płozy zamiast kół', 'Fit the runners instead of wheels'), done: g => g.cart.rig.runners },
+    ],
+    setup: g => {
+      learn(g, ['balloon', 'iceyacht'], ['sailing']); taken(g, 'balloon', 'iceyacht');
+      g.cart.repaired = true; g.hitched = false;
+      Object.assign(g.cart.rig, { mast: true, sail: true, runners: true });
+      g.cart.pos = { ...YACHT_AT }; g.cart.angle = Math.PI / 2;
+      g.pos = { x: YACHT_AT.x - 2, y: YACHT_AT.y - 0.5 }; g.facing = 0;
+      give(g, { sailcloth: 2 });
+    },
+  },
+  {
+    id: 'sailing', name: tr('13. Żaglowóz: żegluga', '13. Land yacht: sailing'),
+    intro: tr('Wjedź na pokład (LPM na Żaglowozie albo E): koło Wolta wskakuje w gniazdo i wózek staje się jego ciałem. Jedzie na wietrze, nie na baterii. Pod wiatr nie pojedziesz prosto: halsuj zygzakiem. Szot (W/S) ustawia żagiel: za luźny łopocze, za ciasny ciągnie w bok. Silny wiatr przy ciasnym żaglu go strzępi.',
+      'Roll onto the deck (LMB the land yacht or E): Wolt\'s wheel locks into the socket and the cart becomes his body. It runs on the wind, not the battery. You cannot sail straight into the wind: tack in a zigzag. The sheet (W/S) sets the sail: too loose and it flaps, too tight and it only pulls sideways. A strong wind on a tight sail frays it.'),
+    goals: [
+      { text: tr('Wsiądź na pokład', 'Board the land yacht'), done: g => g.aboard || g.sailed.dist > 0 },
+      { text: tr('Przejedź na żaglu 150 m', 'Sail 150 m'), done: g => g.sailed.dist >= 150 },
+      { text: tr('Rozpędź się do 6 m/s', 'Get up to 6 m/s'), done: g => g.sailed.top >= 6 },
+      { text: tr('Pod wiatr: 5 s z wiatrem z przodu-z boku (> 2 m/s)', 'Upwind: 5 s with the wind forward of the beam (> 2 m/s)'), done: g => g.sailed.upwind >= 5 },
+    ],
+    setup: g => { g.sailed.dist = Math.max(g.sailed.dist, 150); g.sailed.top = Math.max(g.sailed.top, 6); g.sailed.upwind = Math.max(g.sailed.upwind, 5); },
+  },
+  {
+    id: 'sandbox', name: tr('14. Piaskownica', '14. Sandbox'),
     intro: tr('Wszystko odblokowane, wytwarzanie i budowa za darmo. Poligon do sprawdzania pomysłów: sieci, bilansu prądu, nocy.',
       'Everything unlocked, crafting and building for free. A proving ground for ideas: grids, the power balance, nights.'),
     goals: [{ text: tr('Baw się', 'Have fun'), done: () => false }],

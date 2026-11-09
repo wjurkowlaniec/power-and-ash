@@ -66,6 +66,7 @@ Oznaczenia w SWIAT.md: **[ustalone]** to decyzja Wojtka, **[propozycja]** to szk
 | Rdza: spowalnia, gdy coś nie jest naoliwione; lekarstwo to oliwienie i wymiana elementów. | [SWIAT.md: Wolt](SWIAT.md#wolt) |
 | Wojtek prosi, żeby przemyśleć długofalowe wpływy. Agent zaproponował listę (rdza i zużycie, infrastruktura bez opieki, wydeptane drogi, zwierzęta, które się uczą i wracają, ekologia, nieodwracalne decyzje, pokolenia ludzi, patyna Wolta, pamięć miejsc). Do oceny. | [SWIAT.md: Długofalowe skutki](SWIAT.md#długofalowe-skutki-propozycja) |
 | Z długofalowych skutków przyjęte „kolejne pokolenia ludzi, dla których Wolt staje się legendą”. Do tego ludzie malują na ścianach symbol Wolta. | [SWIAT.md: Długofalowe skutki](SWIAT.md#długofalowe-skutki-propozycja) |
+| Wojtek: „dorób w tech demo budowanie statku z żaglem”. Agent odczytał to jako pierwszy Żaglowóz (etap 1 z SWIAT.md: wózek z masztem, żaglem z powłoki balonu meteo i płozami z ramy bojerka) i dodał go do demo „Warsztat” jako etapy 12 (budowa) i 13 (żegluga z wiatrem pozornym, szotem, martwym kątem i halsowaniem). Liczby i model żeglugi są propozycją agenta, do strojenia w testach. | [DEMO-WARSZTAT.md: Żaglowóz](DEMO-WARSZTAT.md#żaglowóz) |
 
 ## Czeka na decyzję
 
@@ -75,6 +76,7 @@ Oznaczenia w SWIAT.md: **[ustalone]** to decyzja Wojtka, **[propozycja]** to szk
 - Które długofalowe skutki z SWIAT.md wchodzą do gry (2026-11-09).
 - Ślad na równinie i czy zadokowany wózek to ciało, czy osobny pojazd.
 - Mapa świata (później, Wojtek chce ją narysować sam).
+- Żaglowóz w demie „Warsztat” (2026-11-09): czy sterowanie szotem ręcznie (W/S) jest fajne, czy domyślnie ma trymować Q-1; czy przetarcie żagla ma być ostrzejsze; czy tak ma wyglądać przejście od wózka do żaglowozu w grze. [DEMO-WARSZTAT.md: Żaglowóz](DEMO-WARSZTAT.md#żaglowóz)
 - Czy w grze jest crafting od zera (demo „Warsztat” go testuje, a SWIAT.md ustala „bez pełnego craftingu od zera”) i czy rozwój ma widoczne drzewko. [DEMO-WARSZTAT.md: Czeka na decyzję](DEMO-WARSZTAT.md#czeka-na-decyzję)
 - Pozostałe punkty w [Otwartych pytaniach](SWIAT.md#otwarte-pytania).
 
