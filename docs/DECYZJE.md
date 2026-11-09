@@ -67,6 +67,7 @@ Oznaczenia w SWIAT.md: **[ustalone]** to decyzja Wojtka, **[propozycja]** to szk
 | Wojtek prosi, żeby przemyśleć długofalowe wpływy. Agent zaproponował listę (rdza i zużycie, infrastruktura bez opieki, wydeptane drogi, zwierzęta, które się uczą i wracają, ekologia, nieodwracalne decyzje, pokolenia ludzi, patyna Wolta, pamięć miejsc). Do oceny. | [SWIAT.md: Długofalowe skutki](SWIAT.md#długofalowe-skutki-propozycja) |
 | Z długofalowych skutków przyjęte „kolejne pokolenia ludzi, dla których Wolt staje się legendą”. Do tego ludzie malują na ścianach symbol Wolta. | [SWIAT.md: Długofalowe skutki](SWIAT.md#długofalowe-skutki-propozycja) |
 | Symbol Wolta na ścianach: kółko, na nim prostokąt, z prostokąta wystaje ręka. | [SWIAT.md: Długofalowe skutki](SWIAT.md#długofalowe-skutki-propozycja), [szkic](img/koncepty/symbol-wolta.jpg) |
+| **W grze nie ma craftingu od zera. Rozwój jest eksploracyjny** (po demie „Warsztat”, potwierdza ustalenie z 2026-11-06). Fabuła nie jest liniowa: są opcje, rozgałęzienia i wpływ na fabułę, ale da się zrobić 100%. Ma to wychodzić naturalnie. Do mapy świata dochodzi drzewko decyzji i przepływ całej fabuły. Agent zaproponował szkielet: 4 akty, 3 filary w dowolnej kolejności (Ludzie, Sieć, Kopuła), 3 klucze do finału, 9 wyborów zostawionych w świecie i Kronikę, w której wybór liczy się jako „rozstrzygnięty”. Szkielet jest do oceny. | [FABULA.md](FABULA.md), [mapa: przepływ fabuły](https://claude.ai/artifact/3Z4w4jbwc3H2CXB8BAyHtW), [SWIAT.md: Bazy](SWIAT.md#bazy) |
 
 ## Czeka na decyzję
 
@@ -76,7 +77,7 @@ Oznaczenia w SWIAT.md: **[ustalone]** to decyzja Wojtka, **[propozycja]** to szk
 - Które długofalowe skutki z SWIAT.md wchodzą do gry (2026-11-09).
 - Ślad na równinie i czy zadokowany wózek to ciało, czy osobny pojazd.
 - Mapa świata (później, Wojtek chce ją narysować sam).
-- Czy w grze jest crafting od zera (demo „Warsztat” go testuje, a SWIAT.md ustala „bez pełnego craftingu od zera”) i czy rozwój ma widoczne drzewko. [DEMO-WARSZTAT.md: Czeka na decyzję](DEMO-WARSZTAT.md#czeka-na-decyzję)
+- Szkielet fabuły z [FABULA.md](FABULA.md): filary, klucze, wybory, które są nieodwracalne, i czy Kronika 100% jest widoczna (2026-11-09).
 - Pozostałe punkty w [Otwartych pytaniach](SWIAT.md#otwarte-pytania).
 
 ## Sposób pracy, technologia, styl i rozgrywka

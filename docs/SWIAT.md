@@ -341,7 +341,7 @@ Hibernacja **[propozycja]**:
 
 ## Bazy
 
-**[ustalone]** Bez pełnego craftingu od zera. Bazy to istniejące obiekty, które adaptujesz. Produkują rzeczy potrzebne do rozwoju, ale powoli (nawet rok). Trzeba je zasilać i doglądać. Żeby dostać alarm na odległość, trzeba zbudować antenę. Sprzęt z różnych baz nie jest kompatybilny i trzeba analizować protokoły.
+**[ustalone, potwierdzone 2026-11-09]** Bez pełnego craftingu od zera, rozwój eksploracyjny (zob. [FABULA.md](FABULA.md)). Bazy to istniejące obiekty, które adaptujesz. Produkują rzeczy potrzebne do rozwoju, ale powoli (nawet rok). Trzeba je zasilać i doglądać. Żeby dostać alarm na odległość, trzeba zbudować antenę. Sprzęt z różnych baz nie jest kompatybilny i trzeba analizować protokoły.
 
 Obiekty do adaptacji **[propozycja, szkoła ustalona]**:
 
@@ -524,6 +524,8 @@ Kierunek: nieoczywiste połączenia i europejski krajobraz. Pomysły do rozmowy:
 **[propozycja 2026-11-08, do oceny przez Wojtka]** Na interaktywnej mapie świata (https://claude.ai/artifact/3Z4w4jbwc3H2CXB8BAyHtW) są trzy kandydaty: **Mierzeja Wraków** (nadmorskie wydmy z wrakami), **Miasto Tarasów** (miasto na stokach, ludzie żyją wśród martwych maszyn), **Zatopione Szyby** (zalane kopalnie z podziemnym jeziorem, Głębinowcy).
 
 ## Łuk fabularny
+
+**[ustalone 2026-11-09]** Fabuła nie jest liniowa: są opcje, rozgałęzienia i wpływ na fabułę, ale da się zrobić 100%, i ma to wychodzić naturalnie. **Przepływ fabuły i drzewko decyzji są w [FABULA.md](FABULA.md)** i na mapie świata (widok „Przepływ fabuły”). Tam rozdziały 2–4 poniżej są równoległymi filarami w dowolnej kolejności, a nie kolejnymi latami (propozycja).
 
 **[propozycja]** Fabuła jest otwarta, ale ma oś. Każdy rozdział to mniej więcej jeden rok gry.
 

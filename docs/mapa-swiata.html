@@ -1,0 +1,1177 @@
+<!doctype html><html lang="pl"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"></head><body>
+<!-- Kopia artefaktu https://claude.ai/artifact/3Z4w4jbwc3H2CXB8BAyHtW (źródło: /mnt/project-files/mapa-swiata/mapa-swiata.html). Przy zmianie aktualizuj oba. -->
+<title>Mapa świata Popiołu i Prądu</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Saira+Condensed:wght@400;500;600;700&family=Spectral:ital,wght@0,400;0,500;0,600;1,400&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<style>
+/* Układ: mapa jak arkusz kartograficzny misji Zorza (lewa, duża) + karta terenowa (prawa). Kolor tylko dla rzeczy ważnych. */
+:root{
+  --bg:#e2e4e0; --surface:#eceeea; --surface2:#f4f5f2; --ink:#222725; --muted:#5d6661; --line:#b7bdb8;
+  --land:#d1d5cf; --sea:#adbcbe; --fog:#eef0ec;
+  --sodium:#c27a24; --q:#2f8a5c; --copper:#a3582f; --rust:#a4443a; --moss:#557f40; --steel:#53697a; --paper:#86744e; --people:#2a7887; --slate:#56689a;
+  --g-twardy:#c3c0b6; --g-popiol:#dadad3; --g-piasek:#d8cca4; --g-woda:#98aeb3; --g-lod:#cbdde4; --g-szklo:#b1cfcb; --g-bloto:#a6a387; --g-snieg:#f3f5f4; --g-las:#b3bfab;
+  --f-display:"Saira Condensed","Arial Narrow",system-ui,sans-serif;
+  --f-body:"Spectral",Georgia,"Times New Roman",serif;
+  --f-mono:"IBM Plex Mono",ui-monospace,Menlo,Consolas,monospace;
+  --panel-w:400px;
+}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
+  --bg:#131615; --surface:#1a1e1c; --surface2:#202523; --ink:#dce1dc; --muted:#97a19b; --line:#36403b;
+  --land:#272b29; --sea:#1b282c; --fog:#2a302d;
+  --sodium:#e3a04a; --q:#7fd3a0; --copper:#d08055; --rust:#dd6e5e; --moss:#92c171; --steel:#8fa7b6; --paper:#c4ae80; --people:#62bac7; --slate:#93a4d2;
+  --g-twardy:#3b3a35; --g-popiol:#474845; --g-piasek:#575039; --g-woda:#223338; --g-lod:#3a4e57; --g-szklo:#2c4846; --g-bloto:#38392c; --g-snieg:#6c7172; --g-las:#2d382d;
+  color-scheme:dark}}
+:root[data-theme="dark"]{
+  --bg:#131615; --surface:#1a1e1c; --surface2:#202523; --ink:#dce1dc; --muted:#97a19b; --line:#36403b;
+  --land:#272b29; --sea:#1b282c; --fog:#2a302d;
+  --sodium:#e3a04a; --q:#7fd3a0; --copper:#d08055; --rust:#dd6e5e; --moss:#92c171; --steel:#8fa7b6; --paper:#c4ae80; --people:#62bac7; --slate:#93a4d2;
+  --g-twardy:#3b3a35; --g-popiol:#474845; --g-piasek:#575039; --g-woda:#223338; --g-lod:#3a4e57; --g-szklo:#2c4846; --g-bloto:#38392c; --g-snieg:#6c7172; --g-las:#2d382d;
+  color-scheme:dark}
+*{box-sizing:border-box}
+html,body{height:100%}
+body{background:var(--bg);color:var(--ink);font-family:var(--f-body);font-size:15px;line-height:1.5;
+  padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));padding-block:14px 24px}
+button,input,select{font:inherit;color:inherit}
+:focus-visible{outline:2px solid var(--sodium);outline-offset:2px}
+.wrap{max-width:1500px;margin:0 auto;display:flex;flex-direction:column;gap:12px}
+
+header.top{display:flex;flex-wrap:wrap;align-items:flex-end;justify-content:space-between;gap:8px 24px}
+.eyebrow{font-family:var(--f-mono);font-size:11px;letter-spacing:.12em;text-transform:uppercase;color:var(--muted)}
+h1{font-family:var(--f-display);font-weight:600;font-size:clamp(28px,4vw,40px);line-height:1;letter-spacing:.02em;margin:2px 0 0;text-wrap:balance}
+h1 .q{color:var(--q)}
+.lede{max-width:70ch;color:var(--muted);margin:0;font-size:14px}
+
+/* pasek filtrów */
+.bar{display:flex;flex-wrap:wrap;gap:10px 18px;align-items:center;padding:10px 12px;background:var(--surface);border:1px solid var(--line);border-radius:6px}
+.grp{display:flex;flex-wrap:wrap;gap:6px;align-items:center;min-width:0}
+.grp>.lab{font-family:var(--f-mono);font-size:10.5px;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);margin-right:2px}
+.chip{display:inline-flex;align-items:center;gap:6px;border:1px solid var(--line);background:var(--surface2);border-radius:999px;padding:3px 10px 3px 8px;font-family:var(--f-display);font-size:14px;letter-spacing:.03em;cursor:pointer;user-select:none}
+.chip[aria-pressed="false"]{opacity:.45;background:transparent}
+.chip .n{font-family:var(--f-mono);font-size:10.5px;color:var(--muted)}
+.chip svg{width:12px;height:12px;flex:none}
+.seg{display:flex;border:1px solid var(--line);border-radius:6px;overflow:hidden;flex-wrap:wrap}
+.seg button{border:0;background:var(--surface2);padding:4px 9px;font-family:var(--f-display);font-size:14px;cursor:pointer;border-right:1px solid var(--line)}
+.seg button:last-child{border-right:0}
+.seg button[aria-pressed="true"]{background:var(--ink);color:var(--bg)}
+.range{display:flex;align-items:center;gap:8px}
+.range input{width:150px;accent-color:var(--sodium)}
+.range output{font-family:var(--f-display);font-size:14px;min-width:12ch}
+
+.main{display:grid;grid-template-columns:minmax(0,1fr) var(--panel-w);gap:12px;align-items:start}
+@media (max-width:1000px){.main{grid-template-columns:minmax(0,1fr)}}
+
+/* mapa */
+.mapbox{position:relative;background:var(--land);border:1px solid var(--line);border-radius:6px;overflow:hidden;aspect-ratio:4/3;max-width:100%;touch-action:none}
+#map{display:block;width:100%;height:100%;cursor:grab}
+#map.drag{cursor:grabbing}
+.mapctl{position:absolute;right:10px;top:10px;display:flex;flex-direction:column;gap:4px}
+.mapctl button{width:32px;height:32px;border:1px solid var(--line);background:var(--surface);border-radius:4px;cursor:pointer;font-family:var(--f-mono);font-size:16px;line-height:1}
+.stepper{position:absolute;left:10px;bottom:10px;display:flex;gap:6px;align-items:center;background:var(--surface);border:1px solid var(--line);border-radius:6px;padding:4px 6px}
+.stepper button{border:1px solid var(--line);background:var(--surface2);border-radius:4px;padding:2px 10px;cursor:pointer;font-family:var(--f-display);font-size:14px}
+.stepper span{font-family:var(--f-mono);font-size:11px;color:var(--muted);min-width:7ch;text-align:center}
+.legend{position:absolute;right:10px;bottom:10px;background:var(--surface);border:1px solid var(--line);border-radius:6px;padding:6px 8px;display:grid;grid-template-columns:repeat(3,auto);gap:3px 10px;font-family:var(--f-mono);font-size:10.5px;color:var(--muted)}
+.legend i{display:inline-block;width:10px;height:10px;border:1px solid var(--line);margin-right:5px;vertical-align:-1px}
+@media (max-width:640px){.legend{display:none}.mapbox{aspect-ratio:1/1}}
+
+/* SVG */
+.region-fill{stroke:var(--line);stroke-width:1.2}
+.region.locked .lock{opacity:1}
+.lock{opacity:0;transition:opacity .25s;pointer-events:none}
+.region-label{font-family:var(--f-display);font-weight:600;letter-spacing:.18em;text-transform:uppercase;fill:var(--ink);paint-order:stroke;stroke:var(--land);stroke-width:4px;stroke-linejoin:round;pointer-events:none}
+.region-sub{font-family:var(--f-mono);font-size:9px;letter-spacing:.06em;fill:var(--muted);paint-order:stroke;stroke:var(--land);stroke-width:3px;pointer-events:none}
+.region-hit{fill:transparent;cursor:pointer}
+.glyph{fill:none;stroke:var(--muted);stroke-width:.9;opacity:.55;pointer-events:none}
+.route{fill:none;stroke:var(--ink);stroke-width:2;opacity:.55;stroke-linecap:round}
+.route.t-locked{stroke-dasharray:2 6;opacity:.3}
+.route.sel{stroke:var(--sodium);opacity:1;stroke-width:3.2}
+.route-hit{fill:none;stroke:transparent;stroke-width:16;cursor:pointer}
+.road{fill:none;stroke:var(--g-twardy);stroke-width:3.5;stroke-linecap:round;opacity:.9}
+.road-edge{fill:none;stroke:var(--muted);stroke-width:5.5;stroke-linecap:round;opacity:.25}
+.poi{cursor:pointer}
+.poi .mk{stroke:var(--surface2);stroke-width:1.4}
+.poi.nowe .ring{stroke-dasharray:2.5 2}
+.poi .ring{fill:none;stroke-width:1.2;opacity:.9}
+.poi.dim{opacity:.28}
+.poi.sel .halo{opacity:1}
+.halo{fill:none;stroke:var(--sodium);stroke-width:2;opacity:0}
+.poi-label{font-family:var(--f-display);font-size:10.5px;fill:var(--ink);paint-order:stroke;stroke:var(--land);stroke-width:3px;stroke-linejoin:round;pointer-events:none;opacity:0;transition:opacity .2s}
+.show-names .poi-label{opacity:.85}
+.poi:hover .poi-label,.poi.sel .poi-label{opacity:1}
+.fogl{pointer-events:none;transition:opacity .4s}
+.region-hit:focus,.route-hit:focus{outline:none}
+@keyframes pulse{0%{r:6;opacity:.9}100%{r:22;opacity:0}}
+.echo{fill:none;stroke:var(--q);stroke-width:1.5;animation:pulse 2.6s ease-out infinite}
+@media (prefers-reduced-motion:reduce){.echo{animation:none;opacity:.5}}
+
+/* panel */
+.panel{background:var(--surface);border:1px solid var(--line);border-radius:6px;display:flex;flex-direction:column;min-width:0;max-height:calc(100vh - 40px);position:sticky;top:12px}
+@media (max-width:1000px){.panel{position:static;max-height:none}}
+.tabs{display:flex;border-bottom:1px solid var(--line);overflow-x:auto}
+.tabs button{flex:1 0 auto;border:0;background:transparent;padding:9px 10px 8px;font-family:var(--f-display);font-size:14.5px;letter-spacing:.04em;cursor:pointer;color:var(--muted);border-bottom:2px solid transparent}
+.tabs button[aria-selected="true"]{color:var(--ink);border-bottom-color:var(--sodium)}
+.pbody{padding:14px 16px 18px;overflow:auto;min-width:0}
+.pbody h2{font-family:var(--f-display);font-weight:600;font-size:24px;line-height:1.1;margin:0 0 4px;text-wrap:balance}
+.pbody h3{font-family:var(--f-mono);font-weight:500;font-size:10.5px;letter-spacing:.12em;text-transform:uppercase;color:var(--muted);margin:16px 0 4px}
+.pbody p{margin:0 0 8px}
+.pbody ul{margin:0 0 8px;padding-left:18px}
+.pbody li{margin-bottom:3px}
+.tags{display:flex;flex-wrap:wrap;gap:5px;margin:6px 0 4px}
+.tag{font-family:var(--f-mono);font-size:10.5px;border:1px solid var(--line);border-radius:3px;padding:1px 6px;color:var(--muted)}
+.tag.st-ustalone{color:var(--q);border-color:var(--q)}
+.tag.st-propozycja{color:var(--steel);border-color:var(--steel)}
+.tag.st-nowe{color:var(--sodium);border-color:var(--sodium);border-style:dashed}
+.need{border-left:3px solid var(--sodium);padding:4px 0 4px 10px;margin:8px 0;font-size:14px}
+.muted{color:var(--muted)}
+.small{font-size:13.5px}
+.beats{list-style:none;padding:0;margin:4px 0 8px;display:grid;gap:6px}
+.beats li{display:grid;grid-template-columns:5.2ch 1fr;gap:8px;font-size:14px}
+.beats time{font-family:var(--f-mono);font-size:11.5px;color:var(--sodium);padding-top:2px}
+table{border-collapse:collapse;width:100%;font-size:13px}
+th,td{border-bottom:1px solid var(--line);padding:4px 5px;text-align:left;vertical-align:top}
+th{font-family:var(--f-mono);font-weight:500;font-size:10.5px;letter-spacing:.06em;text-transform:uppercase;color:var(--muted)}
+td.c{text-align:center;font-family:var(--f-mono)}
+.tblwrap{overflow-x:auto;max-width:100%}
+.num{font-variant-numeric:tabular-nums;font-family:var(--f-mono);font-size:12.5px}
+.swatches{display:flex;gap:4px;margin:4px 0 8px}
+.swatches span{flex:1;height:18px;border-radius:2px;border:1px solid var(--line)}
+.list{list-style:none;padding:0;margin:4px 0;display:grid;gap:2px}
+.list button{width:100%;text-align:left;border:0;background:transparent;padding:4px 6px;border-radius:4px;cursor:pointer;display:flex;gap:8px;align-items:center;font-size:14px}
+.list button:hover{background:var(--surface2)}
+.list svg{width:12px;height:12px;flex:none}
+.list .rg{margin-left:auto;font-family:var(--f-mono);font-size:10px;color:var(--muted)}
+.idea{border:1px dashed var(--sodium);border-radius:6px;padding:10px 12px;margin:8px 0}
+.vrow{display:grid;grid-template-columns:2ch 1fr;gap:8px;padding:7px 0;border-bottom:1px solid var(--line)}
+.vrow b{font-family:var(--f-display);font-size:16px;font-weight:600}
+.vrow .k{font-family:var(--f-mono);font-size:12px;color:var(--sodium);padding-top:3px}
+.vrow.cur{background:var(--surface2)}
+footer{color:var(--muted);font-size:12.5px;max-width:90ch}
+
+/* widok: przepływ fabuły */
+[hidden]{display:none!important}
+.viewsw{display:flex;border:1px solid var(--line);border-radius:6px;overflow:hidden;align-self:flex-end}
+.viewsw button{border:0;background:var(--surface2);padding:6px 14px;font-family:var(--f-display);font-size:16px;letter-spacing:.03em;cursor:pointer;border-right:1px solid var(--line)}
+.viewsw button:last-child{border-right:0}
+.viewsw button[aria-pressed="true"]{background:var(--ink);color:var(--bg)}
+.flowbox{position:relative;background:var(--surface);border:1px solid var(--line);border-radius:6px;overflow:auto;height:min(calc(100vh - 150px),900px);min-height:420px;max-width:100%;-webkit-overflow-scrolling:touch}
+#flow{display:block}
+.fl-act{font-family:var(--f-display);font-weight:600;font-size:17px;letter-spacing:.14em;text-transform:uppercase;fill:var(--ink)}
+.fl-actsub{font-family:var(--f-mono);font-size:10px;fill:var(--muted)}
+.fl-lane{font-family:var(--f-display);font-weight:600;font-size:13px;letter-spacing:.12em;text-transform:uppercase}
+.fl-lanesub{font-family:var(--f-mono);font-size:9.5px;fill:var(--muted)}
+.fe{fill:none;stroke:var(--muted);stroke-width:1.5;opacity:.75}
+.fe.soft{stroke-dasharray:3 4;opacity:.55}
+.fe.opt{stroke:var(--sodium);opacity:.6;stroke-width:1.2}
+.fe.hl{stroke:var(--sodium);opacity:1;stroke-width:2.2}
+.fn{cursor:pointer}
+.fn .bx{fill:var(--surface2);stroke:var(--line);stroke-width:1.2}
+.fn.core .bx{stroke:var(--ink);stroke-width:1.4}
+.fn.side .bx{stroke-dasharray:4 3;stroke:var(--muted)}
+.fn.choice .bx{stroke:var(--sodium);stroke-width:1.6;fill:color-mix(in srgb,var(--sodium) 12%,var(--surface2))}
+.fn.key .bx{stroke:var(--q);stroke-width:1.8}
+.fn.gate .bx{stroke:var(--sodium);stroke-width:1.8;stroke-dasharray:7 3}
+.fn.end .bx{stroke:var(--copper);stroke-width:2.2}
+.fn.sel .bx{stroke:var(--sodium);stroke-width:3}
+.fn.dimf{opacity:.35}
+.fn:hover .bx{fill:var(--surface)}
+.fn:focus{outline:none}.fn:focus-visible .bx{stroke:var(--sodium);stroke-width:3}
+.fn-t{font-family:var(--f-display);font-weight:600;font-size:13.5px;fill:var(--ink);pointer-events:none}
+.fn-s{font-family:var(--f-mono);font-size:9.5px;fill:var(--muted);pointer-events:none}
+.fn-n{font-family:var(--f-mono);font-size:9px;fill:var(--sodium);pointer-events:none}
+.opts{list-style:none;padding:0;margin:4px 0 8px;display:grid;gap:8px}
+.opts li{border:1px solid var(--line);border-left:3px solid var(--sodium);border-radius:4px;padding:6px 9px;background:var(--surface2)}
+.opts b{font-family:var(--f-display);font-size:15.5px;font-weight:600}
+.opts .fl{font-family:var(--f-mono);font-size:10px;margin-left:6px;padding:0 5px;border-radius:3px;border:1px solid var(--line);color:var(--muted)}
+.opts .fl.stale{color:var(--rust);border-color:var(--rust)}
+.opts .fl.odwr{color:var(--q);border-color:var(--q)}
+.opts p{margin:3px 0 0;font-size:14px}
+.flegend{display:flex;flex-wrap:wrap;gap:6px 12px;font-family:var(--f-mono);font-size:11px;color:var(--muted);margin:6px 0 10px}
+.flegend span{display:inline-flex;align-items:center;gap:5px}
+.flegend i{display:inline-block;width:16px;height:10px;border-radius:2px;background:var(--surface2);border:1.5px solid var(--line)}
+</style>
+
+<div class="wrap">
+  <header class="top">
+    <div>
+      <div class="eyebrow">Program Zorza · arkusz ogólny · szkic do rozmowy</div>
+      <h1>Popiół i Prąd <span class="q">·</span> mapa świata</h1>
+    </div>
+    <div class="viewsw" role="group" aria-label="Widok"><button id="v-mapa" aria-pressed="true">Mapa świata</button><button id="v-fabula" aria-pressed="false">Przepływ fabuły</button></div>
+    <p class="lede">Ogólna mapa świata: obszary, miejsca, trasy i bramy terenu, a w drugim widoku przepływ całej fabuły z drzewkiem decyzji. Kliknij miejsce, obszar albo trasę. Wybierz pojazd, żeby zobaczyć, dokąd da się nim dojechać i ile trwa droga. Oznaczenia: <b>ustalone</b> to decyzje Wojtka, <b>propozycja</b> pochodzi z dokumentów, <b>nowe</b> to pomysły dorysowane na tej mapie.</p>
+  </header>
+
+  <div class="bar" role="toolbar" aria-label="Filtry mapy">
+    <div class="grp" id="cats"><span class="lab">Kategorie</span></div>
+    <div class="grp" id="stats"><span class="lab">Status</span></div>
+  </div>
+  <div class="bar" role="toolbar" aria-label="Pojazd, czas i warstwy">
+    <div class="grp"><span class="lab">Pojazd</span><div class="seg" id="tiers"></div></div>
+    <div class="grp range"><span class="lab">Etap gry</span><input id="year" type="range" min="1" max="6" step="1" value="6" aria-label="Etap gry"><output id="yearOut"></output></div>
+    <div class="grp" id="layers"><span class="lab">Warstwy</span></div>
+  </div>
+
+  <div class="main">
+    <div class="mapbox" id="mapbox">
+      <svg id="map" viewBox="0 0 1200 900" role="img" aria-label="Mapa świata gry"></svg>
+      <div class="mapctl">
+        <button id="zin" aria-label="Przybliż">+</button>
+        <button id="zout" aria-label="Oddal">−</button>
+        <button id="zreset" aria-label="Cała mapa">◻</button>
+      </div>
+      <div class="stepper">
+        <button id="prev" aria-label="Poprzednie miejsce">←</button>
+        <span id="stepN">–</span>
+        <button id="next" aria-label="Następne miejsce">→</button>
+      </div>
+      <div class="legend" id="legend"></div>
+    </div>
+    <div class="flowbox" id="flowbox" hidden title="Przewiń w bok i w dół, żeby zobaczyć całość"><svg id="flow" viewBox="0 0 1500 1000" width="1500" height="1000" role="img" aria-label="Przepływ fabuły i drzewko decyzji"></svg></div>
+
+    <aside class="panel">
+      <div class="tabs" role="tablist">
+        <button role="tab" id="tab-miejsce" aria-selected="true">Miejsce</button>
+        <button role="tab" id="tab-rytm" aria-selected="false">Rytm podróży</button>
+        <button role="tab" id="tab-pojazdy" aria-selected="false">Pojazdy</button>
+        <button role="tab" id="tab-ironia" aria-selected="false">Ironia losu</button>
+        <button role="tab" id="tab-fabula" aria-selected="false">Zasady fabuły</button>
+      </div>
+      <div class="pbody" id="pbody"></div>
+    </aside>
+  </div>
+
+  <footer>Skala orientacyjna: cały świat to ok. 8 × 6 km, czyli 150 px na km. Przy żaglu z wiatrem przejazd z Doliny Olszanki pod Cerkwiska trwa kilka minut, a monocyklem pół godziny. Kształty obszarów to szkic do przerysowania. Źródła: docs/SWIAT.md, docs/POCZATEK.md, design doc „Popiół i Prąd”.</footer>
+</div>
+
+<script>
+(()=>{
+const NS='http://www.w3.org/2000/svg';
+const $=s=>document.querySelector(s);
+const el=(tag,attrs={},parent)=>{const e=document.createElementNS(NS,tag);for(const k in attrs)e.setAttribute(k,attrs[k]);if(parent)parent.appendChild(e);return e};
+const PX_PER_KM=150;
+
+/* ---------- dane: pojazdy ---------- */
+const TIERS=[
+ {k:0,n:'Monocykl',v:3,drive:'jedno koło',ground:['twardy'],
+  d:'Rama na jednym kole z żyroskopem, ramię chwytne, hak, lampa. Szybki na twardym, bezradny na schodach, piasku i błocie. Zasięg ok. 1,5 km na pełnej baterii.'},
+ {k:1,n:'Wózek R-2',v:6,drive:'4 koła w piastach',ground:['twardy'],
+  d:'Wózek serwisowy z rozdzielni R-2: cztery koła z silnikami w piastach, platforma z gniazdem dokowania monocyklu, własna bateria. Jedzie po nasypach dróg, grzęźnie w sypkim popiele.'},
+ {k:2,n:'Bojerek',v:11,drive:'koła ⇄ płozy',ground:['twardy','popiol','lod'],
+  d:'Wózek z masztem i żaglem z powłoki balonu meteo, płozy z ramy bojerka. Na granicy podłoża trzeba stanąć i ramieniem przełożyć koła na płozy (ok. 20 s). Popiół i lód stają się drogą.'},
+ {k:3,n:'Sanie „Zefir”',v:13,drive:'szybka wymiana z pokładu',ground:['twardy','popiol','lod','piasek'],
+  d:'Dłuższa rama, prawdziwe płótno z reklamą „Zefir”, płozy i koła na wahliwych wspornikach: przełożenie bez zsiadania, ale z utratą prędkości. Piasek nadmorski, nocleg przy pojeździe, pierwszy panel.'},
+ {k:4,n:'Żaglowóz',v:10,drive:'płozy chłodzone, szerokie koła',ground:['twardy','popiol','lod','piasek','szklo','bloto'],
+  d:'Ruchoma baza: kadłub z ładownią, fabrykator, turbina, panele. Płozy chłodzone do szkła, szerokie koła balonowe na mokradła. Wolny, ale niesie bazę ze sobą.'},
+ {k:5,n:'Żaglowóz+',v:10,drive:'+ silnik, wyciągarka, pływaki',ground:['twardy','popiol','lod','piasek','szklo','bloto','snieg','woda'],
+  d:'Napęd elektryczny na bezwietrzne odcinki (ładowany z Sieci Siedmiu Stacji), kotwica i wyciągarka na stoki, pływaki, grzałki i izolacja. Żagiel przestaje być jedynym silnikiem.'},
+ {k:6,n:'Poduszkowiec Q',v:20,drive:'poduszka kwantowa',ground:['twardy','popiol','lod','piasek','szklo','bloto','snieg','woda'],
+  d:'Późny etap, po analizie baterii: ogniwo w większej skali unosi kadłub na cichej poduszce. Bez kół i płóz, za to ciągnie za sobą smugę wzbitego popiołu i przyciąga mikroboty jak latarnia. Szczegóły otwarte.'}
+];
+const GROUNDS={twardy:'twardy grunt, nasypy dróg',popiol:'sypki popiół, wydmy',piasek:'piasek nadmorski',woda:'woda',lod:'lód (zimą)',szklo:'stopione szkło',bloto:'błoto, mokradła',snieg:'śnieg, stoki',las:'łąka, olszyny'};
+
+/* ---------- dane: kategorie i statusy ---------- */
+const CATS={
+ baza:{n:'Bazy',col:'--copper',shape:'square'},
+ ludzie:{n:'Ludzie',col:'--people',shape:'circle'},
+ fabula:{n:'Fabuła',col:'--q',shape:'star'},
+ notatki:{n:'Notatki',col:'--paper',shape:'note'},
+ zasoby:{n:'Zasoby',col:'--steel',shape:'hex'},
+ brama:{n:'Bramy',col:'--sodium',shape:'diamond'},
+ zagrozenie:{n:'Zagrożenia',col:'--rust',shape:'tri'},
+ postoj:{n:'Postoje',col:'--slate',shape:'plus'},
+ klimat:{n:'Klimat',col:'--moss',shape:'leaf'}
+};
+const STATS={ustalone:'ustalone',propozycja:'propozycja',nowe:'nowe'};
+const YEARS={1:'Rok 1 · Przebudzenie',2:'Rok 2 · Ludzie',3:'Lata 3–5 · Sieć',4:'Lata 5–8 · Kopuła',5:'Później · Zorza',6:'Po fabule'};
+
+/* ---------- dane: obszary ---------- */
+const REGIONS=[
+ {id:'olszanka',n:'Dolina Olszanki',cx:590,cy:775,rx:210,ry:92,seed:3,g:'las',t:0,ch:1,s:'ustalone',
+  sub:'start · łąki, olszyny',
+  look:'Łąki, olszyny, rowy melioracyjne i polne drogi. Popiół leży jak szary szron, przez który wiosną przebija się zieleń. Rano mgła znad zbiornika, w oddali wieża kościoła wystająca z wody.',
+  sound:'Wiatr w trawie, żaby nad rowami, skrzypienie masztu, kapanie w hali.',
+  pal:['--g-las','--g-popiol','--land','--q','--sodium'],
+  res:'złom z płotów i skrzynek pomiarowych, miedź, plastik, szkło',
+  danger:'pierwsze mikroboty przy kablu turbiny, noce, wilgoć',
+  gate:'Wzgórze: sam monocykl ma za mało prądu, potrzebny jest wózek z R-2.'},
+ {id:'rownina',n:'Popielna Równina',cx:650,cy:555,rx:270,ry:110,seed:7,g:'popiol',t:1,ch:1,s:'propozycja',
+  sub:'pierwszy otwarty obszar',
+  look:'Szeroka, płaska równina za wzgórzem. Dawne pola przysypane popiołem w łagodne wydmy, z których wystają słupy, dachy stodół i nasypy dróg. To pustynia, tyle że z popiołu, a nie z piasku. Jasny popiół jest sypki, ciemny i zbity niesie koła.',
+  sound:'Wiatr bez przeszkód, syk przesypującego się popiołu, daleki brzęk drutów.',
+  pal:['--g-popiol','--g-twardy','--land','--steel','--sodium'],
+  res:'złom z porzuconych maszyn, rama starego bojerka (płozy), drut, ogniwa z maszyn rolniczych',
+  danger:'zasięg (daleko do prądu), sypki popiół, burze pyłowe',
+  gate:'Nasypy dróg są dla kół. Wydmy dopiero z płozami i żaglem.'},
+ {id:'wies',n:'Zatopiona Wieś',cx:285,cy:600,rx:160,ry:112,seed:11,g:'woda',t:1,ch:2,s:'ustalone',
+  sub:'zbiornik zaporowy · Szkoła',
+  look:'Wieś zalana przez zbiornik zaporowy. Z wody wystaje wieża kościoła, dachy i korony drzew. Ludzie dobudowali domy na palach i kładki. Na brzegu zapora z martwą elektrownią wodną.',
+  sound:'Chlupot, krople, dzwon na wieży poruszany wiatrem, głosy z daleka.',
+  pal:['--g-woda','--g-bloto','--fog','--people','--sodium'],
+  res:'płótno (reklama „Zefir”), liny, części pomp',
+  danger:'wilgoć, rdza, wiosenne powodzie, głęboka woda (Wolt tonie)',
+  gate:'Brzeg jest dostępny od razu. Do szkoły trzeba osuszania i powłoki Wolta, a po wodzie pływaków. Zimą zalew zamarza w tor dla bojerka.'},
+ {id:'slupy',n:'Las Słupów',cx:645,cy:330,rx:195,ry:88,seed:5,g:'twardy',t:2,ch:3,s:'ustalone',
+  sub:'gąszcz martwych kratownic',
+  look:'Dawny pas linii wysokiego napięcia, gdzie po katastrofie ktoś (albo coś) stawiał kolejne słupy, aż zrobił się gąszcz martwych kratownic i zwisających drutów. Między nimi krzaki i brzozy. Nocą świecą roje mikrobotów.',
+  sound:'Brzęczenie drutów na wietrze, trzaski, szczebiot mikrobotów nocą.',
+  pal:['--g-twardy','--g-las','--steel','--copper','--q'],
+  res:'dużo miedzi, izolatory, transformatory',
+  danger:'gniazda mikrobotów, burze, splątane druty (kabel się zahacza)',
+  gate:'Wydmy przed lasem wymagają płóz. W środku światło albo EMP przeciw rojom i dłuższy kabel.'},
+ {id:'zalew',n:'Szklany Zalew',cx:290,cy:305,rx:150,ry:105,seed:13,g:'szklo',t:4,ch:4,s:'ustalone',
+  sub:'jezioro ze stopionego szkła',
+  look:'Jezioro, które w noc Popiołu zamieniło się w taflę stopionego szkła. Lustro dla słońca, odłamki jak kry. Na brzegu kopuła Szklarni. Najjaśniejsze miejsce w grze, prawie białe w południe.',
+  sound:'Prawie cisza, cykanie stygnącego szkła, wiatr bez przeszkód.',
+  pal:['--g-szklo','--g-snieg','--g-piasek','--moss','--sodium'],
+  res:'szkło, panele słoneczne, nasiona',
+  danger:'upał i odbicia słońca, ostre odłamki niszczące płozy, burze pyłowe na brzegach',
+  gate:'Chłodzenie Wolta i płozy do szkła. Najlepsze miejsce na energię słoneczną.'},
+ {id:'cerkwiska',n:'Cerkwiska',cx:700,cy:108,rx:310,ry:72,seed:2,g:'snieg',t:5,ch:5,s:'ustalone',
+  sub:'góry · laboratorium Zorza',
+  look:'Góry, świerki, drewniane cerkwie z gontowymi daszkami, śnieg przez większość roku. W skale ukryte wejście do Laboratorium Zorza: gładki, ciemny portal, jedyna naprawdę nowoczesna bryła na mapie.',
+  sound:'Wiatr na grani, skrzypienie drewna, cisza śniegu.',
+  pal:['--g-snieg','--g-las','--muted','--q','--copper'],
+  res:'sprzęt misji, dokumentacja, części do baterii',
+  danger:'mróz, lawiny, strome stoki, strażnicy',
+  gate:'Grzałki i izolacja, kotwica i wyciągarka na stoki, zaufanie strażników albo sposób na ich ominięcie.'},
+ {id:'mierzeja',n:'Mierzeja Wraków',cx:205,cy:115,rx:150,ry:62,seed:17,g:'piasek',t:3,ch:6,s:'nowe',
+  sub:'wydmy nadmorskie · nowy obszar',
+  look:'Wąski pas wydm między morzem a zalewem. W piasku leżą wraki statków, a sosny są pochylone od wiatru w jedną stronę. Morze szare, płaskie, z białą linią fal. Latarnia morska stoi jako jedyny pion.',
+  sound:'Fale, piasek bijący o blachę wraków, krzyk mew (jedyne ptaki na mapie).',
+  pal:['--g-piasek','--sea','--g-las','--slate','--sodium'],
+  res:'płótna, liny, ogniwa okrętowe, szkło soczewek',
+  danger:'piasek w łożyskach, sól i wilgoć, przypływy zalewające plażę',
+  gate:'Piasek: płozy szerokie. Najmocniejszy wiatr w grze, więc nagrodą jest szybki żagiel.'},
+ {id:'tarasy',n:'Miasto Tarasów',cx:1000,cy:390,rx:150,ry:125,seed:19,g:'twardy',t:5,ch:6,s:'nowe',
+  sub:'miasto na stokach · nowy obszar',
+  look:'Miasto zbudowane tarasami na stoku, przecięte estakadą autostrady. Na tarasach martwe farmy pionowe ze szklanymi ścianami. Futurystyczne, ale z europejską skalą: wąskie ulice, schody, place.',
+  sound:'Wiatr w pustych szybach, echo kroków na schodach, tykanie przekaźników.',
+  pal:['--g-twardy','--g-las','--fog','--people','--moss'],
+  res:'elektronika, nasiona z farm pionowych, ogniwa z budynków',
+  danger:'zawalone przęsła, schody (monocykl nie wjedzie), obce automaty strażnicze',
+  gate:'Estakada jest twarda, ale ma zawalone przęsła: wyciągarka albo zdalnie sterowany dźwig.'},
+ {id:'szyby',n:'Zatopione Szyby',cx:990,cy:705,rx:140,ry:100,seed:23,g:'bloto',t:5,ch:6,s:'nowe',
+  sub:'zalana kopalnia · nowy obszar',
+  look:'Na powierzchni hałdy porośnięte brzozami i smukła wieża szybu z kompozytu. Pod ziemią podziemne jezioro z ciepłą wodą kopalnianą i ludzie, którzy zeszli najgłębiej.',
+  sound:'Kapanie, szum wentylacji, metaliczne echo windy.',
+  pal:['--g-bloto','--g-woda','--g-las','--people','--sodium'],
+  res:'ciepło geotermalne, liny, silniki wyciągowe',
+  danger:'ciemność, zalane chodniki, brak zasięgu radiowego',
+  gate:'Zdalne sterowanie windą szybu i pływaki. Pod ziemią sygnał tylko po kablu.'}
+];
+
+/* ---------- dane: miejsca ---------- */
+const POIS=[
+ // Dolina Olszanki
+ {id:'stacja-olszanka',n:'Stacja Pomiarowa Olszanka',r:'olszanka',c:'baza',s:'ustalone',ch:1,t:0,x:560,y:790,
+  look:'Niski budynek stacji z blachy i betonu, maszt pomiarowy z małą turbiną, wyrzutnia balonów meteo i szopa. W środku hala z martwą kołyską i przeszkloną komorą testową, w której pulsuje bladozielone okienko baterii.',
+  do:'Przebudzenie, wyjęcie Q-1 z komory, pierwszy port i mikrokabel, naprawa łożyska turbiny, kabel przez okno dyżurki, fabrykator. Pierwsza baza i awaryjne zimowisko.'},
+ {id:'dyzurka',n:'Dyżurka: mapa i książki',r:'olszanka',c:'notatki',s:'ustalone',ch:1,t:0,x:588,y:772,
+  look:'Kurtka na krześle, kubek, tablica z kartkami. Na ścianie mapa z siedmioma punktami połączonymi markerem i jednym przekreślonym w górach. Na półce podręcznik meteorologii i instrukcje.',
+  do:'Pierwszy duży zastrzyk tekstu do korpusu. Notatka służbowa kierowniczki (spór o Q-2), nieczytelna aż do odkodowania. Mapa ścienna to pierwszy szkic tej mapy w grze.'},
+ {id:'wiatrak',n:'Wiatrak na wzgórzu',r:'olszanka',c:'baza',s:'propozycja',ch:1,t:0,x:470,y:735,
+  look:'Stary drewniany koźlak na wzgórzu nad doliną. Misja dobudowała mu gładką gondolę z prądnicą. Drewno i kompozyt obok siebie, bez kiczu.',
+  do:'Druga baza. Prądnica ma obcy standard złącza: pierwsza analiza protokołu, noc nauki i przejściówka z fabrykatora.'},
+ {id:'podworze',n:'Złom na podwórzu stacji',r:'olszanka',c:'zasoby',s:'ustalone',ch:1,t:0,x:620,y:815,
+  look:'Przewrócony płot, skrzynki pomiarowe, stara stacja meteo, opona. Wszystko pod cienką warstwą popiołu.',
+  do:'Rozbiórka złomu, pierwsze holowanie na oponie jak na sankach. Monocykl zwalnia, ładunek zarzuca na zakrętach.'},
+ {id:'rowy',n:'Rowy i mgła znad zbiornika',r:'olszanka',c:'zagrozenie',s:'propozycja',ch:1,t:0,x:430,y:800,
+  look:'Rowy melioracyjne z czarną wodą. Nocą wchodzi z nich mgła i osiada rosą na ramie Wolta.',
+  do:'Pierwsza noc: wilgotność rośnie, ruchy robią się szarpane, iskry. Grzanie suszy, ale pali energię.'},
+ {id:'wzgorze',n:'Wzgórze za stacją',r:'olszanka',c:'brama',s:'ustalone',ch:1,t:1,x:700,y:705,
+  look:'Polna droga przechodzi w popiół, potem w stromy podjazd. Ze szczytu widać kotlinę z rozdzielnią i szeroką, szarą równinę.',
+  do:'Scena 4: koło buksuje, pasek leci szybko, wiatr w twarz kosztuje. Zjazd odzyskuje trochę energii. Na szczycie chwila ciszy i pierwszy widok na otwarty świat.',
+  need:'Monocykl dojedzie tylko na rezerwie, jeden raz. Na stałe trzeba wózka.'},
+ {id:'r2',n:'Rozdzielnia polowa R-2',r:'olszanka',c:'baza',s:'ustalone',ch:1,t:0,x:720,y:665,
+  look:'Kontenery w kotlinie, ogrodzenie, rząd zakurzonych paneli 600 W, szafa sterownicza i wiata. Pod wiatą stoi wózek serwisowy misji.',
+  do:'Przeżyć na rezerwie, oczyścić panele ramieniem, zrobić kabel, zadokować monocykl w wózku, naładować go kablem 18 m wokół kontenerów. Tu pojawia się tytuł gry.'},
+ // Popielna Równina
+ {id:'wiata',n:'Wiata przystanku z plecakiem',r:'rownina',c:'notatki',s:'propozycja',ch:1,t:1,x:555,y:640,
+  look:'Betonowa wiata przy nasypie starej drogi, rozkład jazdy zatarty popiołem. Na ławce plecak: konserwy, latarka, zeszyt z rysunkami.',
+  do:'Zeszyt pokazuje ludzi schodzących pod ziemię i robota bardzo podobnego do Wolta. Podpisy odręczne, czytelne dopiero na końcu odkodowania. Wątek „Dzieci ze Szkoły”.'},
+ {id:'port-polowy',n:'Słupki serwisowe misji',r:'rownina',c:'postoj',s:'nowe',ch:1,t:1,x:615,y:595,
+  look:'Szary słupek z uchylną klapką, bursztynową diodą i zegarowym amperomierzem. Stały co kilkaset metrów wzdłuż dawnej trasy serwisowej misji. Większość jest martwa, czasem jeden ma resztkę prądu w akumulatorze.',
+  do:'Naturalny przystanek co 1–2 minuty jazdy. Mikrokabel albo ramię, kilka sekund ładowania i dalej. Martwy słupek można naprawić i podpiąć do sieci, a wtedy trasa staje się „korytarzem prądu”.'},
+ {id:'rama-bojerka',n:'Rama bojerka w wydmie',r:'rownina',c:'zasoby',s:'propozycja',ch:1,t:1,x:515,y:520,
+  look:'Z popiołu wystaje rufa i dwie płozy starego bojerka. Reszta zasypana, trzeba odkopać i wyciągnąć na linie.',
+  do:'Źródło płóz. Wyciąganie haka na linie z wydmy to dobra zagadka holowania.'},
+ {id:'stodola',n:'Dach stodoły nad popiołem',r:'rownina',c:'zasoby',s:'nowe',ch:1,t:1,x:705,y:605,
+  look:'Z wydmy wystaje tylko kalenica dachu. W środku, pod popiołem, autonomiczna maszyna rolnicza misji, płaska i szeroka, z pustymi gniazdami ogniw.',
+  do:'Ogniwa, silniczki i dziennik maszyny (format maszynowy, bateria go rozumie). Później maszyna wraca do życia jako „Wiązacz Popiołu”.'},
+ {id:'trop',n:'Punkt z dziennika wózka',r:'rownina',c:'fabula',s:'propozycja',ch:1,t:1,x:785,y:515,
+  look:'Propozycja: przewrócony kontener przekaźnikowy, jedna z Siedmiu Stacji. Antena złamana, pancerz osmalony od środka.',
+  do:'Trop fabularny z dziennika wózka. W środku dziennik automatu: ostatnia noc stacji przed Popiołem. Echo pulsuje mocniej.'},
+ {id:'wymiana-rownina',n:'Koniec nasypu: koła na płozy',r:'rownina',c:'postoj',s:'nowe',ch:2,t:2,x:625,y:470,
+  look:'Nasyp drogi rozmywa się w wydmach. Ktoś zostawił tu podkłady i stary lewarek. Widać ślady kół, które dalej nie poszły.',
+  do:'Granica podłoża jako miejsce postoju: Wolt zeskakuje, ramieniem przekłada koła na płozy (ok. 20 s), a w tym czasie widać, co jest dalej. Od sań „Zefir” wymiana bez zsiadania.'},
+ {id:'autobus',n:'Autobus w wydmie',r:'rownina',c:'postoj',s:'nowe',ch:1,t:1,x:835,y:595,
+  look:'Regionalny autobus przechylony na bok, do połowy w popiele. W środku sucho i cicho.',
+  do:'Schronienie przed burzą pyłową. Można przeczekać, naładować się z małego panelu na dachu i przeczytać notatki kierowcy.'},
+ {id:'burza',n:'Pas burz pyłowych',r:'rownina',c:'zagrozenie',s:'propozycja',ch:1,t:1,x:890,y:525,
+  look:'Szara ściana na horyzoncie, która rośnie w kilka minut. Wewnątrz widoczność na parę metrów, słychać tylko syk.',
+  do:'Wydarzenie co kilka minut jazdy: zdążyć do schronienia albo przejechać z kosztem łożysk i płóz.'},
+ // Zatopiona Wieś
+ {id:'pomost',n:'Pomost z łodzią',r:'wies',c:'ludzie',s:'ustalone',ch:1,t:1,x:365,y:640,
+  look:'Drewniany pomost, rozwieszone sieci, jeszcze ciepłe ognisko i odciski butów w popiele. Na wodzie łódź płynie w stronę wieży kościoła.',
+  do:'Pierwszy człowiek: maska, płaszcz, szum zamiast mowy. Jeśli Wolt nie podjedzie za szybko, zostaje rozładowana latarka. Naładuj ją i zostaw w tym samym miejscu, a dostaniesz miedź i mapkę. Pierwsze słowo: „światło”.'},
+ {id:'szkola',n:'Szkoła ze schronem',r:'wies',c:'ludzie',s:'ustalone',ch:2,t:1,x:265,y:590,
+  look:'Szkoła na wzniesieniu, do połowy w wodzie, połączona kładkami z domami na palach. Pod nią schron z bladym światłem w okienkach. Obok wystaje wieża kościoła z dzwonem.',
+  do:'Bunkier Szkoła: nauczycielka, rodziny, dzieci, rybacy. Zimowisko z nagrodą: ludzie dbają o sprzęt, a Wolt o ich światło. Słownik rośnie przez sen.',
+  need:'Osuszanie i powłoka Wolta (wilgoć, rdza).'},
+ {id:'zefir',n:'Magazyn z reklamą „Zefir”',r:'wies',c:'zasoby',s:'propozycja',ch:2,t:1,x:215,y:660,
+  look:'Długi magazyn na brzegu z wyblakłą płachtą reklamową „Zefir” na ścianie. Płótno trzyma się na linkach i łopocze.',
+  do:'Prawdziwe płótno na żagiel sań (etap 2). Zdjęcie płachty z wysokości to mała zagadka z liną.'},
+ {id:'zapora',n:'Zapora i elektrownia wodna',r:'wies',c:'baza',s:'propozycja',ch:2,t:2,x:175,y:535,
+  look:'Betonowa zapora z rzędem zamkniętych śluz. W środku hala turbin, zamulona i ciemna.',
+  do:'Duża, stała moc. Ludzie ze Szkoły już z niej korzystają po swojemu, więc adaptacja to negocjacja, a nie tylko naprawa.'},
+ {id:'brod',n:'Bród i mokradła',r:'wies',c:'brama',s:'propozycja',ch:1,t:4,x:430,y:555,
+  look:'Szeroki, płytki rozlew z kępami turzycy i olszyn. Woda po oś.',
+  do:'Skrót między Wsią a Lasem Słupów.',
+  need:'Osuszanie Wolta i szerokie koła albo gąsienice (Żaglowóz).'},
+ {id:'lodowy-tor',n:'Lodowy tor (tylko zimą)',r:'wies',c:'postoj',s:'nowe',ch:2,t:2,x:320,y:470,
+  look:'Zimą zalew zamarza i między wieżą kościoła a dachami robi się płaska, czarna tafla. Dachy wystają z lodu jak boje.',
+  do:'Sezonowy skrót do Szklanego Zalewu dla bojerka na płozach. Najszybsza jazda w grze przed poduszkowcem, ale lód cienki przy dachach.'},
+ // Las Słupów
+ {id:'transformatorowa',n:'Stacja transformatorowa',r:'slupy',c:'baza',s:'propozycja',ch:3,t:2,x:600,y:345,
+  look:'Ogrodzony plac z wielkimi transformatorami w zielonkawej farbie, porośnięty brzozami.',
+  do:'Węzeł sieci do łączenia baz. Uszkodzone uzwojenia, a w środku gniazdo mikrobotów.'},
+ {id:'radiolinia',n:'Wieża radiolinii',r:'slupy',c:'baza',s:'propozycja',ch:3,t:2,x:725,y:290,
+  look:'Smukła wieża na wzgórzu nad lasem, z czaszami anten i budką u stóp. Widać ją z całej Równiny.',
+  do:'Antena dalekiego zasięgu (alarmy z baz, zdalne sterowanie radiem) i szafa serwerowa jako jednostka analityczna.'},
+ {id:'rozdzielnia-bunkier',n:'Bunkier Rozdzielnia',r:'slupy',c:'ludzie',s:'propozycja',ch:3,t:2,x:555,y:370,
+  look:'Podziemna stacja przy lesie, wejście przez stalowe drzwi w nasypie. Na drzwiach malowane znaki ostrzegawcze.',
+  do:'Dawni technicy sieci. Chcą części, miedzi i ochrony przed mikrobotami, a baterię chcą rozebrać i skopiować.'},
+ {id:'gniazda',n:'Gniazda mikrobotów',r:'slupy',c:'zagrozenie',s:'propozycja',ch:3,t:2,x:680,y:375,
+  look:'Za dnia ciche skupiska w starych transformatorach i na słupach. Nocą wylatują jak świetliki.',
+  do:'Rój na kablu zjada nadwyżkę bazy. Światło, EMP, pułapki z przynętą, a później oswojone gniazdo.'},
+ {id:'drugi-automat',n:'Drugi automat misji',r:'slupy',c:'fabula',s:'propozycja',ch:3,t:2,x:770,y:340,
+  look:'Starszy, większy automat oplątany drutami, jakby sam się w nie wplątał. Kamera jeszcze śledzi ruch.',
+  do:'Echo prowadzi tutaj. Po wpięciu kabla fragmenty pamięci o Q-2. Zwrot rozdziału „Sieć”.'},
+ {id:'druty',n:'Splątane druty',r:'slupy',c:'brama',s:'propozycja',ch:3,t:2,x:510,y:300,
+  look:'Druty zwisają nisko między kratownicami jak pajęczyna.',
+  do:'Kabel Wolta się o nie zahacza, owijanie liczy się do długości.',
+  need:'Światło albo EMP przeciw rojom i dłuższy kabel.'},
+ // Szklany Zalew
+ {id:'kopula',n:'Szklarnia pod Kopułą',r:'zalew',c:'ludzie',s:'propozycja',ch:4,t:4,x:225,y:275,
+  look:'Wielka kopuła z sześciokątnych tafli na brzegu szklanego jeziora. W środku jedyna intensywna zieleń na mapie.',
+  do:'Bunkier Kopuła, ogrodnicy. Potrzebują ogromnej ilości prądu, żeby przetrwać zimę: cel Sieci Siedmiu Stacji.'},
+ {id:'tafla',n:'Tafla szkła',r:'zalew',c:'brama',s:'propozycja',ch:4,t:4,x:330,y:320,
+  look:'Gładkie, zielonkawe lustro z bąblami. W południe oślepia.',
+  do:'Najszybsza powierzchnia po lodzie, ale grzeje Wolta i ściera zwykłe płozy.',
+  need:'Chłodzenie Wolta i płozy chłodzone (Żaglowóz).'},
+ {id:'odlamki',n:'Pole odłamków',r:'zalew',c:'zagrozenie',s:'propozycja',ch:4,t:4,x:365,y:255,
+  look:'Spękana tafla z ostrymi krami, które stoją pionowo jak płetwy.',
+  do:'Slalom pod presją: każde otarcie to zużycie płóz.'},
+ {id:'panele-zalew',n:'Pole paneli przy brzegu',r:'zalew',c:'zasoby',s:'propozycja',ch:4,t:4,x:265,y:355,
+  look:'Rzędy paneli słonecznych, część wtopiona w szkło.',
+  do:'Najlepsze miejsce na energię słoneczną w grze. Zbieranie paneli dla Żaglowozu i baz.'},
+ // Cerkwiska
+ {id:'klasztor',n:'Klasztor',r:'cerkwiska',c:'ludzie',s:'propozycja',ch:5,t:5,x:640,y:125,
+  look:'Piwnice pod drewnianą cerkwią, kamienne schody, lampki oliwne. Strażnicy w grubych płaszczach.',
+  do:'Pilnują, żeby nikt nie otworzył laboratorium. Pamiętają Popiół i boją się baterii.'},
+ {id:'lab',n:'Laboratorium Zorza',r:'cerkwiska',c:'fabula',s:'propozycja',ch:5,t:5,x:770,y:85,
+  look:'Gładki, ciemny portal w skale, bez żadnych napisów. W środku czyste, jasne korytarze, nietknięte od lat.',
+  do:'Prawda o Q-1 i Q-2, analiza baterii i decyzja końcowa: skalować, oddać ludziom albo budować sieć powoli.'},
+ {id:'cerkwie',n:'Cerkwie na grani',r:'cerkwiska',c:'notatki',s:'propozycja',ch:5,t:5,x:545,y:95,
+  look:'Trzy drewniane cerkwie z gontowymi daszkami na grani, śnieg po dach.',
+  do:'Archiwum strażników: wątek „Strażnicy”, dlaczego pilnują laboratorium.'},
+ {id:'przelecz',n:'Przełęcz z lawinami',r:'cerkwiska',c:'brama',s:'propozycja',ch:5,t:5,x:700,y:170,
+  look:'Strome stoki ze świerkami, ścieżka zygzakiem pod nawisem śniegu.',
+  do:'Kotwica w skałę, wyciągarka, kawałek po kawałku.',
+  need:'Grzałki, izolacja, kotwica i wyciągarka (Żaglowóz+).'},
+ // Mierzeja
+ {id:'latarnia',n:'Latarnia morska',r:'mierzeja',c:'baza',s:'nowe',ch:6,t:3,x:150,y:105,
+  look:'Biała wieża z wielką soczewką Fresnela na szczycie, nad szarym morzem.',
+  do:'Soczewka skupia słońce, więc latarnia może być piecem albo stacją słoneczną. Morski wiatr to najmocniejsza turbina w grze.'},
+ {id:'wraki',n:'Wraki w wydmach',r:'mierzeja',c:'zasoby',s:'nowe',ch:6,t:3,x:255,y:130,
+  look:'Kadłuby statków wbite dziobem w piasek, maszty bez żagli.',
+  do:'Płótna, liny, ogniwa okrętowe. Wnętrza wraków to małe, zalane labirynty.'},
+ // Tarasy
+ {id:'estakada',n:'Estakada autostrady',r:'tarasy',c:'brama',s:'nowe',ch:6,t:5,x:930,y:420,
+  look:'Długa estakada nad doliną, wąska i prosta, z jednym zawalonym przęsłem.',
+  do:'Najdłuższa twarda droga na mapie dla kół i silnika. Zawalone przęsło to zagadka z wyciągarką albo zdalnym dźwigiem.',
+  need:'Wyciągarka albo zdalne sterowanie dźwigiem.'},
+ {id:'farmy',n:'Farmy pionowe',r:'tarasy',c:'zasoby',s:'nowe',ch:6,t:5,x:1035,y:350,
+  look:'Szklane wieże na tarasach z martwymi półkami roślin. Pompy stoją, ale układy jeszcze żyją.',
+  do:'Nasiona i elektronika. Uruchomienie jednej farmy to mała Kopuła w mieście.'},
+ {id:'tarasowi',n:'Tarasowi',r:'tarasy',c:'ludzie',s:'nowe',ch:6,t:5,x:1060,y:425,
+  look:'Ludzie, którzy wyszli na powierzchnię wcześniej niż inni. Żyją wśród maszyn, z których nie umieją korzystać, i palą ogniska na placach.',
+  do:'Najmocniej widać tu ironię losu: miasto pełne technologii i ludzie, którzy żyją jak przed nią.'},
+ // Szyby
+ {id:'wieza-szybu',n:'Wieża szybu',r:'szyby',c:'baza',s:'nowe',ch:6,t:5,x:960,y:680,
+  look:'Smukła wieża wyciągowa z kompozytu, kabel windy znika w czarnym otworze.',
+  do:'Zdalne sterowanie windą: Wolt zostaje na górze, a winda zjeżdża. Albo odwrotnie i ktoś musi pilnować ciała.'},
+ {id:'glebinowcy',n:'Głębinowcy',r:'szyby',c:'ludzie',s:'nowe',ch:6,t:5,x:1025,y:725,
+  look:'Osada przy ciepłym, podziemnym jeziorze, światło z lamp na ciepło kopalni.',
+  do:'Najgłębszy bunkier. Najwięcej zapomnieli, ale mają ciepło, którego reszta nie ma.'},
+ // Klimat (luźny kierunek, po fabule)
+ {id:'wiazacz',n:'Wiązacz Popiołu',r:'rownina',c:'klimat',s:'nowe',ch:6,t:1,x:700,y:520,
+  look:'Maszyna rolnicza ze stodoły jeździ powoli po wydmach, a za nią zostaje pas ciemnej, mokrej ziemi. Nad nią oswojony rój mikrobotów.',
+  do:'Pierwsze pole zieleni na Równinie. Oswojone mikroboty przerabiają popiół w glebę. Widać to na mapie po latach.'},
+ {id:'lapacze',n:'Łapacze mgły',r:'wies',c:'klimat',s:'nowe',ch:6,t:2,x:410,y:640,
+  look:'Rzędy siatek na masztach nad brzegiem, z których kapie woda do rynien.',
+  do:'Czysta woda bez pomp. Ludzie ze Szkoły budują je sami, gdy zobaczą pierwszy działający.'},
+ {id:'siew',n:'Siewnik chmur',r:'slupy',c:'klimat',s:'nowe',ch:6,t:2,x:760,y:255,
+  look:'Wieża radiolinii z nowym masztem, z którego co jakiś czas wylatuje balon meteo.',
+  do:'Deszcz po latach suszy. Działa tylko z dużą nadwyżką z sieci, więc to nagroda za rozbudowę.'},
+ {id:'ogrody',n:'Ogrody za Kopułą',r:'zalew',c:'klimat',s:'nowe',ch:6,t:4,x:190,y:330,
+  look:'Pierwsze grządki poza szkłem, osłonięte płachtami.',
+  do:'Nasiona z Kopuły wychodzą na zewnątrz. Znak, że świat się zmienia.'}
+];
+
+/* ---------- dane: trasy ---------- */
+const ROUTES=[
+ {id:'t-wzgorze',n:'Przez wzgórze',a:[560,790],b:[720,665],via:[[640,740],[700,705]],g:'twardy',t:1,
+  beats:[['0:00','Polna droga, Wolt ocenia zasięg na pasku.'],['0:20','Popiół na podjeździe, koło buksuje: wybór linii po ciemniejszym, zbitym popiele.'],['0:45','Wiatr w twarz, decyzja: zrzucić oponę z ładunkiem czy ciągnąć dalej.'],['1:10','Grzbiet. Kadr się oddala: kotlina z R-2 i Równina. Moment ciszy.'],['1:25','Zjazd z rekuperacją, pasek trochę rośnie.']]},
+ {id:'t-nasyp',n:'Nasyp do brzegu',a:[720,665],b:[365,640],via:[[615,595],[555,640],[460,650]],g:'twardy',t:1,
+  beats:[['0:00','Z kotliny na nasyp starej drogi. Koła wózka trzymają się twardego.'],['0:20','Słupek serwisowy misji z diodą: krótkie ładowanie mikrokablem albo jazda dalej.'],['0:45','Wiata z plecakiem przy drodze. Warto stanąć.'],['1:15','Nasyp przerwany wydmą: objazd po ciemnym popiele albo zjazd z drogi.'],['1:50','Z daleka wieża kościoła z wody. Ślady butów w popiele.']]},
+ {id:'t-wydmy',n:'Wydmy pod Las Słupów',a:[615,595],b:[600,345],via:[[625,470],[610,410]],g:'popiol',t:2,
+  beats:[['0:00','Koniec nasypu. Stop i przełożenie kół na płozy (ok. 20 s).'],['0:25','Podmuch z boku: luzowanie żagla, żeby nie położyło bojerka.'],['0:45','W wydmie błysk metalu. Ramię zgarnia kartkę albo drut w biegu, bez zatrzymania.'],['1:20','Na horyzoncie szara ściana: burza pyłowa. Zdążyć pod autobus czy przejechać?'],['1:50','Kratownice coraz gęściej. Zwolnić, bo zaczynają się druty.']]},
+ {id:'t-brod',n:'Bród',a:[365,640],b:[555,370],via:[[430,555],[500,450]],g:'bloto',t:4,
+  beats:[['0:00','Wjazd w rozlew na szerokich kołach, woda po oś.'],['0:20','Wilgotność Wolta rośnie: grzać teraz czy po drugiej stronie?'],['0:40','Mielizna, Żaglowóz staje. Kotwica albo szukanie twardszej kępy.'],['1:10','Na kępie olszyn zostawiona łódź z siecią i notatką.']]},
+ {id:'t-lod',n:'Lodowy tor (zimą)',a:[265,590],b:[330,320],via:[[320,470],[300,400]],g:'lod',t:2,
+  beats:[['0:00','Tylko zimą. Płozy na lód, żagiel na pełny wiatr.'],['0:15','Prędkość rośnie, dachy wystają z lodu jak boje: slalom.'],['0:35','Trzask lodu przy dachu. Odbić od cienkiego.'],['1:00','Szkło zaczyna się tam, gdzie kończy się lód. Zmiana na płozy chłodzone albo stop.']]},
+ {id:'t-szklo',n:'Brzegiem Zalewu',a:[510,300],b:[330,320],via:[[430,280]],g:'szklo',t:4,
+  beats:[['0:00','Ze żwiru na szkło. Płozy chłodzone, Wolt w cieniu żagla.'],['0:20','Odbicie słońca grzeje: kurs pod kątem, żeby żagiel dawał cień.'],['0:45','Pole odłamków, slalom. Każde otarcie widać na karcie stanu płóz.'],['1:20','Kopuła rośnie na horyzoncie, w środku zieleń.']]},
+ {id:'t-mierzeja',n:'Wiatr od morza',a:[225,275],b:[150,105],via:[[200,190]],g:'piasek',t:3,
+  beats:[['0:00','Szkło przechodzi w piasek. Płozy szerokie z pokładu sań.'],['0:20','Wiatr od morza najmocniejszy w grze: żagiel na pełno, wydmy jak fale.'],['0:50','Wrak wbity w wydmę: postój i rozbiórka.'],['1:20','Latarnia jako punkt orientacyjny z każdego miejsca Mierzei.']]},
+ {id:'t-stoki',n:'Stoki pod Cerkwiska',a:[725,290],b:[640,125],via:[[700,170]],g:'snieg',t:5,
+  beats:[['0:00','Żagiel złożony, napęd elektryczny i gąsienice.'],['0:30','Stromo: kotwica w skałę, wyciągarka, kolejne 20 m.'],['1:00','Zimno, akumulatory słabną: grzanie kosztuje.'],['1:40','Na grani pierwsza drewniana cerkiew. Strażnik patrzy z daleka.']]},
+ {id:'t-estakada',n:'Estakada',a:[770,340],b:[930,420],via:[[850,390]],g:'twardy',t:5,
+  beats:[['0:00','Wjazd na estakadę, prosta jak strzała. Silnik, bo w kanionie budynków nie wieje.'],['0:30','Zawalone przęsło: wyciągarka albo przejęcie dźwigu na dole.'],['1:10','Pierwsze tarasy i ogniska na placach.']]},
+ {id:'t-trakt',n:'Stary trakt do szybów',a:[835,595],b:[960,680],via:[[900,650]],g:'bloto',t:5,
+  beats:[['0:00','Z wydm na trakt między hałdami, brzozy na hałdach.'],['0:30','Rozmokłe odcinki: szerokie koła albo pływaki.'],['1:00','Wieża szybu widoczna nad lasem.']]}
+];
+
+/* ---------- dane: przepływ fabuły i drzewko decyzji ---------- */
+// k: core (rdzeń), side (wątek poboczny), choice (wybór), key (klucz do finału), gate (brama), end (zakończenie / stan świata)
+// opts: [opcja, skutek, 'stale' (nieodwracalne) | 'odwr' (da się naprawić albo dobrać później)]
+const ACTS=[
+ {n:'1 · Przebudzenie',sub:'rok 1 · liniowo, samouczek',x0:20,x1:200},
+ {n:'2 · Świat otwarty',sub:'lata 2–8 · filary w dowolnej kolejności',x0:220,x1:1090},
+ {n:'3 · Zorza',sub:'gdy znajdziesz drogę',x0:1110,x1:1280},
+ {n:'4 · Po fabule',sub:'gra trwa dalej',x0:1300,x1:1480}
+];
+const LANES=[
+ {n:'Ludzie',sub:'Zatopiona Wieś',y0:96,y1:300,col:'--people'},
+ {n:'Sieć',sub:'Las Słupów',y0:310,y1:540,col:'--copper'},
+ {n:'Kopuła',sub:'Szklany Zalew',y0:550,y1:760,col:'--moss'},
+ {n:'Wątki poboczne i stałe wybory',sub:'w każdej chwili',y0:770,y1:980,col:'--slate'}
+];
+const FLOW=[
+ // Akt 1
+ {id:'f-hala',k:'core',x:110,y:140,n:'Hala i bateria',sub:'Scena 0–1',poi:'stacja-olszanka',s:'ustalone',
+  txt:'Ciemność, puls baterii, pierwsze ruchy. Wolt wyjmuje Q-1 z komory testowej i od tej chwili nosi ją w sobie.'},
+ {id:'f-stacja',k:'core',x:110,y:230,n:'Martwa stacja',sub:'Scena 2 · port, kabel',poi:'podworze',s:'ustalone',
+  txt:'Pierwszy port i mikrokabel, złom, naprawa łożyska turbiny, kabel przez okno dyżurki. Na ścianie mapa z siedmioma punktami.'},
+ {id:'f-noc',k:'core',x:110,y:320,n:'Pierwsza noc',sub:'Scena 3',poi:'rowy',s:'ustalone',
+  txt:'Wilgoć, chłód, pierwsze mikroboty przy kablu. Gracz uczy się, że noc kosztuje.'},
+ {id:'f-odjazd',k:'core',x:110,y:410,n:'Odjazd na rezerwie',sub:'Scena 4 · wzgórze',poi:'wzgorze',s:'ustalone',
+  txt:'Wzgórze za stacją na resztce prądu. Ze szczytu pierwszy widok na otwarty świat.'},
+ {id:'f-r2',k:'core',x:110,y:500,n:'R-2 i wózek',sub:'Scena 5 · tytuł gry',poi:'r2',s:'ustalone',
+  txt:'Rozdzielnia polowa, oczyszczone panele, dokowanie monocyklu w wózku. Tu pojawia się tytuł gry.'},
+ {id:'f-rownina',k:'core',x:110,y:590,n:'Popielna Równina',sub:'Scena 6 · Echo',poi:'trop',s:'ustalone',
+  txt:'Świat się otwiera. Echo pulsuje w stronę innych prototypów, ale nie mówi, dokąd iść najpierw.'},
+ {id:'f-latarka',k:'choice',x:110,y:690,n:'Pierwszy człowiek',sub:'Scena 7 · latarka',poi:'pomost',s:'nowe',
+  txt:'Na pomoście zostaje rozładowana latarka. To pierwszy wybór, który zostaje w świecie, i uczy gracza, że świat pamięta.',
+  opts:[['Naładować i zostawić','Szkoła ufa szybciej: miedź, mapka i pierwsze słowo „światło”.','odwr'],
+        ['Podjechać bliżej','Człowiek ucieka. Zaufanie odbudowuje się później w Szkole, dłuższą drogą (dostawy).','odwr'],
+        ['Zabrać latarkę','Wolt ma od razu lepsze światło, ale w Szkole długo jest „złodziejem”. Da się to naprawić: oddać latarkę dziecku w Szkole.','odwr']],
+  sto:'Każda opcja kończy się zaufaniem Szkoły. Różni się tylko droga i czas.'},
+ {id:'f-zima',k:'core',x:110,y:790,n:'Pierwsza zima',sub:'Scena 8 · hibernacja',poi:'stacja-olszanka',s:'ustalone',
+  txt:'Sen do wiosny w zimowisku. Koniec samouczka: od teraz nic nie prowadzi za rękę.'},
+ {id:'f-hub',k:'gate',x:285,y:530,w:120,n:'Świat otwarty',sub:'3 filary, dowolna kolejność',s:'nowe',
+  txt:'Po pierwszej zimie fabuła rozchodzi się na trzy filary: Ludzie, Sieć i Kopuła. Kolejność wybiera gracz. Drogę zamyka tylko podłoże i pojazd, a nie skrypt fabuły. Echo podpowiada kierunek, ale każdy kierunek jest dobry. Do Kopuły trzeba chłodzenia i płóz do szkła, więc zwykle przychodzi trzecia, ale lodowy tor zimą to skrót dla odważnych.'},
+ // Ludzie
+ {id:'f-szkola',k:'core',x:440,y:190,n:'Szkoła: zimowisko',sub:'słownik, dostawy',poi:'szkola',s:'propozycja',
+  txt:'Bunkier Szkoła: nauczycielka, rodziny, dzieci. Słownik rośnie, Wolt robi dostawy i poznaje pierwsze potrzeby ludzi.'},
+ {id:'f-zapora',k:'choice',x:610,y:190,n:'Zapora: czyja woda',sub:'wybór · teren',poi:'zapora',s:'nowe',
+  txt:'Ludzie ze Szkoły korzystają z zapory po swojemu (koło wodne, młyn). Wolt może z niej zrobić dużą elektrownię.',
+  opts:[['Uruchomić pełną moc','Dużo stałego prądu, ale woda się podnosi: znikają dwie kładki i dom na palach, dolina jest zalana bardziej.','stale'],
+        ['Podzielić się z ludźmi','Połowa mocy, ludzie sami obsługują śluzę. Szybsze zaufanie i nowe słowa. Pełną moc da się dobrać później, gdy Szkoła przeniesie się wyżej.','odwr'],
+        ['Zostawić zaporę ludziom','Wolt szuka prądu gdzie indziej (panele z Zalewu). Po latach Szkoła sama prosi o pomoc z turbiną.','odwr']],
+  sto:'Do 100% liczy się, że zapora jest rozstrzygnięta, a nie którą drogą.'},
+ {id:'f-popiol',k:'core',x:780,y:190,n:'Noc, gdy zgasło wszystko',sub:'ludzie mówią o Popiele',s:'propozycja',poi:'szkola',
+  txt:'Ludzie pierwszy raz opowiadają o Popiele. Pierwszy etap analizy baterii. Wolt rozumie, dlaczego się go boją.'},
+ {id:'f-dzieci',k:'side',x:780,y:268,n:'Dzieci ze Szkoły',sub:'wątek notatek',poi:'wiata',s:'propozycja',
+  txt:'Zeszyt z wiaty, rysunki robota bardzo podobnego do Wolta. Czytelny dopiero na końcu odkodowania. Nic nie blokuje, ale zmienia, jak gracz czyta zakończenie.'},
+ {id:'f-k1',k:'key',x:1000,y:190,n:'Klucz: pamięć ludzi',sub:'droga do gór',s:'nowe',
+  txt:'Starsi ze Szkoły pamiętają, którędy ewakuowano naukowców z gór. To jedna z trzech dróg do Cerkwisk. W finale otwiera opcję „oddać ludziom”.'},
+ // Sieć
+ {id:'f-technicy',k:'core',x:440,y:425,n:'Technicy z Rozdzielni',sub:'protokoły, miedź',poi:'rozdzielnia-bunkier',s:'propozycja',
+  txt:'Dawni technicy sieci. Znają protokoły maszyn, chcą miedzi i ochrony przed rojami.'},
+ {id:'f-roje',k:'choice',x:610,y:362,n:'Mikroboty',sub:'tępić czy oswoić',poi:'gniazda',s:'nowe',
+  txt:'Gniazda w transformatorach zjadają nadwyżkę prądu. Wolt może z nimi walczyć albo się z nimi dogadać.',
+  opts:[['Tępić (EMP, światło)','Las szybko robi się bezpieczny, kable nie tracą prądu. W tym lesie rojów nie da się już oswoić.','stale'],
+        ['Oswoić gniazdo','Wolniej i drożej (przynęty z prądu). Oswojony rój pracuje dla Wolta, a po latach robi z popiołu glebę (Wiązacz Popiołu).','odwr'],
+        ['Omijać','Nic się nie zmienia od razu. Gniazda rosną z każdą hibernacją, więc decyzja wraca.','odwr']],
+  sto:'Do 100% wystarczy rozstrzygnąć las. Wiązacz Popiołu ma drugą drogę: dziki rój u Głębinowców.'},
+ {id:'f-skan',k:'choice',x:610,y:490,n:'Technicy chcą baterii',sub:'skan Q-1',poi:'rozdzielnia-bunkier',s:'nowe',
+  txt:'Technicy chcą zeskanować Q-1, żeby zbudować własną. Pamiętają Popiół, ale też głód prądu.',
+  opts:[['Pozwolić na skan','Od razu ich protokoły (szybsze zdalne sterowanie). Oni zaczynają budować kopię, która w finale może być problemem albo ratunkiem.','stale'],
+        ['Odmówić','Technicy sabotują kable w lesie. Zaufanie da się odbudować dostawami miedzi, wolniej.','odwr'],
+        ['Dać fałszywe dane','Spokój na teraz. Po latach odkrywają oszustwo, a w bunkrze zostaje przekreślony symbol Wolta.','stale']],
+  sto:'Protokoły są też w notatkach techników, więc zdalne sterowanie przychodzi każdą drogą, tylko w innym tempie.'},
+ {id:'f-antena',k:'core',x:780,y:425,n:'Wieża radiolinii',sub:'antena, sygnały',poi:'radiolinia',s:'propozycja',
+  txt:'Antena dalekiego zasięgu: alarmy z baz, zdalne sterowanie radiem, sygnały z innych miejsc na Ziemi.'},
+ {id:'f-automat',k:'choice',x:900,y:425,n:'Drugi automat',sub:'pamięć czy pomocnik',poi:'drugi-automat',s:'nowe',w:120,
+  txt:'Starszy automat oplątany drutami ma fragmenty pamięci o Q-2. Jego bateria jest prawie pusta.',
+  opts:[['Ściągnąć jego pamięć','Pełny zapis nocy Popiołu od razu, ale automat gaśnie na zawsze. Jego rama zostaje jako relikwia.','stale'],
+        ['Podzielić się prądem','Pamięć przychodzi kawałkami przez lata. Automat zostaje pomocnikiem: jeździ za Woltem, kładzie kable i drogi (pomysł z POMYSLY.md).','odwr'],
+        ['Zostawić na później','Echo wraca do niego co rok. Po długiej hibernacji automat może zgasnąć sam.','odwr']]},
+ {id:'f-k2',k:'key',x:1015,y:425,n:'Klucz: pamięć Q-2',sub:'kod drzwi',s:'nowe',w:120,
+  txt:'Automat pamięta wejście do laboratorium i kod drzwi. W finale otwiera opcję „odtworzyć w większej skali” bez powtórki Popiołu.'},
+ // Kopuła
+ {id:'f-ogrodnicy',k:'core',x:440,y:655,n:'Ogrodnicy pod Kopułą',sub:'chłodzenie, szkło',poi:'kopula',s:'propozycja',
+  txt:'Szklarnia potrzebuje ogromnej ilości prądu, żeby przetrwać zimę. To cel Sieci Siedmiu Stacji.'},
+ {id:'f-zimakop',k:'choice',x:610,y:655,n:'Zima: kogo zasilić',sub:'Kopuła czy Szkoła',poi:'kopula',s:'nowe',
+  txt:'Pierwszej zimy Kopuły sieci starcza tylko na jedną dużą rzecz.',
+  opts:[['Kopuła','Nasiona przeżywają, ale Szkoła ma ciemną zimę i ktoś choruje. Szkoła to pamięta.','stale'],
+        ['Szkoła','Kopuła traci połowę upraw, ogrodnicy są nieufni. Nasiona da się odbudować z farm pionowych w Mieście Tarasów.','odwr'],
+        ['Pół na pół','Obie strony ledwo przeżywają. Następnej zimy, z większą siecią, problem znika.','odwr']],
+  sto:'Dylemat znika, gdy sieć jest większa. Gracz, który najpierw zbudował Sieć, nie musi wybierać: kolejność filarów sama daje nagrodę.'},
+ {id:'f-zmiana',k:'core',x:780,y:655,n:'Pierwsza zmiana świata',sub:'Kopuła przeżywa zimę',s:'propozycja',poi:'kopula',
+  txt:'Kopuła przeżywa zimę. Pierwsza duża zmiana świata, którą Wolt sam spowodował.'},
+ {id:'f-ogrody',k:'side',x:780,y:733,n:'Ogrody za Kopułą',sub:'klimat',poi:'ogrody',s:'nowe',
+  txt:'Nasiona wychodzą poza szkło. Początek długiego łuku klimatu.'},
+ {id:'f-k3',k:'key',x:1000,y:655,n:'Klucz: mapa misji',sub:'laboratorium na mapie',s:'nowe',
+  txt:'Ogrodnicy mają mapę misji Zorza z zaznaczonym laboratorium. W finale nasiona z Kopuły są warunkiem szybkiego powrotu klimatu.'},
+ // Poboczne
+ {id:'f-latarnia',k:'side',x:440,y:875,n:'Mierzeja: latarnia',sub:'wiatr, płótna',poi:'latarnia',s:'nowe',
+  txt:'Najmocniejszy wiatr, soczewka jako piec słoneczny, płótna z wraków. Lepszy żagiel i szybsze podróże.'},
+ {id:'f-tarasy',k:'side',x:610,y:875,n:'Tarasowi',sub:'nasiona, elektronika',poi:'tarasowi',s:'nowe',
+  txt:'Ludzie wśród martwych maszyn. Nasiona i elektronika z farm pionowych: druga droga do rzeczy z Kopuły.'},
+ {id:'f-glebia',k:'side',x:780,y:875,n:'Głębinowcy',sub:'ciepło, dziki rój',poi:'glebinowcy',s:'nowe',
+  txt:'Najgłębszy bunkier, ciepło kopalni i dziki rój mikrobotów: druga droga do Wiązacza Popiołu.'},
+ {id:'f-sen',k:'choice',x:910,y:875,n:'Co zimę: ile spać',sub:'stały wybór',s:'nowe',w:120,poi:'stacja-olszanka',
+  txt:'Stały wybór co roku, mechanika zamiast scenki. Suma tych wyborów decyduje, czy na końcu zostaną ludzie.',
+  opts:[['Do wiosny','Świat zmienia się mało, ludzie starzeją się powoli.','odwr'],
+        ['Rok albo dłużej','Bazy produkują, obliczenia idą, ale ludzie odchodzą, a sprzęt rdzewieje.','stale'],
+        ['Aż baza skończy','Najszybszy postęp techniki i najwięcej utraconych ludzi.','stale']]},
+ {id:'f-symbol',k:'side',x:1015,y:875,n:'Symbol Wolta',sub:'pamięć ludzi',s:'ustalone',w:120,
+  txt:'Ludzie malują na ścianach symbol Wolta. Gdzie się pojawia i jak bardzo jest uproszczony, zależy od tego, komu i kiedy Wolt pomógł.'},
+ // Zorza
+ {id:'f-droga',k:'gate',x:1195,y:300,n:'Droga na Cerkwiska',sub:'1 z 3 kluczy',poi:'przelecz',s:'nowe',
+  txt:'Wystarczy jeden z trzech kluczy, żeby znaleźć laboratorium, i Żaglowóz+ (wyciągarka, grzałki) na stoki. Każdy kolejny klucz daje nową opcję w finale, więc gracz, który poszedł w góry wcześnie, może wrócić po resztę.'},
+ {id:'f-straz',k:'choice',x:1195,y:410,n:'Strażnicy',sub:'jak wejść',poi:'klasztor',s:'nowe',
+  txt:'Strażnicy pilnują, żeby nikt nie otworzył laboratorium. Pamiętają Popiół i boją się baterii.',
+  opts:[['Przekonać prawdą','Przynieść notatki o Popiele (wymaga odkodowania). Strażnicy wpuszczają Wolta i zostają sojusznikami.','odwr'],
+        ['Ominąć','Zdalnie przejąć automat strażniczy i wejść bokiem. Strażnicy zostają nieufni.','odwr'],
+        ['Odstraszyć EMP','Najszybciej, ale klasztor gaśnie, a strażnicy na zawsze odchodzą z gór.','stale']]},
+ {id:'f-lab',k:'core',x:1195,y:520,n:'Laboratorium',sub:'prawda o Q-1 i Q-2',poi:'lab',s:'propozycja',
+  txt:'Prawda o Q-1 i Q-2 i o tym, czym jest Wolt. Ostatnia, najgłębsza analiza baterii.'},
+ {id:'f-final',k:'choice',x:1195,y:630,n:'Co zrobić z baterią',sub:'finał, nie koniec',poi:'lab',s:'propozycja',
+  txt:'Wybór końcowy z SWIAT.md. Opcje otwierają klucze i relacje z filarów.',
+  opts:[['Odtworzyć w większej skali','Wymaga klucza „pamięć Q-2”, żeby nie powtórzyć Popiołu. Szybka naprawa świata, ale ryzyko zostaje.','stale'],
+        ['Oddać ludziom','Wymaga zaufania Szkoły (klucz „pamięć ludzi”) albo skanu u Techników. Ludzie przejmują technologię, a Wolt zostaje nauczycielem.','stale'],
+        ['Zostać w sobie, budować powoli','Zawsze dostępne. Sieć rośnie latami, a świat zmienia się w tempie Wolta.','stale']],
+  sto:'Finał nie zamyka gry. Zmienia, jak świat wygląda dalej i co zostaje do zrobienia.'},
+ {id:'f-kto',k:'side',x:1195,y:740,n:'Kto naprawdę steruje',sub:'zwrot do decyzji',s:'propozycja',
+  txt:'Zwrot w rozważaniu (SWIAT.md): baterią steruje człowiek z drugiej strony, czyli gracz. Ujawnienie tutaj albo po finale, z drobnymi rysami wcześniej.'},
+ // Po fabule
+ {id:'f-swiat',k:'end',x:1390,y:300,n:'Świat po decyzji',sub:'gra trwa',s:'ustalone',
+  txt:'Gra trwa dalej: Sieć do wszystkich bunkrów, kolejne obszary, kolejne pokolenia. Finał zmienia świat, a nie kończy grę.'},
+ {id:'f-klimat',k:'side',x:1390,y:410,n:'Klimat wraca',sub:'dzikie technologie',poi:'wiazacz',s:'nowe',
+  txt:'Wiązacz Popiołu, łapacze mgły, siewnik chmur, ogrody. Mapa zielenieje tam, gdzie Wolt działał.'},
+ {id:'f-pokolenia',k:'core',x:1390,y:520,n:'Pokolenia',sub:'legenda Wolta',s:'ustalone',
+  txt:'Dzieci, które pamiętają Wolta, dorastają i się starzeją. Symbol na ścianach się upraszcza, a kolejne pokolenia traktują Wolta inaczej.'},
+ {id:'f-bezludzi',k:'end',x:1390,y:630,n:'Zakończenie bez ludzi?',sub:'do decyzji',s:'propozycja',
+  txt:'Pomysł Wojtka w rozważaniu: jeśli Wolt naprawia świat za wolno albo śpi za długo, ludzie wymierają, zanim skończy. Tu wynika to z mechaniki czasu (hibernacje), a nie ze scenki.'},
+ {id:'f-kronika',k:'key',x:1390,y:790,n:'Kronika: 100%',sub:'wszystko w jednym przejściu',s:'nowe',
+  txt:'Kronika liczy miejsca, notatki, ludzi, bazy, umiejętności, ciała, pojazdy i rozstrzygnięte wybory. Wybór liczy się jako „rozstrzygnięty” bez względu na opcję, więc 100% da się zrobić w jednym przejściu.'}
+];
+const FEDGES=[
+ ['f-hala','f-stacja'],['f-stacja','f-noc'],['f-noc','f-odjazd'],['f-odjazd','f-r2'],['f-r2','f-rownina'],['f-rownina','f-latarka'],['f-latarka','f-zima'],['f-zima','f-hub'],
+ ['f-hub','f-szkola'],['f-hub','f-technicy'],['f-hub','f-ogrodnicy'],['f-hub','f-latarnia',1],['f-hub','f-tarasy',1],['f-hub','f-glebia',1],
+ ['f-szkola','f-zapora'],['f-zapora','f-popiol'],['f-popiol','f-k1'],['f-szkola','f-dzieci',1],['f-dzieci','f-popiol',1],
+ ['f-technicy','f-roje'],['f-technicy','f-skan'],['f-roje','f-antena'],['f-skan','f-antena'],['f-antena','f-automat'],['f-automat','f-k2'],
+ ['f-ogrodnicy','f-zimakop'],['f-zimakop','f-zmiana'],['f-zmiana','f-k3'],['f-zmiana','f-ogrody',1],
+ ['f-k1','f-droga'],['f-k2','f-droga'],['f-k3','f-droga'],
+ ['f-droga','f-straz'],['f-straz','f-lab'],['f-lab','f-final'],['f-lab','f-kto',1],
+ ['f-final','f-swiat'],['f-swiat','f-klimat'],['f-swiat','f-pokolenia'],['f-pokolenia','f-bezludzi',1],['f-sen','f-bezludzi',1],['f-final','f-kronika',1],
+ ['f-symbol','f-pokolenia',1]
+];
+const FKINDS={core:'rdzeń fabuły',side:'wątek poboczny',choice:'wybór',key:'klucz do finału',gate:'brama',end:'stan świata'};
+
+/* ---------- stan ---------- */
+const S={cats:new Set(Object.keys(CATS)),stats:new Set(Object.keys(STATS)),tier:6,year:6,
+  layers:{ground:false,routes:true,fog:true,names:false},sel:null,selKind:null,tab:'miejsce',view:'mapa'};
+try{const t=localStorage.getItem('pip-map-tier');if(t!==null)S.tier=+t}catch(e){}
+
+/* ---------- pomocnicze ---------- */
+const cssv=n=>getComputedStyle(document.documentElement).getPropertyValue(n).trim();
+function rng(seed){let s=seed*9301+49297;return()=>{s=(s*9301+49297)%233280;return s/233280}}
+function blob(cx,cy,rx,ry,seed,n=14){
+  const r=rng(seed),pts=[];
+  for(let i=0;i<n;i++){const a=i/n*Math.PI*2,k=.82+r()*.3;pts.push([cx+Math.cos(a)*rx*k,cy+Math.sin(a)*ry*k])}
+  let d='';
+  for(let i=0;i<n;i++){
+    const p0=pts[(i-1+n)%n],p1=pts[i],p2=pts[(i+1)%n],p3=pts[(i+2)%n];
+    if(i===0)d+=`M${p1[0].toFixed(1)},${p1[1].toFixed(1)}`;
+    const c1=[p1[0]+(p2[0]-p0[0])/6,p1[1]+(p2[1]-p0[1])/6],c2=[p2[0]-(p3[0]-p1[0])/6,p2[1]-(p3[1]-p1[1])/6];
+    d+=`C${c1[0].toFixed(1)},${c1[1].toFixed(1)} ${c2[0].toFixed(1)},${c2[1].toFixed(1)} ${p2[0].toFixed(1)},${p2[1].toFixed(1)}`;
+  }
+  return d+'Z';
+}
+function smooth(pts){
+  let d=`M${pts[0][0]},${pts[0][1]}`;
+  for(let i=0;i<pts.length-1;i++){
+    const p0=pts[i-1]||pts[i],p1=pts[i],p2=pts[i+1],p3=pts[i+2]||p2;
+    const c1=[p1[0]+(p2[0]-p0[0])/6,p1[1]+(p2[1]-p0[1])/6],c2=[p2[0]-(p3[0]-p1[0])/6,p2[1]-(p3[1]-p1[1])/6];
+    d+=`C${c1[0].toFixed(1)},${c1[1].toFixed(1)} ${c2[0].toFixed(1)},${c2[1].toFixed(1)} ${p2[0]},${p2[1]}`;
+  }
+  return d;
+}
+function shapePath(shape,s=7){
+  switch(shape){
+    case 'square':return `M${-s},${-s}h${2*s}v${2*s}h${-2*s}Z`;
+    case 'circle':return `M${-s},0a${s},${s} 0 1,0 ${2*s},0a${s},${s} 0 1,0 ${-2*s},0`;
+    case 'diamond':return `M0,${-s*1.25}L${s*1.1},0L0,${s*1.25}L${-s*1.1},0Z`;
+    case 'tri':return `M0,${-s*1.2}L${s*1.15},${s*.85}L${-s*1.15},${s*.85}Z`;
+    case 'hex':{let d='';for(let i=0;i<6;i++){const a=Math.PI/3*i+Math.PI/6;d+=(i?'L':'M')+(Math.cos(a)*s*1.05).toFixed(2)+','+(Math.sin(a)*s*1.05).toFixed(2)}return d+'Z'}
+    case 'note':return `M${-s*.8},${-s}h${s*1.1}l${s*.5},${s*.5}v${s*1.5}h${-s*1.6}Z`;
+    case 'plus':{const a=s*.42;return `M${-a},${-s}h${2*a}v${s-a}h${s-a}v${2*a}h${-(s-a)}v${s-a}h${-2*a}v${-(s-a)}h${-(s-a)}v${-2*a}h${s-a}Z`}
+    case 'star':{let d='';for(let i=0;i<10;i++){const a=-Math.PI/2+i*Math.PI/5,rr=i%2?s*.5:s*1.25;d+=(i?'L':'M')+(Math.cos(a)*rr).toFixed(2)+','+(Math.sin(a)*rr).toFixed(2)}return d+'Z'}
+    case 'leaf':return `M0,${-s*1.2}C${s*1.2},${-s*.5} ${s*.9},${s*.8} 0,${s*1.2}C${-s*.9},${s*.8} ${-s*1.2},${-s*.5} 0,${-s*1.2}Z`;
+  }
+}
+function icon(cat,size=12){
+  const c=CATS[cat];
+  return `<svg viewBox="-9 -9 18 18" width="${size}" height="${size}" aria-hidden="true"><path d="${shapePath(c.shape,7)}" fill="var(${c.col})"/></svg>`;
+}
+const reg=id=>REGIONS.find(r=>r.id===id);
+const esc=s=>String(s).replace(/[&<>"]/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[m]));
+const canGo=(tier,g)=>TIERS[tier].ground.includes(g==='las'?'twardy':g);
+
+/* ---------- budowa SVG ---------- */
+const svg=$('#map');
+const defs=el('defs',{},svg);
+defs.innerHTML=`
+ <filter id="fogf" x="0" y="0" width="100%" height="100%"><feTurbulence type="fractalNoise" baseFrequency="0.004 0.009" numOctaves="3" seed="4"/><feColorMatrix type="matrix" values="0 0 0 0 0  0 0 0 0 0  0 0 0 0 0  0 0 0 -1.3 1.05" result="a"/><feFlood style="flood-color:var(--fog)" result="c"/><feComposite in="c" in2="a" operator="in"/></filter>
+ <filter id="grain"><feTurbulence type="fractalNoise" baseFrequency="0.9" numOctaves="2" seed="2"/><feColorMatrix type="saturate" values="0"/><feComponentTransfer><feFuncA type="table" tableValues="0 0.07"/></feComponentTransfer></filter>
+ <pattern id="hatch" width="7" height="7" patternUnits="userSpaceOnUse" patternTransform="rotate(45)"><rect width="7" height="7" fill="var(--bg)" fill-opacity="0.55"/><line x1="0" y1="0" x2="0" y2="7" stroke="var(--muted)" stroke-width="1.2" stroke-opacity="0.55"/></pattern>
+ <mask id="fogmask"><rect width="1200" height="900" fill="white"/></mask>`;
+const gWorld=el('g',{id:'world'},svg);
+el('rect',{x:-400,y:-400,width:2000,height:1700,fill:'var(--land)'},gWorld);
+// morze w lewym górnym rogu
+el('path',{d:'M-400,-400H520C470,-10 330,40 210,30C120,22 60,70 40,160C25,240 0,300 -400,330Z',fill:'var(--sea)'},gWorld);
+const gWaves=el('g',{class:'glyph'},gWorld);
+for(let i=0;i<7;i++){const y=-10+i*22,x=30+i*8;el('path',{d:`M${x},${y}q10,-5 20,0t20,0t20,0`},gWaves)}
+
+const gRegions=el('g',{},gWorld);
+const gGlyph=el('g',{},gWorld);
+const gRoads=el('g',{},gWorld);
+const gRoutes=el('g',{},gWorld);
+const gLabels=el('g',{},gWorld);
+const gPois=el('g',{},gWorld);
+const gFog=el('g',{class:'fogl'},svg);
+el('rect',{x:0,y:0,width:1200,height:900,fill:'var(--fog)',filter:'url(#fogf)',opacity:.55},gFog);
+el('rect',{x:0,y:0,width:1200,height:900,filter:'url(#grain)'},svg).style.pointerEvents='none';
+
+const regionEls={};
+REGIONS.forEach(r=>{
+  const g=el('g',{class:'region','data-id':r.id},gRegions);
+  const d=blob(r.cx,r.cy,r.rx,r.ry,r.seed);
+  const f=el('path',{d,class:'region-fill'},g);
+  el('path',{d,fill:'url(#hatch)',class:'lock'},g);
+  const hit=el('path',{d,class:'region-hit'},g);
+  hit.addEventListener('click',e=>{if(!dragMoved)select('region',r.id)});
+  regionEls[r.id]={g,f};
+  // podpis
+  const lab=el('text',{x:r.cx,y:r.cy-r.ry*.55,'text-anchor':'middle',class:'region-label','font-size':r.rx>200?17:14},gLabels);lab.textContent=r.n;
+  const sub=el('text',{x:r.cx,y:r.cy-r.ry*.55+13,'text-anchor':'middle',class:'region-sub'},gLabels);sub.textContent=r.sub;
+});
+
+// glify terenu (proceduralne)
+(function glyphs(){
+  const R=rng(99);
+  const inside=(r,x,y)=>((x-r.cx)/(r.rx*.8))**2+((y-r.cy)/(r.ry*.8))**2<1;
+  const scatter=(r,n,fn)=>{let k=0,tries=0;while(k<n&&tries<n*20){tries++;const x=r.cx+(R()*2-1)*r.rx,y=r.cy+(R()*2-1)*r.ry;if(inside(r,x,y)){fn(x,y);k++}}};
+  const g=gGlyph;
+  scatter(reg('olszanka'),38,(x,y)=>{el('circle',{cx:x,cy:y,r:2.2+R()*1.6,class:'glyph'},g)});                        // olszyny
+  scatter(reg('rownina'),34,(x,y)=>{el('path',{d:`M${x-11},${y}q11,-7 22,0`,class:'glyph'},g)});                     // wydmy
+  scatter(reg('mierzeja'),16,(x,y)=>{el('path',{d:`M${x-9},${y}q9,-6 18,0`,class:'glyph'},g)});
+  scatter(reg('wies'),18,(x,y)=>{el('path',{d:`M${x-8},${y}q4,-3 8,0t8,0`,class:'glyph'},g)});                       // fale
+  scatter(reg('szyby'),12,(x,y)=>{el('path',{d:`M${x-8},${y}q4,-3 8,0t8,0`,class:'glyph'},g)});
+  scatter(reg('slupy'),34,(x,y)=>{el('path',{d:`M${x-4},${y+5}L${x},${y-7}L${x+4},${y+5}M${x-5},${y-3}h10M${x-3},${y+1}h6`,class:'glyph'},g)}); // kratownice
+  scatter(reg('zalew'),16,(x,y)=>{el('path',{d:`M${x-8},${y+4}l16,-8`,class:'glyph'},g)});                           // połysk szkła
+  scatter(reg('cerkwiska'),46,(x,y)=>{const s=6+R()*8;el('path',{d:`M${x-s},${y+s*.6}L${x},${y-s*.8}L${x+s},${y+s*.6}`,class:'glyph'},g)}); // góry
+  const t=reg('tarasy');for(let i=0;i<7;i++){const y=t.cy-70+i*22;el('path',{d:`M${t.cx-90+i*6},${y}h${160-i*10}`,class:'glyph'},g)} // tarasy
+  scatter(reg('szyby'),10,(x,y)=>{el('path',{d:`M${x-9},${y+4}q9,-14 18,0`,class:'glyph'},g)});                     // hałdy
+})();
+
+// drogi (nasypy) – warstwa twardego gruntu
+[[[560,790],[640,740],[720,665],[615,595],[555,640],[460,650],[365,640]],[[720,665],[835,595],[900,650],[960,680]],[[770,340],[850,390],[930,420]]]
+ .forEach(p=>{const d=smooth(p);el('path',{d,class:'road-edge'},gRoads);el('path',{d,class:'road'},gRoads)});
+
+// trasy
+const routeEls={};
+ROUTES.forEach(rt=>{
+  const pts=[rt.a,...rt.via,rt.b],d=smooth(pts);
+  const p=el('path',{d,class:'route'},gRoutes);
+  const hit=el('path',{d,class:'route-hit'},gRoutes);
+  hit.addEventListener('click',()=>{if(!dragMoved)select('route',rt.id)});
+  rt.len=p.getTotalLength()/PX_PER_KM;
+  routeEls[rt.id]=p;
+});
+
+// echo z Olszanki
+el('circle',{cx:560,cy:790,r:6,class:'echo'},gPois);
+
+// miejsca
+const poiEls={};
+POIS.forEach(p=>{
+  const c=CATS[p.c];
+  const g=el('g',{class:'poi '+p.s,transform:`translate(${p.x},${p.y})`,tabindex:'0',role:'button','aria-label':p.n},gPois);
+  el('circle',{r:14,class:'halo'},g);
+  el('circle',{r:11,class:'ring',stroke:`var(${c.col})`},g);
+  el('path',{d:shapePath(c.shape,6.2),class:'mk',fill:`var(${c.col})`},g);
+  const t=el('text',{x:13,y:4,class:'poi-label'},g);t.textContent=p.n;
+  g.addEventListener('click',e=>{e.stopPropagation();if(!dragMoved)select('poi',p.id)});
+  g.addEventListener('keydown',e=>{if(e.key==='Enter'||e.key===' '){e.preventDefault();select('poi',p.id)}});
+  poiEls[p.id]=g;
+});
+
+// skala i róża
+const gScale=el('g',{transform:'translate(1040,860)'},svg);
+el('path',{d:'M0,0h150M0,-5v10M75,-3v6M150,-5v10',stroke:'var(--ink)','stroke-width':1.5,fill:'none'},gScale);
+const st=el('text',{x:75,y:-9,'text-anchor':'middle','font-family':'IBM Plex Mono,monospace','font-size':10,fill:'var(--muted)'},gScale);st.textContent='1 km';
+const gRose=el('g',{transform:'translate(1150,60)'},svg);
+el('path',{d:'M0,-22L6,0L0,22L-6,0Z',fill:'none',stroke:'var(--muted)'},gRose);
+el('path',{d:'M0,-22L6,0L-6,0Z',fill:'var(--ink)'},gRose);
+const nt=el('text',{y:-27,'text-anchor':'middle','font-family':'Saira Condensed,sans-serif','font-size':12,fill:'var(--ink)'},gRose);nt.textContent='N';
+
+/* ---------- widoczność ---------- */
+function visiblePois(){return POIS.filter(p=>S.cats.has(p.c)&&S.stats.has(p.s)&&p.ch<=S.year)}
+function refresh(){
+  const vis=new Set(visiblePois().map(p=>p.id));
+  POIS.forEach(p=>{
+    const g=poiEls[p.id];
+    g.style.display=vis.has(p.id)?'':'none';
+    g.classList.toggle('dim',p.t>S.tier);
+    g.classList.toggle('sel',S.selKind==='poi'&&S.sel===p.id);
+  });
+  REGIONS.forEach(r=>{
+    const {g,f}=regionEls[r.id];
+    g.classList.toggle('locked',r.t>S.tier);
+    f.setAttribute('fill',S.layers.ground?`var(--g-${r.g})`:'var(--land)');
+    f.setAttribute('stroke-width',S.selKind==='region'&&S.sel===r.id?2.6:1.2);
+    f.setAttribute('stroke',S.selKind==='region'&&S.sel===r.id?'var(--sodium)':'var(--line)');
+  });
+  ROUTES.forEach(rt=>{
+    const p=routeEls[rt.id];
+    p.classList.toggle('t-locked',rt.t>S.tier);
+    p.classList.toggle('sel',S.selKind==='route'&&S.sel===rt.id);
+  });
+  gRoutes.style.display=S.layers.routes?'':'none';
+  gFog.style.opacity=S.layers.fog?1:0;
+  svg.classList.toggle('show-names',S.layers.names);
+  // liczniki
+  document.querySelectorAll('#cats .chip[data-k]').forEach(b=>{const k=b.dataset.k;b.querySelector('.n').textContent=POIS.filter(p=>p.c===k&&S.stats.has(p.s)&&p.ch<=S.year).length});
+  $('#yearOut').textContent=YEARS[S.year];
+  const list=stepList(),i=S.selKind==='poi'?list.findIndex(p=>p.id===S.sel):-1;
+  $('#stepN').textContent=(i<0?'–':i+1)+' / '+list.length;
+  renderLegend();
+}
+function stepList(){return visiblePois().sort((a,b)=>a.ch-b.ch||b.y-a.y)}
+
+/* ---------- pasek filtrów ---------- */
+Object.entries(CATS).forEach(([k,c])=>{
+  const b=document.createElement('button');b.className='chip';b.dataset.k=k;b.setAttribute('aria-pressed','true');
+  b.innerHTML=icon(k)+esc(c.n)+' <span class="n"></span>';
+  b.addEventListener('click',()=>{S.cats.has(k)?S.cats.delete(k):S.cats.add(k);b.setAttribute('aria-pressed',S.cats.has(k));refresh()});
+  b.addEventListener('dblclick',()=>{S.cats=new Set([k]);document.querySelectorAll('#cats .chip').forEach(x=>x.setAttribute('aria-pressed',x.dataset.k===k));refresh()});
+  $('#cats').appendChild(b);
+});
+{const b=document.createElement('button');b.className='chip';b.textContent='wszystkie';b.setAttribute('aria-pressed','true');
+ b.addEventListener('click',()=>{const all=S.cats.size===Object.keys(CATS).length;S.cats=all?new Set():new Set(Object.keys(CATS));document.querySelectorAll('#cats .chip[data-k]').forEach(x=>x.setAttribute('aria-pressed',!all));refresh()});
+ $('#cats').appendChild(b)}
+Object.entries(STATS).forEach(([k,n])=>{
+  const b=document.createElement('button');b.className='chip';b.setAttribute('aria-pressed','true');
+  b.innerHTML=`<svg viewBox="-9 -9 18 18" aria-hidden="true"><circle r="6.5" fill="none" stroke="var(${k==='ustalone'?'--q':k==='nowe'?'--sodium':'--steel'})" stroke-width="2" ${k==='nowe'?'stroke-dasharray="2.5 2"':''}/></svg>${n}`;
+  b.addEventListener('click',()=>{S.stats.has(k)?S.stats.delete(k):S.stats.add(k);b.setAttribute('aria-pressed',S.stats.has(k));refresh()});
+  $('#stats').appendChild(b);
+});
+TIERS.forEach(t=>{
+  const b=document.createElement('button');b.textContent=t.n;b.setAttribute('aria-pressed',t.k===S.tier);b.title=t.drive;
+  b.addEventListener('click',()=>{S.tier=t.k;try{localStorage.setItem('pip-map-tier',t.k)}catch(e){};document.querySelectorAll('#tiers button').forEach((x,i)=>x.setAttribute('aria-pressed',i===t.k));refresh();renderPanel()});
+  $('#tiers').appendChild(b);
+});
+$('#year').addEventListener('input',e=>{S.year=+e.target.value;refresh()});
+[['ground','Podłoże'],['routes','Trasy'],['fog','Mgła'],['names','Nazwy']].forEach(([k,n])=>{
+  const b=document.createElement('button');b.className='chip';b.textContent=n;b.setAttribute('aria-pressed',S.layers[k]);
+  b.addEventListener('click',()=>{S.layers[k]=!S.layers[k];b.setAttribute('aria-pressed',S.layers[k]);refresh()});
+  $('#layers').appendChild(b);
+});
+function renderLegend(){
+  const L=$('#legend');
+  if(S.layers.ground){L.innerHTML=Object.entries(GROUNDS).map(([k,n])=>`<span><i style="background:var(--g-${k})"></i>${n.split(',')[0]}</span>`).join('')}
+  else{L.innerHTML=`<span><i style="background:var(--bg);border-style:dashed"></i>poza zasięgiem</span><span><svg width="18" height="8"><path d="M1,4h16" stroke="var(--ink)" stroke-width="2" opacity=".6"/></svg> trasa</span><span><svg width="18" height="8"><path d="M1,4h16" stroke="var(--g-twardy)" stroke-width="3.5"/></svg> nasyp</span>`}
+}
+
+
+/* ---------- przepływ fabuły ---------- */
+const fsvg=$('#flow');
+const FN={};FLOW.forEach(n=>{n.w=n.w||150;n.h=48;FN[n.id]=n});
+const flowEls={},edgeEls=[];
+(function buildFlow(){
+  const gB=el('g',{},fsvg),gE=el('g',{},fsvg),gN=el('g',{},fsvg);
+  ACTS.forEach((a,i)=>{
+    el('rect',{x:a.x0,y:10,width:a.x1-a.x0,height:975,rx:8,fill:i%2?'var(--surface2)':'var(--bg)',opacity:.55},gB);
+    const t=el('text',{x:a.x0+12,y:36,class:'fl-act'},gB);t.textContent=a.n;
+    const s=el('text',{x:a.x0+12,y:52,class:'fl-actsub'},gB);s.textContent=a.sub;
+  });
+  const A=ACTS[1];
+  LANES.forEach(l=>{
+    el('rect',{x:A.x0+138,y:l.y0,width:A.x1-A.x0-146,height:l.y1-l.y0,rx:6,fill:'none',stroke:`var(${l.col})`,'stroke-opacity':.45,'stroke-dasharray':'2 4'},gB);
+    const t=el('text',{x:A.x0+150,y:l.y0+18,class:'fl-lane',fill:`var(${l.col})`},gB);t.textContent=l.n;
+    const s=el('text',{x:A.x0+150,y:l.y0+31,class:'fl-lanesub'},gB);s.textContent=l.sub;
+  });
+  const side=(n,dir)=>dir==='r'?[n.x+n.w/2,n.y]:dir==='l'?[n.x-n.w/2,n.y]:dir==='b'?[n.x,n.y+n.h/2]:[n.x,n.y-n.h/2];
+  const curve=(a,b)=>{
+    if(Math.abs(a.x-b.x)<20){const p=side(a,b.y>a.y?'b':'t'),q=side(b,b.y>a.y?'t':'b');return {p,q,d:`M${p[0]},${p[1]}L${q[0]},${q[1]}`}}
+    const p=side(a,b.x>a.x?'r':'l'),q=side(b,b.x>a.x?'l':'r'),mx=(p[0]+q[0])/2;
+    return {p,q,d:`M${p[0]},${p[1]}C${mx},${p[1]} ${mx},${q[1]} ${q[0]},${q[1]}`};
+  };
+  FEDGES.forEach(([a,b,soft])=>{
+    const A1=FN[a],B1=FN[b];
+    if(A1.k==='choice'&&!soft&&A1.opts){
+      const n=A1.opts.length;
+      for(let i=0;i<n;i++){const off=(i-(n-1)/2)*7;const {d}=curve({...A1,y:A1.y+off},{...B1,y:B1.y+off*.35});edgeEls.push({a,b,e:el('path',{d,class:'fe opt'},gE)})}
+    }else{const {d}=curve(A1,B1);edgeEls.push({a,b,e:el('path',{d,class:'fe'+(soft?' soft':'')},gE)})}
+  });
+  FLOW.forEach(n=>{
+    const g=el('g',{class:'fn '+n.k,transform:`translate(${n.x},${n.y})`,tabindex:'0',role:'button','aria-label':n.n},gN);
+    const w=n.w,h=n.h;
+    if(n.k==='choice'){const c=12;el('path',{class:'bx',d:`M${-w/2+c},${-h/2}H${w/2-c}L${w/2},0L${w/2-c},${h/2}H${-w/2+c}L${-w/2},0Z`},g)}
+    else el('rect',{class:'bx',x:-w/2,y:-h/2,width:w,height:h,rx:n.k==='end'?22:n.k==='key'?10:4},g);
+    const t=el('text',{x:0,y:-3,'text-anchor':'middle',class:'fn-t'},g);t.textContent=n.n;
+    const s=el('text',{x:0,y:13,'text-anchor':'middle',class:'fn-s'},g);s.textContent=n.sub||'';
+    if(n.opts){const k=el('text',{x:w/2-10,y:-h/2-5,'text-anchor':'end',class:'fn-n'},g);k.textContent=n.opts.length+' opcje'}
+    g.addEventListener('click',()=>select('flow',n.id));
+    g.addEventListener('keydown',e=>{if(e.key==='Enter'||e.key===' '){e.preventDefault();select('flow',n.id)}});
+    flowEls[n.id]=g;
+  });
+})();
+function refreshFlow(){
+  const sel=S.selKind==='flow'?S.sel:null;
+  const near=new Set();
+  if(sel){near.add(sel);FEDGES.forEach(([a,b])=>{if(a===sel)near.add(b);if(b===sel)near.add(a)})}
+  FLOW.forEach(n=>{const g=flowEls[n.id];g.classList.toggle('sel',n.id===sel);g.classList.toggle('dimf',!!sel&&!near.has(n.id))});
+  edgeEls.forEach(({a,b,e})=>e.classList.toggle('hl',!!sel&&(a===sel||b===sel)));
+}
+let flowFitted=false;
+function fitFlowText(){ // getBBox działa dopiero, gdy widok jest widoczny
+  if(flowFitted)return;flowFitted=true;
+  FLOW.forEach(n=>{const g=flowEls[n.id];[[g.querySelector('.fn-t'),n.w-22],[g.querySelector('.fn-s'),n.w-16]].forEach(([t,max])=>{try{if(t&&t.getBBox().width>max){t.setAttribute('textLength',max);t.setAttribute('lengthAdjust','spacingAndGlyphs')}}catch(e){}})});
+}
+function setView(v){
+  S.view=v;
+  $('#v-mapa').setAttribute('aria-pressed',v==='mapa');$('#v-fabula').setAttribute('aria-pressed',v==='fabula');
+  $('#mapbox').hidden=v!=='mapa';$('#flowbox').hidden=v!=='fabula';
+  document.querySelectorAll('.bar').forEach(b=>b.hidden=v!=='mapa');
+  if(v==='fabula')fitFlowText();
+}
+$('#v-mapa').addEventListener('click',()=>{setView('mapa');if(S.selKind==='flow'){S.sel=null;S.selKind=null}refresh();renderPanel()});
+$('#v-fabula').addEventListener('click',()=>{setView('fabula');if(S.selKind!=='flow'){S.sel=null;S.selKind=null;S.tab='fabula'}refreshFlow();renderPanel()});
+function flowHTML(n){
+  const poi=n.poi&&POIS.find(p=>p.id===n.poi);
+  const ins=FEDGES.filter(e=>e[1]===n.id).map(e=>FN[e[0]]),outs=FEDGES.filter(e=>e[0]===n.id).map(e=>FN[e[1]]);
+  const link=x=>`<button class="chip" data-go="flow:${x.id}">${esc(x.n)}</button>`;
+  return `<div class="eyebrow">${esc(FKINDS[n.k])}${poi?' · '+esc(reg(poi.r).n):''}</div><h2>${esc(n.n)}</h2>
+  <div class="tags">${tagStatus(n.s)}${n.sub?`<span class="tag">${esc(n.sub)}</span>`:''}</div>
+  <p>${esc(n.txt)}</p>
+  ${n.opts?`<h3>Opcje i skutki</h3><ul class="opts">${n.opts.map(([o,c,f])=>`<li><b>${esc(o)}</b><span class="fl ${f}">${f==='stale'?'zostaje na zawsze':'da się naprawić'}</span><p>${esc(c)}</p></li>`).join('')}</ul>`:''}
+  ${n.sto?`<div class="need"><b>A 100%:</b> ${esc(n.sto)}</div>`:''}
+  ${poi?`<h3>Na mapie</h3><p><button class="chip" data-go="poi:${poi.id}">${icon(poi.c,10)} ${esc(poi.n)} →</button></p>`:''}
+  ${ins.length?`<h3>Skąd</h3><p>${ins.map(link).join(' ')}</p>`:''}
+  ${outs.length?`<h3>Dokąd</h3><p>${outs.map(link).join(' ')}</p>`:''}`;
+}
+function fabulaHTML(){
+  const nCh=FLOW.filter(n=>n.k==='choice').length;
+  return `<h2>Zasady fabuły</h2>
+  <div class="tags"><span class="tag st-ustalone">ustalone 2026-11-09</span></div>
+  <p><b>Bez craftingu od zera, rozwój przez eksplorację.</b> Wolt niczego nie wymyśla z niczego: znajduje, rozbiera, analizuje i adaptuje to, co zostało. Nowe umiejętności i części przychodzą z miejsc, ludzi i obserwacji, a fabrykator kopiuje tylko to, co Wolt już przeanalizował.</p>
+  <p><b>Nieliniowo, z wyborami, ale do 100%.</b> Po samouczku świat rozchodzi się na trzy filary w dowolnej kolejności. Wybory zmieniają ludzi, teren i finał, ale nigdy nie odcinają miejsc ani umiejętności.</p>
+  <h3>Jak to działa naturalnie</h3>
+  <ul class="small">
+   <li><b>Wybór to sytuacja w świecie</b>, a nie menu: latarka na pomoście, zapora, gniazdo mikrobotów, pusta bateria starego automatu. Gracz często nie wie, że właśnie wybiera.</li>
+   <li><b>Bramą jest podłoże i pojazd</b>, nie skrypt. Echo podpowiada kierunek, ale każdy kierunek jest dobry.</li>
+   <li><b>Co najmniej dwie drogi</b> do każdej umiejętności, miejsca i ważnej rzeczy (np. Wiązacz Popiołu z oswojonego lasu albo od Głębinowców, nasiona z Kopuły albo z Tarasów).</li>
+   <li><b>Część wyborów da się naprawić później</b> (zielone), część zostaje na zawsze (czerwone). Skutki widać w świecie: zalana kładka, przekreślony symbol, zgaszony klasztor.</li>
+   <li><b>Kolejność też jest wyborem.</b> Kto najpierw zbuduje Sieć, nie musi wybierać, kogo zasilić zimą. Kto pójdzie w góry z jednym kluczem, ma mniej opcji w finale i może wrócić po resztę.</li>
+   <li><b>Czas jest stałym wyborem:</b> długość każdej hibernacji decyduje, ilu ludzi doczeka końca.</li>
+  </ul>
+  <h3>100% w jednym przejściu</h3>
+  <p class="small">Kronika liczy miejsca, notatki, ludzi, bazy, umiejętności, ciała, pojazdy i <b>rozstrzygnięte</b> wybory. Każdy z ${nCh} wyborów liczy się bez względu na opcję. Do 100% nie trzeba widzieć wszystkich zakończeń.</p>
+  <h3>Legenda</h3>
+  <div class="flegend"><span><i style="border-color:var(--ink)"></i>rdzeń</span><span><i style="border-style:dashed"></i>wątek poboczny</span><span><i style="border-color:var(--sodium);background:color-mix(in srgb,var(--sodium) 12%,var(--surface2))"></i>wybór</span><span><i style="border-color:var(--q)"></i>klucz do finału</span><span><i style="border-color:var(--sodium);border-style:dashed"></i>brama</span><span><i style="border-color:var(--copper);border-radius:6px"></i>stan świata</span></div>
+  <p class="small muted">Pomarańczowe wiązki linii to opcje wyboru, które wychodzą osobno i dalej łączą się w jedną drogę. Przerywane linie to luźne powiązania. Kliknij węzeł, żeby zobaczyć opcje, skutki i miejsce na mapie.</p>
+  <h3>Wybory (${nCh})</h3>
+  <ul class="list">${FLOW.filter(n=>n.k==='choice').map(n=>`<li><button data-go="flow:${n.id}"><span>${esc(n.n)}</span><span class="rg">${esc(n.sub||'')}</span></button></li>`).join('')}</ul>`;
+}
+
+/* ---------- panel ---------- */
+const tabs=['miejsce','rytm','pojazdy','ironia','fabula'];
+tabs.forEach(t=>$('#tab-'+t).addEventListener('click',()=>{S.tab=t;renderPanel()}));
+function tagStatus(s){return `<span class="tag st-${s}">${STATS[s]}</span>`}
+function travel(rt){
+  const tier=TIERS[S.tier];
+  if(rt.t>S.tier||!canGo(S.tier,rt.g))return `<p class="need">${esc(tier.n)} tu nie przejedzie. Potrzeba co najmniej: <b>${esc(TIERS[rt.t].n)}</b> (${esc(GROUNDS[rt.g])}).</p>`;
+  const sec=rt.len*1000/tier.v,m=Math.floor(sec/60),s=Math.round(sec%60);
+  return `<p class="num">${rt.len.toFixed(1).replace('.',',')} km · ${esc(tier.n)} ok. ${tier.v} m/s · ok. ${m} min ${s} s</p>`;
+}
+function renderPanel(){
+  tabs.forEach(t=>$('#tab-'+t).setAttribute('aria-selected',t===S.tab));
+  const B=$('#pbody');
+  if(S.tab==='miejsce')B.innerHTML=S.selKind==='flow'?flowHTML(FN[S.sel]):S.selKind==='poi'?poiHTML(POIS.find(p=>p.id===S.sel)):S.selKind==='region'?regionHTML(reg(S.sel)):S.selKind==='route'?routeHTML(ROUTES.find(r=>r.id===S.sel)):overviewHTML();
+  if(S.tab==='rytm')B.innerHTML=rytmHTML();
+  if(S.tab==='pojazdy')B.innerHTML=pojazdyHTML();
+  if(S.tab==='ironia')B.innerHTML=ironiaHTML();
+  if(S.tab==='fabula')B.innerHTML=fabulaHTML();
+  B.querySelectorAll('[data-go]').forEach(b=>b.addEventListener('click',()=>{const [k,id]=b.dataset.go.split(':');select(k,id,true)}));
+  B.scrollTop=0;
+}
+function overviewHTML(){
+  const list=stepList();
+  return `<h2>Świat w skrócie</h2>
+  <p>Jeden ciągły świat, mniej więcej 8 na 6 km. Start na południu w Dolinie Olszanki, a dalej świat otwiera się na północ i na boki. Obszary otwierają się dzięki ulepszeniom Wolta i pojazdu, a nie kluczom fabularnym: bramą jest <b>podłoże</b> (popiół, piasek, lód, szkło, błoto, śnieg, woda) i to, czym da się po nim jechać.</p>
+  <p class="small muted">Kliknij miejsce, obszar albo trasę. Strzałki ← → na mapie przeklikują widoczne miejsca po kolei. Podwójne kliknięcie kategorii zostawia tylko ją.</p>
+  <h3>Widoczne miejsca (${list.length})</h3>
+  <ul class="list">${list.map(p=>`<li><button data-go="poi:${p.id}">${icon(p.c)}<span>${esc(p.n)}</span><span class="rg">${esc(reg(p.r).n)}</span></button></li>`).join('')}</ul>`;
+}
+function poiHTML(p){
+  const r=reg(p.r),c=CATS[p.c];
+  const locked=p.t>S.tier;
+  return `<div class="eyebrow">${esc(r.n)}</div><h2>${esc(p.n)}</h2>
+  <div class="tags"><span class="tag">${icon(p.c,10)} ${esc(c.n)}</span>${tagStatus(p.s)}<span class="tag">${esc(YEARS[p.ch])}</span><span class="tag">od: ${esc(TIERS[p.t].n)}</span></div>
+  ${locked?`<p class="need">Wybranym pojazdem (${esc(TIERS[S.tier].n)}) jeszcze tu nie dojedziesz.</p>`:''}
+  <h3>Jak wygląda</h3><p>${esc(p.look)}</p>
+  <h3>Co tu robisz</h3><p>${esc(p.do)}</p>
+  ${p.need?`<div class="need"><b>Wymaga:</b> ${esc(p.need)}</div>`:''}
+  ${(()=>{const fl=FLOW.filter(n=>n.poi===p.id);return fl.length?`<h3>W fabule</h3><p>${fl.map(n=>`<button class="chip" data-go="flow:${n.id}">${n.k==='choice'?'◆ ':''}${esc(n.n)} →</button>`).join(' ')}</p>`:''})()}
+  <h3>Obszar</h3><p><button class="chip" data-go="region:${r.id}">${esc(r.n)} →</button></p>`;
+}
+function regionHTML(r){
+  const pois=POIS.filter(p=>p.r===r.id);
+  const rts=ROUTES.filter(rt=>{const near=pt=>pois.some(p=>Math.hypot(p.x-pt[0],p.y-pt[1])<8);return near(rt.a)||near(rt.b)});
+  return `<div class="eyebrow">Obszar</div><h2>${esc(r.n)}</h2>
+  <div class="tags">${tagStatus(r.s)}<span class="tag">${esc(YEARS[r.ch])}</span><span class="tag">podłoże: ${esc(GROUNDS[r.g])}</span><span class="tag">od: ${esc(TIERS[r.t].n)}</span></div>
+  <div class="swatches" aria-label="Paleta obszaru">${r.pal.map(v=>`<span style="background:var(${v})"></span>`).join('')}</div>
+  <h3>Jak wygląda</h3><p>${esc(r.look)}</p>
+  <h3>Dźwięk</h3><p>${esc(r.sound)}</p>
+  <h3>Zasoby</h3><p>${esc(r.res)}</p>
+  <h3>Zagrożenia</h3><p>${esc(r.danger)}</p>
+  <div class="need"><b>Brama:</b> ${esc(r.gate)}</div>
+  <h3>Miejsca (${pois.length})</h3>
+  <ul class="list">${pois.map(p=>`<li><button data-go="poi:${p.id}">${icon(p.c)}<span>${esc(p.n)}</span></button></li>`).join('')}</ul>
+  ${rts.length?`<h3>Trasy</h3><ul class="list">${rts.map(rt=>`<li><button data-go="route:${rt.id}"><span>${esc(rt.n)}</span><span class="rg">${esc(GROUNDS[rt.g].split(',')[0])}</span></button></li>`).join('')}</ul>`:''}`;
+}
+function routeHTML(rt){
+  return `<div class="eyebrow">Trasa · ${esc(GROUNDS[rt.g])}</div><h2>${esc(rt.n)}</h2>
+  <div class="tags"><span class="tag">od: ${esc(TIERS[rt.t].n)}</span></div>
+  ${travel(rt)}
+  <h3>Co dzieje się po drodze</h3>
+  <ul class="beats">${rt.beats.map(([t,x])=>`<li><time>${t}</time><span>${esc(x)}</span></li>`).join('')}</ul>
+  <p class="small muted">Czasy liczone dla pojazdu, który trasę otwiera. Szybszym pojazdem te same zdarzenia przychodzą częściej, więc trasa robi się gęstsza, a nie pusta.</p>`;
+}
+function rytmHTML(){
+  const rows=TIERS.map(t=>{const a=Math.round(t.v*15),b=Math.round(t.v*30);return `<tr${t.k===S.tier?' style="background:var(--surface2)"':''}><td>${esc(t.n)}</td><td class="num">${t.v}</td><td class="num">${a}–${b} m</td></tr>`}).join('');
+  return `<h2>Rytm podróży: 15–30 sekund</h2>
+  <p>Zasada: co 15–30 s gracz ma coś ciekawego do zrobienia. Na monocyklu działa dosłownie: złom, kartka, port, dźwignia. W pojeździe z żaglem <b>sama jazda jest czynnością</b>, więc rytm układa się w trzy poziomy.</p>
+  <h3>Trzy poziomy</h3>
+  <ul>
+   <li><b>15–30 s, sterowanie.</b> Podmuch albo cisza (wiatr zmienia się co 20–40 s), trym żagla, czytanie podłoża po kolorze (jasny popiół jest sypki, ciemny niesie), przeszkoda, błysk czegoś w wydmie, który ramię zgarnia w biegu.</li>
+   <li><b>1–2 min, okazja do postoju.</b> Słupek serwisowy z resztką prądu, wrak, wiata, notatka. Gracz decyduje, czy staje. Nie musi.</li>
+   <li><b>3–5 min, wydarzenie.</b> Granica podłoża i wymiana kół na płozy, burza pyłowa, człowiek w oddali, gniazdo mikrobotów, zmiana pogody.</li>
+  </ul>
+  <h3>Gęstość mikro-zdarzeń a prędkość</h3>
+  <div class="tblwrap"><table><thead><tr><th>Pojazd</th><th>m/s</th><th>co ile metrów</th></tr></thead><tbody>${rows}</tbody></table></div>
+  <p class="small muted">Odstęp to prędkość × 15–30 s. Szybszy pojazd potrzebuje rzadszych, ale większych rzeczy, widocznych z daleka (wieża, maszt, dym), żeby było do czego celować.</p>
+  <h3>Granice podłoża jako przystanki</h3>
+  <p>Wymiana kół na płozy (ok. 20 s ramieniem) to gotowy przerywnik dokładnie w zasadzie 15–30 s. Granice stawiamy tam, gdzie jest na co popatrzeć: z końca nasypu widać wydmy i Las Słupów. Później sanie „Zefir” robią to z pokładu, Żaglowóz ma płozy chłodzone, a poduszkowiec zdejmuje temat w ogóle. Postęp pojazdu jest więc też postępem w płynności jazdy.</p>
+  <h3>Cisza jest dozwolona</h3>
+  <p>Jak w Inside: odcinek bez bodźca do 45–60 s jest OK, jeśli kończy się widokiem albo dźwiękiem (dzwon z wieży, brzęk drutów). Nie wolno za to: długiej prostej z wciśniętym W i bez wiatru.</p>
+  <p class="small muted">Kliknij trasę na mapie, żeby zobaczyć jej rozpisany rytm.</p>`;
+}
+function pojazdyHTML(){
+  const gk=['twardy','popiol','lod','piasek','szklo','bloto','snieg','woda'];
+  const head=gk.map(k=>`<th title="${esc(GROUNDS[k])}">${esc(GROUNDS[k].split(',')[0].split(' ').slice(-1)[0])}</th>`).join('');
+  const body=TIERS.map(t=>`<tr${t.k===S.tier?' style="background:var(--surface2)"':''}><td>${esc(t.n)}</td>${gk.map(k=>`<td class="c">${t.ground.includes(k)?'●':'·'}</td>`).join('')}</tr>`).join('');
+  return `<h2>Pojazdy i podłoże</h2>
+  <p>Na początku jeździmy żaglem, później dochodzą inne napędy. Każde podłoże wymaga innego „buta”: na piasek i lód trzeba zmienić koła na płozy, na szkło płozy chłodzone, na błoto szerokie koła, na stoki wyciągarkę. Na końcu poduszkowiec kwantowy, który pływa nad wszystkim.</p>
+  <div>${TIERS.map(t=>`<div class="vrow${t.k===S.tier?' cur':''}"><span class="k">${t.k}</span><div><b>${esc(t.n)}</b> <span class="muted small">· ${esc(t.drive)} · ok. ${t.v} m/s</span><p class="small">${esc(t.d)}</p></div></div>`).join('')}</div>
+  <h3>Co po czym jedzie</h3>
+  <div class="tblwrap"><table><thead><tr><th></th>${head}</tr></thead><tbody>${body}</tbody></table></div>
+  <h3>Pomysły na pośrednie napędy</h3>
+  <ul class="small">
+   <li><b>Latawiec trakcyjny</b> między sańmi a Żaglowozem: ciągnie mocniej i wyżej łapie wiatr, ale zahacza o słupy (Las Słupów robi się trudny).</li>
+   <li><b>Silnik z sieci</b>: Żaglowóz ładuje się na stacjach Sieci Siedmiu, więc rozbudowa sieci skraca podróże bez wiatru.</li>
+   <li><b>Szyny po estakadzie</b>: stary tor lub prowadnica w Mieście Tarasów jako „autostrada” dla wózka.</li>
+  </ul>`;
+}
+function ironiaHTML(){
+  return `<h2>Ironia losu</h2>
+  <div class="idea"><p class="small muted" style="margin:0 0 6px">Luźny pomysł Wojtka, rozpisany jako kierunek do decyzji, a nie ustalenie.</p>
+  <p style="margin:0">Świat się poddał. Ludzie po Popiele i zmianach klimatu cofnęli się w rozwoju: żyją pod ziemią, palą ogniska wśród maszyn, których nie umieją uruchomić. Jedyną rzeczą, która nadal robi postęp, jest jeden robot. Wolt naprawia, ulepsza, wymyśla technologie, których ludziom zabrakło, i powoli wyprowadza ich z powrotem na powierzchnię.</p></div>
+  <h3>Jak to pasuje do kanonu</h3>
+  <ul>
+   <li><b>Ironia podwójna.</b> Popiół spowodowała technologia z tej samej rodziny co bateria (Q-2). Ratuje ich to samo, czego się boją. Opór ludzi ma więc dobry powód, a nie jest tylko przeszkodą.</li>
+   <li><b>Cofnięcie, ale nie jaskinie.</b> Bunkry z lampkami oliwnymi, Tarasowi palący ogniska pod farmami pionowymi, Głębinowcy przy ciepłej wodzie. Czuć „epokę kamienia” wśród resztek przyszłości, bez dosłownych jaskiniowców.</li>
+   <li><b>Wolt nie rozumie ich, oni nie rozumieją techniki.</b> Słownik i odkodowywanie pisma działa w obie strony: Wolt uczy się ludzi, a ludzie uczą się od Wolta maszyn.</li>
+  </ul>
+  <h3>Dzikie technologie przywracające klimat</h3>
+  <p class="small">Na mapie w kategorii <b>Klimat</b> (etap „Po fabule”). To długi łuk po głównej fabule: świat na mapie zielenieje z każdym rokiem.</p>
+  <ul>
+   <li><button class="chip" data-go="poi:wiazacz">Wiązacz Popiołu</button> oswojone mikroboty przerabiają popiół w glebę.</li>
+   <li><button class="chip" data-go="poi:lapacze">Łapacze mgły</button> czysta woda bez pomp.</li>
+   <li><button class="chip" data-go="poi:siew">Siewnik chmur</button> deszcz z nadwyżki sieci.</li>
+   <li><button class="chip" data-go="poi:ogrody">Ogrody za Kopułą</button> nasiona wychodzą na zewnątrz.</li>
+  </ul>
+  <h3>Pytania do decyzji</h3>
+  <ul class="small">
+   <li>Czy przywrócenie klimatu to główny cel gry po fabule, czy tylko tło?</li>
+   <li>Czy ludzie mają w końcu sami przejąć technologie (Wolt uczy), czy Wolt zostaje jedynym, który je obsługuje?</li>
+   <li>Ile oporu: sabotaż sieci, kradzieże, a może frakcja, która chce zostać pod ziemią?</li>
+  </ul>`;
+}
+
+/* ---------- wybór ---------- */
+function select(kind,id,center){
+  S.selKind=kind;S.sel=id;S.tab='miejsce';
+  try{history.replaceState(null,'','#'+id)}catch(e){}
+  if(kind==='flow'){if(S.view!=='fabula')setView('fabula');refreshFlow();renderPanel();
+    if(center){const n=FN[id],fb=$('#flowbox');fb.scrollTo({left:Math.max(0,n.x-fb.clientWidth/2),top:Math.max(0,n.y-fb.clientHeight/2),behavior:'smooth'})}
+    return}
+  if(S.view!=='mapa'){setView('mapa');refreshFlow()}
+  refresh();renderPanel();
+  if(center){let x,y;if(kind==='poi'){const p=POIS.find(q=>q.id===id);x=p.x;y=p.y}else if(kind==='region'){const r=reg(id);x=r.cx;y=r.cy}else{const rt=ROUTES.find(q=>q.id===id);x=(rt.a[0]+rt.b[0])/2;y=(rt.a[1]+rt.b[1])/2}
+    if(x<vb.x||x>vb.x+vb.w||y<vb.y||y>vb.y+vb.h){vb.x=x-vb.w/2;vb.y=y-vb.h/2;applyVB()}}
+}
+function step(d){const list=stepList();if(!list.length)return;let i=S.selKind==='poi'?list.findIndex(p=>p.id===S.sel):-1;i=(i+d+list.length)%list.length;select('poi',list[i].id,true);poiEls[list[i].id].focus({preventScroll:true})}
+$('#prev').addEventListener('click',()=>step(-1));
+$('#next').addEventListener('click',()=>step(1));
+$('#mapbox').addEventListener('keydown',e=>{if(e.key==='ArrowRight'){e.preventDefault();step(1)}if(e.key==='ArrowLeft'){e.preventDefault();step(-1)}if(e.key==='Escape'){S.sel=null;S.selKind=null;refresh();renderPanel()}});
+
+/* ---------- przesuwanie i zoom ---------- */
+const vb={x:0,y:0,w:1200,h:900};
+function applyVB(){vb.w=Math.max(240,Math.min(1200,vb.w));vb.h=vb.w*.75;vb.x=Math.max(-100,Math.min(1300-vb.w,vb.x));vb.y=Math.max(-80,Math.min(980-vb.h,vb.y));svg.setAttribute('viewBox',`${vb.x} ${vb.y} ${vb.w} ${vb.h}`)}
+function zoom(f,cx,cy){if(cx===undefined){cx=vb.x+vb.w/2;cy=vb.y+vb.h/2}const nw=Math.max(240,Math.min(1200,vb.w*f)),k=nw/vb.w;vb.x=cx-(cx-vb.x)*k;vb.y=cy-(cy-vb.y)*k;vb.w=nw;applyVB()}
+function toSvg(e){const r=svg.getBoundingClientRect();const sc=Math.max(vb.w/r.width,vb.h/r.height);const ox=(r.width*sc-vb.w)/2,oy=(r.height*sc-vb.h)/2;return [vb.x+(e.clientX-r.left)*sc-ox,vb.y+(e.clientY-r.top)*sc-oy,sc]}
+svg.addEventListener('wheel',e=>{e.preventDefault();const [x,y]=toSvg(e);zoom(e.deltaY>0?1.15:1/1.15,x,y)},{passive:false});
+let drag=null,dragMoved=false;
+svg.addEventListener('pointerdown',e=>{drag={x:e.clientX,y:e.clientY,vx:vb.x,vy:vb.y,sc:toSvg(e)[2]};dragMoved=false});
+window.addEventListener('pointermove',e=>{if(!drag)return;const dx=e.clientX-drag.x,dy=e.clientY-drag.y;if(!dragMoved&&Math.hypot(dx,dy)>5){dragMoved=true;svg.classList.add('drag')}if(dragMoved){vb.x=drag.vx-dx*drag.sc;vb.y=drag.vy-dy*drag.sc;applyVB()}});
+window.addEventListener('pointerup',()=>{drag=null;svg.classList.remove('drag');setTimeout(()=>dragMoved=false,0)});
+$('#zin').addEventListener('click',()=>zoom(1/1.4));
+$('#zout').addEventListener('click',()=>zoom(1.4));
+$('#zreset').addEventListener('click',()=>{vb.x=0;vb.y=0;vb.w=1200;applyVB()});
+
+/* ---------- start ---------- */
+document.querySelectorAll('#tiers button').forEach((x,i)=>x.setAttribute('aria-pressed',i===S.tier));
+const h=location.hash.slice(1);
+if(FLOW.some(n=>n.id===h))select('flow',h,true);else if(h==='fabula'){setView('fabula');S.tab='fabula'}else if(POIS.some(p=>p.id===h))select('poi',h);else if(REGIONS.some(r=>r.id===h))select('region',h);else if(ROUTES.some(r=>r.id===h))select('route',h);
+refresh();refreshFlow();renderPanel();
+})();
+</script>
+</body></html>
