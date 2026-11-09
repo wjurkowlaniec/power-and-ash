@@ -421,6 +421,10 @@ Gra trwa wiele lat, więc to, co Wolt robi (albo zaniedbuje), powinno zostawać 
 | **Sam Wolt** | Patyna, łaty i wymienione części zostają na modelu. Po latach gracz widzi na ciele historię swoich napraw. Stare ciała zostają w bazach jak relikwie. |
 | **Pamięć świata** | Miejsca, gdzie coś się stało (grób jelenia, pierwsza zapalona lampa, rozbity wózek), zostają na mapie jako małe znaki. |
 
+![Symbol Wolta w trzech pokoleniach: rysunek dziecka, znak, piktogram](img/koncepty/symbol-wolta.jpg)
+
+Szkic: `img/koncepty/symbol-wolta.html` (`?sciana` albo `?zblizenie`). Prompt do generatora obrazów jest w `/mnt/project-files/koncepty/symbol-wolta/prompt-openai.md`.
+
 Jak to policzyć technicznie (do decyzji później): świat ma prosty „zegar starzenia” na obiekt, który tyka szybciej przy wilgoci i braku opieki, a hibernacja przelicza go skokowo.
 
 ## Mapa świata i obszary
