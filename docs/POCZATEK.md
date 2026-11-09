@@ -17,7 +17,7 @@ Czarny ekran. Wiatr, skrzypienie blachy, kapanie wody. Co kilka sekund głuchy, 
 
 Puls się wzmacnia, w ciemności pojawia się bladozielona kropka (jedyny kolor na ekranie). Szum obrazu, jak w starej kamerze. Bateria sięga przez kabel diagnostyczny do jedynej maszyny podpiętej do stanowiska: pustego automatu serwisowego na jednym kole, który stoi w kołysce. Obraz to widok z jego kamery, na **4% jego własnej rezerwy**. To pierwsze zdalne sterowanie w grze, choć gracz jeszcze tego nie wie.
 
-Bez napisów i bez logo. Tytuł gry pojawia się dopiero w Scenie 5, gdy Wolt pierwszy raz wyjeżdża pojazdem na równinę.
+Bez napisów i bez logo. Tytuł gry pojawia się dopiero w Scenie 3, gdy zapada pierwsza noc (decyzja Wojtka 2026-11-09, wcześniej był w Scenie 5).
 
 ## Scena 1. Hala pomiarowa (samouczek ruchu, ok. 5 min)
 
@@ -62,7 +62,7 @@ Pierwsza noc przychodzi niezależnie od postępu, zwykle w trakcie Sceny 2 albo 
 
 **Czego uczy:** temperatura i wilgotność Wolta, lampa, pierwsze zagrożenie.
 
-1. Robi się ciemno i zimno. Na łąkę wchodzi mgła znad zbiornika. Wilgotność Wolta rośnie (osiada rosa), a gdy przekroczy próg, ruchy robią się szarpane i pojawiają się iskry.
+1. **Zapada pierwsza noc i tu pojawia się tytuł gry** (Wojtek 2026-11-09). Słońce chowa się za wzgórzem, lampa Wolta zapala się sama, kamera na chwilę się oddala nad stacją, a w ciszy i mgle wyłania się napis „Popiół i Prąd”. Robi się ciemno i zimno. Na łąkę wchodzi mgła znad zbiornika. Wilgotność Wolta rośnie (osiada rosa), a gdy przekroczy próg, ruchy robią się szarpane i pojawiają się iskry.
 2. Wolt może **się zgrzać** (przytrzymanie klawisza): suszy się, ale pali energię. Albo schować się w stacji przy maszynowni, gdzie jest ciepło. Gracz uczy się, że noc na zewnątrz jest droga.
 3. **Mikroboty:** na kablu z turbiny pojawiają się małe, migające punkciki, jak świetliki. Przyczepiają się do kabla i podjadają prąd, a fabrykator zwalnia. Światło lampy Wolta je płoszy (rozpierzchają się z cichym szczebiotem). Na tym etapie są niegroźne, raczej zagadkowe i trochę piękne.
 4. Rano kabel ma w kilku miejscach nadgryzioną izolację. Pierwszy znak, że kable się zużywają.
@@ -95,7 +95,7 @@ Rozdzielnia polowa R-2 stoi w kotlinie: kontenery, ogrodzenie, rząd paneli sło
 3. **Dokowanie:** Wolt wjeżdża monocyklem na platformę, a koło wskakuje w gniazdo i zatrzaskuje się. Albo doczepia wózek do haka i ciągnie go jak przyczepkę, ale wtedy wózek jest tylko ładunkiem, a nie napędem. Gracz szybko odkrywa, że po zadokowaniu bateria steruje wózkiem jak swoim ciałem.
 4. **Podłączenie i ładowanie:** kabel z szafy rozdzielni do portu wózka. Trasa wokół kontenerów ma ok. 18 m, a prosto się nie da. Bateria wózka ładuje się powoli (w czasie gry: popołudnie), a w tym czasie Wolt rozbiera złom w okolicy.
 5. W kontenerze leży notatka technika z R-2 (nieczytelna, ale z rysunkiem wskaźnika baterii zakreślonego na 80% i ikonką ognia; po odkodowaniu: „wózek ciągnie w lewo, nie ładuj go powyżej 80%, bo grzeje się pakiet”). Dziennik trasy wózka jest w pamięci wózka, w formacie maszyn, więc bateria go rozumie: ostatni kurs, punkt na równinie, którego nie ma na mapie stacji.
-6. **Odjazd:** z naładowanym wózkiem Wolt wyjeżdża z kotliny. Kamera się oddala, a przed nim jest **Popielna Równina**: płaska, szara, z wydmami popiołu, słupami i resztkami dróg. **Tutaj pojawia się tytuł gry.** Od tego momentu świat jest otwarty.
+6. **Odjazd:** z naładowanym wózkiem Wolt wyjeżdża z kotliny. Kamera się oddala, a przed nim jest **Popielna Równina**: płaska, szara, z wydmami popiołu, słupami i resztkami dróg. Od tego momentu świat jest otwarty.
 
 **Stan po scenie:** Wolt ma pojazd, który jedzie dalej i szybciej, wozi ładunek i ma własną baterię. Ale wózek jest na kółkach: grzęźnie w sypkim popiele, a na wydmach trzeba szukać twardego podłoża. To pierwsza brama metroidvanii (płozy, a potem żagiel).
 
