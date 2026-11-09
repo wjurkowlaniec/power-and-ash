@@ -55,9 +55,16 @@ Oznaczenia w SWIAT.md: **[ustalone]** to decyzja Wojtka, **[propozycja]** to szk
 | Żadnych „biednych brył”: wszystko ma być porządnie zamodelowane w kierunku artystycznym gry. Jeśli brakuje modeli, agent mówi czego, a Wojtek ich poszuka. Demo używa paczek KayKit (CC0, klonowane z GitHuba) i szczegółowych modeli w kodzie. | [DEMO-WARSZTAT.md: Modele](DEMO-WARSZTAT.md#modele), [CREDITS.md](../CREDITS.md) |
 | Pomysły na później, bez implementacji: bardzo długi kabel z centralnej elektrowni, robot pomocnik (jeździ za Woltem, kładzie kable i drogi na zlecenie), możliwy zwrot w stronę „restoration”. | [POMYSLY.md](POMYSLY.md) |
 
+## 2026-11-09
+
+| Decyzja | Gdzie |
+|---|---|
+| **Pomysł w rozważaniu, nie decyzja.** Zwrot fabularny: bateria jest „kwantowa” albo nieznanego pochodzenia, a później okazuje się, że steruje nią człowiek z innego wymiaru, jakby z innego wszechświata. Uwagi agentów: dobry pomysł, ale słowo „multiwersum” grozi kliszą; lepiej nie wyjaśniać połączenia do końca i dać człowiekowi po drugiej stronie małe, konkretne życie; pasuje do etapowego odkodowywania notatek. | [SWIAT.md: Pomysł w rozważaniu](SWIAT.md#pomysł-w-rozważaniu-kto-naprawdę-steruje-do-decyzji-wojtek-2026-11-09) |
+
 ## Czeka na decyzję
 
 - Czy popiół jako skutek katastrofy Q-2 jest OK.
+- Czy wchodzi zwrot „człowiek z innego wymiaru steruje baterią” (2026-11-09).
 - Ślad na równinie i czy zadokowany wózek to ciało, czy osobny pojazd.
 - Mapa świata (później, Wojtek chce ją narysować sam).
 - Czy w grze jest crafting od zera (demo „Warsztat” go testuje, a SWIAT.md ustala „bez pełnego craftingu od zera”) i czy rozwój ma widoczne drzewko. [DEMO-WARSZTAT.md: Czeka na decyzję](DEMO-WARSZTAT.md#czeka-na-decyzję)

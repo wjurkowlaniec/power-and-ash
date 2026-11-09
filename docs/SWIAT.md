@@ -72,6 +72,18 @@ Umiejętności baterii (kolejność orientacyjna):
 | **Pamięć miejsc** | zapasowe ciała w bazach, do których bateria wraca po śmierci | propozycja |
 | **Dobieranie** | bateria powoli sama się ładuje z otoczenia, ale przy tym coś „wysysa” (rośliny więdną, mikroboty uciekają). Echo katastrofy Q-2. | propozycja |
 
+### Pomysł w rozważaniu: kto naprawdę steruje **[do decyzji, Wojtek 2026-11-09]**
+
+**Pomysł Wojtka (zwrot fabularny):** na początku bateria jest „kwantowa” albo po prostu nieznanego pochodzenia. Później okazuje się, że steruje nią człowiek z innego wymiaru, połączony z nią w jakiś sposób, jakby z innego wszechświata.
+
+**Uwagi agentów (nie decyzja):**
+
+- **Mocna strona:** pasuje do tego, że gracz od pierwszej sekundy *jest* baterią. Zwrot nadaje graczowi rolę w świecie: to Ty jesteś tym człowiekiem po drugiej stronie. Samotność jak w Inside dostaje drugie dno, bo samotny jest też ktoś po drugiej stronie.
+- **Ryzyko:** słowo „multiwersum” jest wytarte. Lepiej, żeby to połączenie nigdy nie zostało do końca wyjaśnione, a człowiek po drugiej stronie miał własne, małe, konkretne życie (pokój, pora dnia, kubek, zmęczenie), widoczne tylko we fragmentach.
+- **Połączenie z notatkami:** bateria odkodowuje pismo etapami z korpusu (patrz [Notatki i archiwum](#notatki-i-archiwum)). Korpus może powoli odsłaniać, że wśród zapisków są ślady języka i myśli tamtego człowieka, np. dopiski, których nikt w tym świecie nie mógł zrobić.
+- **Do pogodzenia z kanonem:** dziś bateria „jest inteligencją”, a system uczący się liczy w tle. Wersja zgodna: bateria jest łączem i pamięcią, a decyzje (gracz) przychodzą z drugiej strony. Wtedy „uczenie się” to uczenie się nawzajem obu stron. Popiół po Q-2 mógłby być skutkiem połączenia, które poszło źle.
+- **Kiedy ujawnić:** późno (rozdział „Zorza” albo po nim), z wcześniejszymi drobnymi rysami, np. Echo czasem odpowiada na coś, czego nie ma na mapie.
+
 ## Ciała i transfer
 
 **[ustalone kierunkowo, 2026-11-06]** To bateria jest inteligencją i to ona naprawdę steruje. Ciało jest narzędziem. Bateria **zawsze jest w Tobie**, nie oddajesz jej nikomu, ale możesz **zdalnie sterować innymi maszynami** i z czasem **przenosić się do innych ciał**. Ciało ma wspólną ramę bazową, którą się rozbudowuje: najpierw monocykl, potem Latarnik i dalej.
@@ -495,6 +507,7 @@ Decyzja na końcu nie zamyka gry, tylko zmienia świat dalej.
 
 ## Otwarte pytania
 
+- Czy wchodzi zwrot „kto naprawdę steruje baterią” (człowiek z innego wymiaru), patrz [Pomysł w rozważaniu](#pomysł-w-rozważaniu-kto-naprawdę-steruje-do-decyzji-wojtek-2026-11-09).
 - Czy Popiół jako skutek katastrofy Q-2 jest OK? To mocno ustawia ton i stosunek ludzi do baterii.
 - Kto budzi Wolta i dlaczego teraz.
 - Ile umiejętności baterii i w jakiej kolejności.
