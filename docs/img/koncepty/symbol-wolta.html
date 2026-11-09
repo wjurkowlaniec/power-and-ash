@@ -1,0 +1,110 @@
+<!doctype html><html><head><meta charset="utf-8"><style>html,body{margin:0;background:#000}canvas{display:block}</style></head><body>
+<canvas id="c" width="1600" height="900"></canvas>
+<script>
+// deterministic rng
+let seed=7;function R(){seed=(seed*16807)%2147483647;return (seed-1)/2147483646}
+const c=document.getElementById('c'),W=c.width,H=c.height;let g=c.getContext('2d');
+const L=document.createElement('canvas');L.width=W;L.height=H;const wallG=g;
+const mode=location.search.slice(1)||'sciana';
+// ---- concrete wall
+function wall(){
+  g.fillStyle='#6f6a62';g.fillRect(0,0,W,H);
+  const img=g.getImageData(0,0,W,H),d=img.data;
+  for(let i=0;i<d.length;i+=4){const n=(R()-0.5)*26;d[i]+=n;d[i+1]+=n;d[i+2]+=n*0.9}
+  g.putImageData(img,0,0);
+  // formwork board seams
+  g.strokeStyle='rgba(40,36,32,0.35)';g.lineWidth=2;
+  for(let y=150;y<H;y+=180){g.beginPath();g.moveTo(0,y+R()*4);g.lineTo(W,y+R()*4);g.stroke()}
+  for(let x=0;x<W;x+=400){g.beginPath();g.moveTo(x+R()*6,0);g.lineTo(x+R()*6,H);g.stroke()}
+  // damp streaks running down from seams
+  for(let k=0;k<260;k++){const x=R()*W,y=150+Math.floor(R()*4)*180,w=2+R()*10,h=40+R()*260;
+    const gr=g.createLinearGradient(0,y,0,y+h);gr.addColorStop(0,'rgba(40,37,32,'+(0.10+R()*0.18)+')');gr.addColorStop(1,'rgba(40,37,32,0)');
+    g.fillStyle=gr;g.fillRect(x,y,w,h)}
+  // big soft damp patches
+  for(let k=0;k<10;k++){const x=R()*W,y=R()*H,r=80+R()*220;const gr=g.createRadialGradient(x,y,0,x,y,r);gr.addColorStop(0,'rgba(50,46,40,0.18)');gr.addColorStop(1,'rgba(50,46,40,0)');g.fillStyle=gr;g.fillRect(x-r,y-r,2*r,2*r)}
+  // ash dust on bottom
+  const ash=g.createLinearGradient(0,H*0.78,0,H);ash.addColorStop(0,'rgba(190,186,176,0)');ash.addColorStop(1,'rgba(190,186,176,0.35)');
+  g.fillStyle=ash;g.fillRect(0,H*0.78,W,H*0.22);
+  // cracks
+  g.strokeStyle='rgba(25,22,20,0.55)';g.lineWidth=1.3;
+  for(let k=0;k<7;k++){let x=R()*W,y=R()*H;g.beginPath();g.moveTo(x,y);for(let s=0;s<14;s++){x+=(R()-0.5)*30;y+=8+R()*18;g.lineTo(x,y)}g.stroke()}
+}
+// wobbly line helper
+function wob(pts,j,w,col,a=1){g.save();g.globalAlpha=a;g.strokeStyle=col;g.lineWidth=w;g.lineCap='round';g.lineJoin='round';
+  for(let pass=0;pass<2;pass++){g.beginPath();pts.forEach((p,i)=>{const x=p[0]+(R()-0.5)*j,y=p[1]+(R()-0.5)*j;i?g.lineTo(x,y):g.moveTo(x,y)});g.stroke()}g.restore()}
+function circ(cx,cy,r,n=40){const p=[];for(let i=0;i<=n;i++){const t=i/n*Math.PI*2;p.push([cx+Math.cos(t)*r,cy+Math.sin(t)*r])}return p}
+// paint texture: mask by dry-brush noise
+function dryBrush(x,y,w,h,amount){const img=g.getImageData(x,y,w,h),d=img.data,base=g.getImageData(x,y,w,h);for(let i=0;i<d.length;i+=4){if(R()<amount){d[i]=d[i]*0.6+111*0.4;d[i+1]=d[i+1]*0.6+106*0.4;d[i+2]=d[i+2]*0.6+98*0.4}}g.putImageData(img,x,y)}
+// 1. child's chalk drawing: Wolt on one wheel with lamp on boom, people, sun
+function child(ox,oy,s){
+  const ch='rgba(232,228,214,0.85)';
+  wob(circ(ox,oy+90*s,38*s,30),5*s,4*s,ch);                 // wheel
+  wob(circ(ox,oy+90*s,8*s,10),3*s,3*s,ch);
+  wob([[ox-28*s,oy+52*s],[ox-26*s,oy-30*s],[ox+26*s,oy-32*s],[ox+30*s,oy+50*s],[ox-28*s,oy+52*s]],6*s,4*s,ch); // body
+  wob([[ox-12*s,oy-8*s],[ox+12*s,oy-8*s]],3*s,6*s,'rgba(240,200,110,0.9)'); // eye window
+  wob([[ox+20*s,oy-30*s],[ox+40*s,oy-110*s],[ox+95*s,oy-120*s]],6*s,4*s,ch); // boom
+  wob([[ox+95*s,oy-120*s],[ox+95*s,oy-98*s]],3*s,3*s,ch);
+  g.save();g.globalAlpha=0.9;g.fillStyle='rgba(240,180,80,0.85)';g.beginPath();g.arc(ox+95*s,oy-88*s,11*s,0,7);g.fill();g.restore(); // lamp (orange chalk)
+  wob([[ox+80*s,oy-75*s],[ox+60*s,oy-40*s]],4*s,2*s,'rgba(240,180,80,0.6)');wob([[ox+110*s,oy-75*s],[ox+130*s,oy-40*s]],4*s,2*s,'rgba(240,180,80,0.6)');
+  // arm
+  wob([[ox-28*s,oy+10*s],[ox-70*s,oy+25*s],[ox-80*s,oy+5*s]],5*s,4*s,ch);
+  // people stick figures holding hands with the arm
+  const fig=(x,y,h)=>{wob(circ(x,y-h,h*0.18,12),3*s,3*s,ch);wob([[x,y-h*0.82],[x,y-h*0.35]],3*s,3*s,ch);wob([[x,y-h*0.35],[x-h*0.18,y]],3*s,3*s,ch);wob([[x,y-h*0.35],[x+h*0.18,y]],3*s,3*s,ch);wob([[x-h*0.25,y-h*0.6],[x+h*0.25,y-h*0.6]],3*s,3*s,ch)};
+  fig(ox-110*s,oy+128*s,110*s);fig(ox-165*s,oy+128*s,80*s);
+  // ground line + sun
+  wob([[ox-210*s,oy+130*s],[ox+170*s,oy+130*s]],6*s,3*s,ch,0.7);
+  wob(circ(ox-170*s,oy-120*s,22*s,16),4*s,3*s,ch,0.8);
+  for(let k=0;k<8;k++){const t=k/8*6.283;wob([[ox-170*s+Math.cos(t)*30*s,oy-120*s+Math.sin(t)*30*s],[ox-170*s+Math.cos(t)*44*s,oy-120*s+Math.sin(t)*44*s]],2*s,2.5*s,ch,0.8)}
+}
+// 2. middle generation sign: ochre paint, simplified figure inside a ring
+function sign(ox,oy,s){
+  const col='#b5874a';
+  g.save();g.strokeStyle=col;g.lineWidth=13*s;g.lineCap='round';
+  g.beginPath();g.arc(ox,oy+70*s,42*s,0,7);g.stroke();                // wheel
+  g.beginPath();g.moveTo(ox,oy+28*s);g.lineTo(ox,oy-60*s);g.stroke();   // body
+  g.beginPath();g.moveTo(ox,oy-60*s);g.quadraticCurveTo(ox+10*s,oy-125*s,ox+70*s,oy-120*s);g.stroke(); // boom
+  g.fillStyle=col;g.beginPath();g.arc(ox+70*s,oy-92*s,15*s,0,7);g.fill(); // lamp
+  g.lineWidth=5*s;g.globalAlpha=0.8;
+  for(const a of [-0.5,0,0.5]){g.beginPath();g.moveTo(ox+70*s+Math.sin(a)*24*s,oy-92*s+Math.cos(a)*24*s);g.lineTo(ox+70*s+Math.sin(a)*48*s,oy-92*s+Math.cos(a)*48*s);g.stroke()}
+  g.restore();
+  // drips
+  g.save();g.strokeStyle=col;g.globalAlpha=0.75;g.lineCap='round';
+  for(const [x,y,l] of [[ox-42*s,oy+75*s,50],[ox+2*s,oy+112*s,70],[ox+70*s,oy-78*s,40],[ox+40*s,oy+80*s,30]]){g.lineWidth=(3+R()*3)*s;g.beginPath();g.moveTo(x,y);g.lineTo(x+R()*2,y+l*s);g.stroke()}
+  g.restore();
+  // tally marks under it (votive, people counting visits)
+  wob([[ox-80*s,oy+150*s],[ox-80*s,oy+180*s]],2,4*s,'rgba(30,28,25,0.7)');wob([[ox-68*s,oy+150*s],[ox-68*s,oy+180*s]],2,4*s,'rgba(30,28,25,0.7)');wob([[ox-56*s,oy+150*s],[ox-56*s,oy+180*s]],2,4*s,'rgba(30,28,25,0.7)');wob([[ox-86*s,oy+175*s],[ox-48*s,oy+155*s]],2,4*s,'rgba(30,28,25,0.7)');
+}
+// 3. final pictogram: ring + vertical stroke + hook with dot. Rust red, worn
+function picto(ox,oy,s,col='#8e3b2a',a=1){
+  g.save();g.globalAlpha=a;g.strokeStyle=col;g.fillStyle=col;g.lineWidth=16*s;g.lineCap='round';g.lineJoin='round';
+  g.beginPath();g.arc(ox,oy+50*s,40*s,0,7);g.stroke();                       // koło
+  g.beginPath();g.moveTo(ox,oy+10*s);g.lineTo(ox,oy-60*s);g.quadraticCurveTo(ox+2*s,oy-95*s,ox+45*s,oy-95*s);g.stroke(); // wysięgnik
+  g.lineWidth=6*s;g.beginPath();g.moveTo(ox+45*s,oy-95*s);g.lineTo(ox+45*s,oy-72*s);g.stroke(); // zawieszenie
+  g.beginPath();g.arc(ox+45*s,oy-58*s,14*s,0,7);g.fill();                    // lampa
+  g.restore();
+}
+function wear(x,y,w,h,amt){g.save();g.globalCompositeOperation='source-atop';for(let k=0;k<w*h*amt/40;k++){const px=x+R()*w,py=y+R()*h,r=1+R()*4;g.fillStyle='rgba(112,106,98,'+(0.5+R()*0.5)+')';g.beginPath();g.ellipse(px,py,r*1.8,r,R()*3,0,7);g.fill()}g.restore()}
+function lamp(){ // warm sodium light from upper left, dark vignette
+  const l=g.createRadialGradient(W*0.42,H*0.30,50,W*0.45,H*0.45,W*0.75);
+  l.addColorStop(0,'rgba(255,190,110,0.20)');l.addColorStop(0.5,'rgba(30,25,20,0.10)');l.addColorStop(1,'rgba(5,5,6,0.82)');
+  g.fillStyle=l;g.fillRect(0,0,W,H);
+  // fog/haze
+  g.fillStyle='rgba(150,150,145,0.06)';g.fillRect(0,0,W,H);
+}
+wall();
+g=L.getContext('2d');
+if(mode==='sciana'){
+  child(330,430,1.15); wear(80,200,520,420,0.12);
+  sign(810,420,1.25); wear(640,220,340,420,0.22);
+  picto(1300,440,1.45); wear(1180,280,260,330,0.30);
+  // small labels (scratched numerals, as if years)
+  g.font='italic 22px Georgia';g.fillStyle='rgba(225,220,205,0.55)';
+  g.fillText('I',330,720);g.fillText('II',800,720);g.fillText('III',1290,720);
+} else { // close-up of pictogram, faded overpainted copies
+  picto(520,470,2.6,'#8e3b2a',0.35); wear(260,120,540,640,0.35);
+  picto(1050,430,3.1); wear(800,60,560,700,0.28);
+}
+g=wallG;g.drawImage(L,0,0);
+lamp();
+document.title='done';
+</script></body></html>
