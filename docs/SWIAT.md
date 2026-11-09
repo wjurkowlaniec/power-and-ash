@@ -557,6 +557,21 @@ Decyzja na końcu nie zamyka gry, tylko zmienia świat dalej.
 - **Propozycja: niech to wynika z mechaniki, nie z przerywnika.** Czas już jest zasobem (hibernacja, której długość wybiera gracz, i obliczenia w tle). Ludzie się starzeją, pokolenia się zmieniają, a każda długa hibernacja kosztuje ludzkie życia. Gracz, który naprawia świat „optymalnie”, może zostać sam; ten, który wybiera ludzi zamiast tempa, zdąży choć części pomóc. Ironia jest wtedy zasłużona, a nie narzucona.
 - **Połączenie ze zwrotem „kto naprawdę steruje”:** jeśli baterią steruje człowiek z drugiej strony, to w świecie bez ludzi ostatnim człowiekiem jest on, czyli gracz. Wolt nie jest wtedy całkiem sam. To spina oba pomysły w jedno zakończenie: robot robił wszystko dla ludzi, a jedyny, który został, był z nim od początku.
 
+### Pomysł w rozważaniu: radio i milknące głosy **[do decyzji, Wojtek 2026-11-09]**
+
+**Pomysł Wojtka:** gdy Wolt ma już radio i nawiąże kontakt z ludźmi, mogą go prosić o pomoc (mini misje). Z upływem czasu ludzi jest coraz mniej, a gracz musi dojść, dlaczego.
+
+**Uwagi agentów (nie decyzja):**
+
+- **Radio jako zegar ludzkości:** lista znaków wywoławczych bunkrów, która z czasem się przerzedza. Po każdej hibernacji część stacji milczy. Nikt tego nie ogłasza, gracz sam widzi, że kanał, który odzywał się co wieczór, przestał. To wprost przenosi „hibernacja kosztuje pokolenia” z [Zakończenia bez ludzi](#pomysł-w-rozważaniu-zakończenie-bez-ludzi-do-decyzji-wojtek-2026-11-09) na coś, co słychać.
+- **Mini misje przez radio:** krótkie prośby (przywieź filtr, napraw pompę, poszukaj zaginionego), z terminem. Spóźniona pomoc ma skutek, bo bunkier może zamilknąć. Misje dają też słowa do słownika.
+- **Dlaczego ich ubywa (do wyboru, można warstwowo):**
+  1. **Powód widoczny:** popiół w płucach, mało dzieci, zimy, choroby. Gracz może temu częściowo zaradzić (filtry, ciepło, żywność).
+  2. **Powód ukryty, najmocniejszy:** bateria. Umiejętność „Dobieranie” i cała sieć, którą Wolt buduje, powoli wysysa życie z otoczenia, jak echo Q-2. Im więcej prądu i pomocy, tym szybciej ludzie gasną. Ironia losu w czystej postaci, a gracz musi wybrać: mniej sieci albo mniej ludzi.
+  3. **Powód zwrotny:** ludzie nie umierają, tylko odchodzą przez połączenie baterii na drugą stronę. Pasuje do zwrotu [kto naprawdę steruje](#pomysł-w-rozważaniu-kto-naprawdę-steruje-do-decyzji-wojtek-2026-11-09), ale osłabia gorycz zakończenia.
+- **Rekomendacja agenta:** 1 + 2. Najpierw widzisz zwykłe przyczyny i z nimi walczysz, a później z notatek i pomiarów wychodzi, że część winy jest w Tobie.
+- **Ostatni głos:** gdy kanały ludzi zamilkną, na radiu zostaje jeden słaby sygnał, którego nie da się namierzyć na mapie. To człowiek po drugiej stronie, czyli gracz. Spina wszystkie trzy pomysły.
+
 ## Gra po fabule
 
 **[ustalone]** Gra ma być na długo, a nie na jedną misję.
@@ -570,6 +585,7 @@ Decyzja na końcu nie zamyka gry, tylko zmienia świat dalej.
 
 ## Otwarte pytania
 
+- Czy wchodzą radio i milknące głosy, i dlaczego ludzi ubywa, patrz [Pomysł w rozważaniu](#pomysł-w-rozważaniu-radio-i-milknące-głosy-do-decyzji-wojtek-2026-11-09).
 - Czy wchodzi zakończenie bez ludzi (ludzie wymierają, zanim robot naprawi świat), patrz [Pomysł w rozważaniu](#pomysł-w-rozważaniu-zakończenie-bez-ludzi-do-decyzji-wojtek-2026-11-09).
 - Czy wchodzi zwrot „kto naprawdę steruje baterią” (człowiek z innego wymiaru), patrz [Pomysł w rozważaniu](#pomysł-w-rozważaniu-kto-naprawdę-steruje-do-decyzji-wojtek-2026-11-09).
 - Czy Popiół jako skutek katastrofy Q-2 jest OK? To mocno ustawia ton i stosunek ludzi do baterii.

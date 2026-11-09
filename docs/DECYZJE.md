@@ -68,11 +68,13 @@ Oznaczenia w SWIAT.md: **[ustalone]** to decyzja Wojtka, **[propozycja]** to szk
 | Z długofalowych skutków przyjęte „kolejne pokolenia ludzi, dla których Wolt staje się legendą”. Do tego ludzie malują na ścianach symbol Wolta. | [SWIAT.md: Długofalowe skutki](SWIAT.md#długofalowe-skutki-propozycja) |
 | Symbol Wolta na ścianach: kółko, na nim prostokąt, z prostokąta wystaje ręka. | [SWIAT.md: Długofalowe skutki](SWIAT.md#długofalowe-skutki-propozycja), [szkic](img/koncepty/symbol-wolta.jpg) |
 | **W grze nie ma craftingu od zera. Rozwój jest eksploracyjny** (po demie „Warsztat”, potwierdza ustalenie z 2026-11-06). Fabuła nie jest liniowa: są opcje, rozgałęzienia i wpływ na fabułę, ale da się zrobić 100%. Ma to wychodzić naturalnie. Do mapy świata dochodzi drzewko decyzji i przepływ całej fabuły. Agent zaproponował szkielet: 4 akty, 3 filary w dowolnej kolejności (Ludzie, Sieć, Kopuła), 3 klucze do finału, 9 wyborów zostawionych w świecie i Kronikę, w której wybór liczy się jako „rozstrzygnięty”. Szkielet jest do oceny. | [FABULA.md](FABULA.md), [mapa: przepływ fabuły](https://claude.ai/artifact/3Z4w4jbwc3H2CXB8BAyHtW), [SWIAT.md: Bazy](SWIAT.md#bazy) |
+| **Pomysł w rozważaniu, nie decyzja.** Gdy jest radio i kontakt z ludźmi, proszą o pomoc (mini misje). Z czasem ludzi jest coraz mniej i trzeba dojść dlaczego. Uwagi agentów: lista kanałów, które milkną po hibernacjach; powody warstwowo (popiół, choroby, a ukryty: bateria i sieć wysysają życie jak echo Q-2); ostatni głos na radiu to człowiek po drugiej stronie. | [SWIAT.md: Radio i milknące głosy](SWIAT.md#pomysł-w-rozważaniu-radio-i-milknące-głosy-do-decyzji-wojtek-2026-11-09) |
 
 ## Czeka na decyzję
 
 - Czy popiół jako skutek katastrofy Q-2 jest OK.
 - Czy wchodzi zwrot „człowiek z innego wymiaru steruje baterią” (2026-11-09).
+- Dlaczego ludzi ubywa (popiół i choroby, bateria, odejście na drugą stronę) (2026-11-09).
 - Czy wchodzi zakończenie bez ludzi i czy jest stałe, czy zależy od gracza (2026-11-09).
 - Które długofalowe skutki z SWIAT.md wchodzą do gry (2026-11-09).
 - Ślad na równinie i czy zadokowany wózek to ciało, czy osobny pojazd.
