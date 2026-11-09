@@ -65,6 +65,7 @@ Oznaczenia w SWIAT.md: **[ustalone]** to decyzja Wojtka, **[propozycja]** to szk
 | Jeden jeleń, który się z Woltem zaprzyjaźnia: gdy wracamy w jego okolicę, chodzi z nami, najpierw dziko z daleka, potem bliżej, a po latach umiera. Tylko ten jeden i tylko przez pewien czas. | [SWIAT.md: Jeleń](SWIAT.md#jeleń-ustalone-2026-11-09-szczegóły-propozycja) |
 | Rdza: spowalnia, gdy coś nie jest naoliwione; lekarstwo to oliwienie i wymiana elementów. | [SWIAT.md: Wolt](SWIAT.md#wolt) |
 | Wojtek prosi, żeby przemyśleć długofalowe wpływy. Agent zaproponował listę (rdza i zużycie, infrastruktura bez opieki, wydeptane drogi, zwierzęta, które się uczą i wracają, ekologia, nieodwracalne decyzje, pokolenia ludzi, patyna Wolta, pamięć miejsc). Do oceny. | [SWIAT.md: Długofalowe skutki](SWIAT.md#długofalowe-skutki-propozycja) |
+| Z długofalowych skutków przyjęte „kolejne pokolenia ludzi, dla których Wolt staje się legendą”. Do tego ludzie malują na ścianach symbol Wolta. | [SWIAT.md: Długofalowe skutki](SWIAT.md#długofalowe-skutki-propozycja) |
 
 ## Czeka na decyzję
 
