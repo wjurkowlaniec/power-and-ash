@@ -61,12 +61,17 @@ Oznaczenia w SWIAT.md: **[ustalone]** to decyzja Wojtka, **[propozycja]** to szk
 |---|---|
 | **Pomysł w rozważaniu, nie decyzja.** Zwrot fabularny: bateria jest „kwantowa” albo nieznanego pochodzenia, a później okazuje się, że steruje nią człowiek z innego wymiaru, jakby z innego wszechświata. Uwagi agentów: dobry pomysł, ale słowo „multiwersum” grozi kliszą; lepiej nie wyjaśniać połączenia do końca i dać człowiekowi po drugiej stronie małe, konkretne życie; pasuje do etapowego odkodowywania notatek. | [SWIAT.md: Pomysł w rozważaniu](SWIAT.md#pomysł-w-rozważaniu-kto-naprawdę-steruje-do-decyzji-wojtek-2026-11-09) |
 | **Pomysł w rozważaniu, nie decyzja.** Zakończenie bez ludzi: naprawa ziemi trwa dziesiątki lub setki lat i ludzie wymierają, zanim robot skończy; zostaje sam z robocikami. Łuk relacji: zrozumieć ludzi, poznać ich potrzeby, pomóc. Uwagi agentów: niech wymarcie wynika z mechaniki czasu (hibernacja kosztuje pokolenia), a nie będzie stałym przerywnikiem; łączy się ze zwrotem „kto steruje” (ostatnim człowiekiem jest ten po drugiej stronie). | [SWIAT.md: Zakończenie bez ludzi](SWIAT.md#pomysł-w-rozważaniu-zakończenie-bez-ludzi-do-decyzji-wojtek-2026-11-09) |
+| Dzikie zwierzęta muszą być i bywają przeszkodą: niedźwiedzie, ataki z góry (sokoły). Niektóre przejścia są bezpieczne tylko o określonych porach, a stałe bezpieczne przejście wymaga odstraszacza. | [SWIAT.md: Dzikie zwierzęta](SWIAT.md#dzikie-zwierzęta-ustalone-2026-11-09-szczegóły-propozycja) |
+| Jeden jeleń, który się z Woltem zaprzyjaźnia: gdy wracamy w jego okolicę, chodzi z nami, najpierw dziko z daleka, potem bliżej, a po latach umiera. Tylko ten jeden i tylko przez pewien czas. | [SWIAT.md: Jeleń](SWIAT.md#jeleń-ustalone-2026-11-09-szczegóły-propozycja) |
+| Rdza: spowalnia, gdy coś nie jest naoliwione; lekarstwo to oliwienie i wymiana elementów. | [SWIAT.md: Wolt](SWIAT.md#wolt) |
+| Wojtek prosi, żeby przemyśleć długofalowe wpływy. Agent zaproponował listę (rdza i zużycie, infrastruktura bez opieki, wydeptane drogi, zwierzęta, które się uczą i wracają, ekologia, nieodwracalne decyzje, pokolenia ludzi, patyna Wolta, pamięć miejsc). Do oceny. | [SWIAT.md: Długofalowe skutki](SWIAT.md#długofalowe-skutki-propozycja) |
 
 ## Czeka na decyzję
 
 - Czy popiół jako skutek katastrofy Q-2 jest OK.
 - Czy wchodzi zwrot „człowiek z innego wymiaru steruje baterią” (2026-11-09).
 - Czy wchodzi zakończenie bez ludzi i czy jest stałe, czy zależy od gracza (2026-11-09).
+- Które długofalowe skutki z SWIAT.md wchodzą do gry (2026-11-09).
 - Ślad na równinie i czy zadokowany wózek to ciało, czy osobny pojazd.
 - Mapa świata (później, Wojtek chce ją narysować sam).
 - Czy w grze jest crafting od zera (demo „Warsztat” go testuje, a SWIAT.md ustala „bez pełnego craftingu od zera”) i czy rozwój ma widoczne drzewko. [DEMO-WARSZTAT.md: Czeka na decyzję](DEMO-WARSZTAT.md#czeka-na-decyzję)

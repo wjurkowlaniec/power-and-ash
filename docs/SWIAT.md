@@ -19,11 +19,12 @@ Oznaczenia: **[ustalone]** to decyzja Wojtka, **[propozycja]** to mój pomysł d
 11. [Ludzie i bunkry](#ludzie-i-bunkry)
 12. [Czas: doba, pory roku, hibernacja](#czas-doba-pory-roku-hibernacja)
 13. [Bazy](#bazy)
-14. [Zagrożenia](#zagrożenia)
-15. [Mapa świata i obszary](#mapa-świata-i-obszary)
-16. [Łuk fabularny](#łuk-fabularny)
-17. [Gra po fabule](#gra-po-fabule)
-18. [Otwarte pytania](#otwarte-pytania)
+14. [Zagrożenia](#zagrożenia) (w tym dzikie zwierzęta i jeleń)
+15. [Długofalowe skutki](#długofalowe-skutki-propozycja)
+16. [Mapa świata i obszary](#mapa-świata-i-obszary)
+17. [Łuk fabularny](#łuk-fabularny)
+18. [Gra po fabule](#gra-po-fabule)
+19. [Otwarte pytania](#otwarte-pytania)
 
 ## W jednym akapicie
 
@@ -213,6 +214,8 @@ Parametry Wolta **[propozycja]**:
 | Wilgotność | mgła, woda, rosa, deszcz: iskrzenie, szarpane ruchy, w końcu zwarcie | grzanie, osuszacz, powłoka |
 | Zużycie ciała | stawy, serwa, oko | wymiana części, smar |
 
+**Rdza** **[ustalone 2026-11-09, szczegóły propozycja]:** wilgoć i czas bez smarowania dają rdzę na stawach, kole i ramieniu. Zardzewiały Wolt jedzie wolniej, ruchy są szarpane i zużywa więcej prądu, a w końcu część się blokuje. Lekarstwo to oliwienie (olej jako materiał zużywalny, np. z beczek, później z roślin) i wymiana elementów. Rdzę widać na modelu i słychać (skrzypienie koła coraz głośniejsze). Dotyczy też wózka, żaglowozu i masztów sieci.
+
 Ulepszenia Wolta to zamienne moduły na ramie bazowej (patrz [Ciała i transfer](#ciała-i-transfer)): izolacja, radiator, osuszacz, mocniejsza lampa, dłuższy kabel własny, nawijak o większej pojemności, czujniki (wilgotność gruntu, prąd w ziemi, ślady mikrobotów).
 
 ## Ładowanie: zawsze przez fizyczne połączenie
@@ -367,7 +370,8 @@ Zasady baz **[propozycja]**:
 |---|---|---|---|
 | Upał | lato, Szklany Zalew | przegrzanie Wolta i baterii | cień, chłodzenie, jazda nocą |
 | Mróz | zima, noce, góry | wychłodzenie, kruche kable, słabsze akumulatory | grzałki, izolacja, zimowisko |
-| Wilgoć | mgła, woda, deszcz | iskrzenie, zwarcia, rdza | grzanie, osuszacz, powłoka |
+| Wilgoć | mgła, woda, deszcz | iskrzenie, zwarcia, rdza | grzanie, osuszacz, powłoka, oliwienie |
+| **Dzikie zwierzęta** | o swoich porach, patrz niżej | przewracają, niszczą ładunek i części, atak z góry | pory przejazdu, odstraszacz, osłony |
 | Burze | lato | pioruny w maszty i kable | uziemienie, a później łapanie energii z piorunów |
 | Burza pyłowa | sucho, wietrznie | brak widoczności, ścieranie łożysk i płóz | schronienie, osłony |
 | **Mikroboty** | noc, przy kablach i źródłach prądu | podżerają energię, nadgryzają izolację, w roju mogą wyssać baterię | światło, EMP, pułapki z przynętą, izolacja |
@@ -377,6 +381,47 @@ Zasady baz **[propozycja]**:
 **Mikroboty** **[propozycja]** to cała mała ekologia. Za dnia śpią w gniazdach (stare transformatory, słupy). Nocą wylatują do najbliższego prądu i wyglądają jak świetliki. Pojedyncze są niegroźne, ale rój na kablu potrafi zjeść całą nadwyżkę bazy. Są zwabiane przez światło i ciepło. Później da się je wykorzystać: oswojone gniazdo, które „czyści” linię z obcych rojów, albo przynęta odciągająca je od bazy.
 
 **Walka** **[propozycja]:** Wolt nie ma broni. Odstrasza (światło, impuls EMP), zastawia pułapki, ucieka, przeprogramowuje. To pasuje do ciszy i tonu.
+
+### Dzikie zwierzęta **[ustalone 2026-11-09, szczegóły propozycja]**
+
+Zwierzęta są częścią świata i bywają przeszkodą. Niektóre przejścia są bezpieczne tylko o określonych porach, a stałe bezpieczne przejście wymaga zbudowania odstraszacza.
+
+| Zwierzę | Gdzie i kiedy | Co robi | Jak sobie radzić |
+|---|---|---|---|
+| **Niedźwiedź** | olszyny i rzeki, świt i zmierzch, jesienią najaktywniejszy (żeruje przed snem zimowym) | przewraca Wolta, rozrywa holowany ładunek, niszczy części i kable | omijać jego pory, odstraszacz, jesienią trasa naokoło; zimą śpi, jak Wolt w hibernacji |
+| **Sokół** (atak z góry) | otwarte równiny i maszty, za dnia | nurkuje na błyszczące części, lampę, antenę; gniazduje na słupach Sieci | osłony, nie jechać odkrytym terenem w południe, przenieść gniazdo, odstraszacz na maszcie |
+| Inne (do wymyślenia) | | np. dziki ryjące wokół kabli, kruki kradnące drobne części | |
+
+**Odstraszacz:** ma kosztować prąd, więc pasuje do mechaniki sieci. Przykłady: buczek akustyczny, migające światło, pastuch elektryczny na kablu, strach na wróble z blachy na maszcie. Zwierzęta z czasem się przyzwyczajają, więc odstraszacz trzeba co jakiś czas zmieniać albo przesuwać (patrz [Długofalowe skutki](#długofalowe-skutki-propozycja)).
+
+**Ostrożnie z tonem:** to nie są przeciwnicy do walki (Wolt nie ma broni), tylko rytm świata, który trzeba czytać.
+
+### Jeleń **[ustalone 2026-11-09, szczegóły propozycja]**
+
+Jeden jeleń, który z czasem zaprzyjaźnia się z Woltem. Gdy Wolt wraca w jego okolicę, jeleń mu towarzyszy: najpierw dziko i z daleka, z każdym rokiem bliżej. Po latach umiera. Jest tylko ten jeden i tylko przez pewien czas gry.
+
+- **Gdzie:** propozycja Dolina Olszanki, czyli okolica startu, do której się wraca.
+- **Jak rośnie zaufanie:** Wolt nie podjeżdża za blisko, gasi lampę, zostaje w miejscu; jeleń podchodzi coraz bliżej, potem idzie obok, a w końcu sam ostrzega (zatrzymuje się i nasłuchuje przed niedźwiedziem).
+- **Śmierć:** po kilku latach gry, najlepiej odkryta po przebudzeniu z hibernacji wiosną. Bez przerywnika, tylko miejsce, gdzie leży, a później poroże w trawie.
+- **Po co:** to wczesny, mały przedsmak dużego tematu gry, czyli tego, że Wolt przeżyje wszystkich, dla których coś robi (patrz [Zakończenie bez ludzi](#pomysł-w-rozważaniu-zakończenie-bez-ludzi-do-decyzji-wojtek-2026-11-09)).
+
+## Długofalowe skutki **[propozycja 2026-11-09, na prośbę Wojtka]**
+
+Gra trwa wiele lat, więc to, co Wolt robi (albo zaniedbuje), powinno zostawać w świecie i się zmieniać. Zasada: każdy skutek ma być widoczny na ekranie, a nie tylko w liczbach.
+
+| Obszar | Co się dzieje z czasem |
+|---|---|
+| **Rdza i zużycie** | Wszystko, czego nie oliwisz i nie naprawiasz, rdzewieje: maszty, kable, wózek, sam Wolt. Po długiej hibernacji świat jest bardziej zardzewiały niż przed nią. |
+| **Infrastruktura bez opieki** | Nieodwiedzane linie i bazy niszczeją (zarastają, pękają kable, wpadają mikroboty), więc sieć trzeba objeżdżać jak gospodarz, a nie tylko budować. |
+| **Ślady i drogi** | Często używana trasa wydeptuje się w ścieżkę, potem w drogę (szybsza jazda). Zwierzęta zaczynają ją omijać albo wręcz przeciwnie, z niej korzystać. |
+| **Zwierzęta się uczą** | Odstraszacz działa coraz słabiej. Sokoły gniazdują na słupach Sieci. Gdy Wolt naprawia przyrodę, wraca więcej zwierząt: więcej jeleni, ale też więcej niedźwiedzi. Sukces ma koszt. |
+| **Ekologia** | Popiół z roku na rok cienieje tam, gdzie działają technologie klimatyczne; wraca zieleń, mokradła, owady. Tam, gdzie nic nie zrobiono, zostaje szaro. Mapa po 20 latach wygląda inaczej niż na początku. |
+| **Nieodwracalne decyzje** | Niektóre ruchy zmieniają teren na stałe, np. naprawa zapory zatapia dolinę jeszcze bardziej, a wycięcie Lasu Słupów otwiera przejazd i zabiera gniazda. |
+| **Ludzie i pokolenia** | Dzieci, które pamiętają Wolta, dorastają i się starzeją. Wolt staje się legendą, rysunkiem na ścianie bunkra, słowem w ich języku. Kolejne pokolenia traktują go inaczej niż pierwsze. Łączy się z [Zakończeniem bez ludzi](#pomysł-w-rozważaniu-zakończenie-bez-ludzi-do-decyzji-wojtek-2026-11-09). |
+| **Sam Wolt** | Patyna, łaty i wymienione części zostają na modelu. Po latach gracz widzi na ciele historię swoich napraw. Stare ciała zostają w bazach jak relikwie. |
+| **Pamięć świata** | Miejsca, gdzie coś się stało (grób jelenia, pierwsza zapalona lampa, rozbity wózek), zostają na mapie jako małe znaki. |
+
+Jak to policzyć technicznie (do decyzji później): świat ma prosty „zegar starzenia” na obiekt, który tyka szybciej przy wilgoci i braku opieki, a hibernacja przelicza go skokowo.
 
 ## Mapa świata i obszary
 
