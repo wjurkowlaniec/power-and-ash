@@ -1,0 +1,37 @@
+name: Etykiety
+
+# Zakłada etykiety zgłoszeń z .github/labels.yml (bug, pomysł, ...).
+on:
+  push:
+    branches: [main]
+    paths: ['.github/labels.yml', '.github/workflows/labels.yml']
+  workflow_dispatch:
+
+permissions:
+  issues: write
+
+jobs:
+  labels:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          python3 - <<'PY' > labels.tsv
+          import re
+          name = color = desc = None
+          for line in open('.github/labels.yml', encoding='utf-8'):
+              m = re.match(r'\s*-?\s*(name|color|description):\s*(.*)', line)
+              if not m: continue
+              k, v = m.groups()
+              if k == 'name':
+                  if name: print(f'{name}\t{color}\t{desc}')
+                  name, color, desc = v.strip(), '', ''
+              elif k == 'color': color = v.strip()
+              else: desc = v.strip()
+          if name: print(f'{name}\t{color}\t{desc}')
+          PY
+          while IFS=$'\t' read -r name color desc; do
+            gh label create "$name" --color "$color" --description "$desc" --force -R "$GITHUB_REPOSITORY"
+          done < labels.tsv

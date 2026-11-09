@@ -135,9 +135,11 @@ Nowa mechanika w logice dostaje test. Testy logiki nie dotykają Three.js.
 |---|---|---|
 | `.github/workflows/ci.yml` | każdy PR | `npm ci`, `npm test`, `npm run build` |
 | `.github/workflows/pages.yml` | push na `main` (i ręcznie) | to samo, potem `cp -r docs dist/docs` i deploy na GitHub Pages |
+| `.github/workflows/labels.yml` | push na `main` ze zmianą `.github/labels.yml` (i ręcznie) | zakłada albo poprawia etykiety zgłoszeń (`bug`, `pomysł`, `do-decyzji`) |
 
 - Pages ma w ustawieniach repo źródło **GitHub Actions** (włączył to Wojtek, API z chmury tego nie pozwala).
 - Adresy: gra https://wjurkowlaniec.github.io/power-and-ash/, tech demo https://wjurkowlaniec.github.io/power-and-ash/demo/, dokumenty https://wjurkowlaniec.github.io/power-and-ash/docs/ (np. `docs/design.html`).
+- Zgłoszenia testerów: formularze „Błąd” i „Pomysł” w `.github/ISSUE_TEMPLATE/`, przewodnik w [README: Jak testować](../README.md#jak-testować).
 - Każda zmiana ma trafić na Pages do testów: PR, zielone CI, squash-merge do `main`, a deploy rusza sam. Jeśli strona pokazuje starą wersję, pomaga Ctrl+Shift+R.
 
 ## Konwencje
