@@ -42,6 +42,8 @@ export class HallScene implements Scene {
     c.hud.appendChild(this.el);
   }
 
+  modal() { return !!this.hall.reading || this.journalOpen; }
+
   exit(c: Ctx) {
     c.sound.onDrip = null;
     this.view.dispose();

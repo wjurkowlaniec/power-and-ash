@@ -59,6 +59,7 @@ Używają go i gra, i tech demo. Zmiana tutaj musi zostawić obie strony działa
 | `cable.ts` | kabel jak napięty sznurek: zagina się na wypukłych narożnikach przeszkód, gdy koniec się przesuwa, i prostuje, gdy wraca. Długość liczona wzdłuż zagięć |
 | `path.ts` | A* po kaflach dla marszu myszą, `clearLine` do wygładzania ścieżki |
 | `drive.ts` | model jazdy monocykla: toczy się tylko wzdłuż kursu, skręca z ograniczoną prędkością (ostry skręt = obrót w miejscu), płynnie przyspiesza i hamuje, zatrzymuje się na celu |
+| `footprint.ts` | obrys Wolta do kolizji: koło plus nos i szpula jako okręgi wzdłuż kursu; `bodyOk` (ruch), `guardTurn` (obrót w miejscu przy ścianie odsuwa koło albo cofa obrót). Używają go hala, stacja i demo |
 | `tow.ts` | holowanie: opona i sanki z cegłami na linie 1,5 m za hakiem, zaczepianie o przeszkody, koszt energii i spowolnienie |
 | `power.ts` | sieć energetyczna: węzły z portami, kable jako krawędzie, bilans mocy w każdej spójnej składowej |
 | `wind.ts` | deterministyczny wiatr: kierunek i siła z sumy wolnych sinusów, podmuchy |
@@ -103,7 +104,7 @@ Korzysta ze wspólnego silnika (`World`, `Cable`, `solveNetworks`, `findPath`, `
 
 ## Gra
 
-Sceny z [POCZATEK.md](POCZATEK.md): `src/game/main.ts` (mapa scen, pętla, wygaszanie między scenami), `scene.ts` (interfejs `Scene`), `scenes/*` (klej), `sim/*` (logika scen), `render/*View.ts` (widoki), `notes.ts` (notatki i odkodowanie), `fx.ts`, `audio/sound.ts`. Pełny opis i stan scen: [GRA.md](GRA.md). `?scene=<id>` przeskakuje do sceny (`darkness`, `hall`, `station`, `crane`), a w konsoli jest `window.hall` / `window.station`.
+Sceny z [POCZATEK.md](POCZATEK.md): `src/game/main.ts` (mapa scen, pętla, wygaszanie między scenami, menu główne na ekranie startowym i pauza pod Esc), `menu.ts` (lista scen i tech demo w menu, teksty przez `tr`; nowa scena = nowy wpis w `CHAPTERS`, scena może zgłosić `modal()`, żeby Esc najpierw zamykało jej notatkę), `scene.ts` (interfejs `Scene`), `scenes/*` (klej), `sim/*` (logika scen), `render/*View.ts` (widoki), `notes.ts` (notatki i odkodowanie), `fx.ts`, `audio/sound.ts`. Pełny opis i stan scen: [GRA.md](GRA.md). `?scene=<id>` przeskakuje do sceny z pominięciem menu (`darkness`, `hall`, `station`, `crane`), a w konsoli jest `window.hall` / `window.station`.
 
 ## Testy
 

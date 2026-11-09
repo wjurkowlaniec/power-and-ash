@@ -29,9 +29,9 @@ Wszystko działa w przeglądarce, bez instalowania. Najlepiej Chrome albo Firefo
 
 | Wersja | Link | Co to jest |
 |---|---|---|
-| **Gra** | https://wjurkowlaniec.github.io/power-and-ash/ | Prawdziwa gra od początku: ciemność, hala, martwa stacja. Przytrzymana spacja pomija pierwszą scenę. |
-| Gra od hali | https://wjurkowlaniec.github.io/power-and-ash/?scene=hall | Skok do Sceny 1 (Wolt budzi się w hali). |
-| Gra od stacji | https://wjurkowlaniec.github.io/power-and-ash/?scene=station | Skok do Sceny 2 (martwa stacja, turbina, kabel do maszynowni). |
+| **Gra** | https://wjurkowlaniec.github.io/power-and-ash/ | Prawdziwa gra. Startuje od menu: nowa gra (ciemność, hala, martwa stacja), wybór sceny albo przejście do tech demo. W grze **Esc** otwiera menu (pauza, restart sceny, inna scena). Przytrzymana spacja pomija pierwszą scenę. |
+| Gra od hali | https://wjurkowlaniec.github.io/power-and-ash/?scene=hall | Skok do Sceny 1 (Wolt budzi się w hali), bez menu. |
+| Gra od stacji | https://wjurkowlaniec.github.io/power-and-ash/?scene=station | Skok do Sceny 2 (martwa stacja, turbina, kabel do maszynowni), bez menu. |
 | **Tech demo „Rozruch”** | https://wjurkowlaniec.github.io/power-and-ash/demo/ | Poligon mechanik: kable, złom, fabrykator, ładowanie Żaglowozu, odjazd. |
 | **Tech demo „Warsztat”** | https://wjurkowlaniec.github.io/power-and-ash/demo-craft/ | Wytwarzanie, ekwipunek, wózek, rozbiórka, sieć, drzewko technologii. 12 etapów, `?stage=0` … `?stage=11` otwiera wybrany. |
 | Wersja angielska | dopisz `?lang=en` do linku (np. https://wjurkowlaniec.github.io/power-and-ash/demo/?lang=en) | Ta sama gra po angielsku, przydatne do sprawdzania tłumaczeń. |
@@ -68,6 +68,7 @@ Co dalej: agent (Claude) i Wojtek czytają zgłoszenia, błędy naprawiają w PR
 | Alt | panel sieci |
 | M | dźwięk wł./wył. |
 | H | pomoc |
+| Esc (gra) | menu: wróć, zacznij scenę od nowa, inna scena, tech demo (gdy otwarta jest notatka, Esc najpierw ją zamyka) |
 
 ## Grafika i licencje
 

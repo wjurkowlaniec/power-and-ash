@@ -37,6 +37,8 @@ export class StationScene implements Scene {
     c.hud.appendChild(this.el);
   }
 
+  modal() { return !!this.st.reading || this.journalOpen; }
+
   exit(c: Ctx) {
     this.view.dispose();
     this.el.remove();
