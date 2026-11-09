@@ -66,6 +66,7 @@ Oznaczenia w SWIAT.md: **[ustalone]** to decyzja Wojtka, **[propozycja]** to szk
 | Rdza: spowalnia, gdy coś nie jest naoliwione; lekarstwo to oliwienie i wymiana elementów. | [SWIAT.md: Wolt](SWIAT.md#wolt) |
 | Wojtek prosi, żeby przemyśleć długofalowe wpływy. Agent zaproponował listę (rdza i zużycie, infrastruktura bez opieki, wydeptane drogi, zwierzęta, które się uczą i wracają, ekologia, nieodwracalne decyzje, pokolenia ludzi, patyna Wolta, pamięć miejsc). Do oceny. | [SWIAT.md: Długofalowe skutki](SWIAT.md#długofalowe-skutki-propozycja) |
 | Z długofalowych skutków przyjęte „kolejne pokolenia ludzi, dla których Wolt staje się legendą”. Do tego ludzie malują na ścianach symbol Wolta. | [SWIAT.md: Długofalowe skutki](SWIAT.md#długofalowe-skutki-propozycja) |
+| Symbol Wolta na ścianach: kółko, na nim prostokąt, z prostokąta wystaje ręka. | [SWIAT.md: Długofalowe skutki](SWIAT.md#długofalowe-skutki-propozycja), [szkic](img/koncepty/symbol-wolta.jpg) |
 
 ## Czeka na decyzję
 
