@@ -34,6 +34,7 @@ Wolt to kwantowa bateria, prototyp z misji badawczej, która myśli i steruje ci
 
 - **Samotność i cisza jak w Inside.** Historia opowiadana otoczeniem, prawie bez tekstu. Żadnych dialogów w dymkach na początku gry. **[ustalone]**
 - **Przyszłość, ale europejska.** Krajobraz i przyroda środkowej Europy: łąki, olszyny, mokradła, zbiorniki zaporowe, łagodne wzgórza, a dalej góry. Architektura nie amerykańska, ale też bez kiczu PRL-u czy PGR-ów: ma być czuć Europę w kształcie terenu, materiałach i proporcjach. **[ustalone]**
+- **Dużo, ale subtelnie** **[ustalone 2026-11-10]:** nie da się zrobić wszystkiego, ale wiele pomysłów (pokolenia, mikrokult, zmieniająca się natura, dary, symbole) może być w grze jako drobne, ciche szczegóły: bez okienek i komunikatów, widoczne tylko dla tego, kto patrzy. Lepiej wiele małych śladów niż kilka dużych systemów.
 - **Paleta:** wyblakła, popielna. Kolor zarezerwowany dla ważnych rzeczy: blade okienko i dioda kasety baterii, sodowa lampa Wolta, miedziany kabel, przekaźniki, światła bunkrów.
 - **Dźwięk:** ambient otoczenia (wiatr, woda, metal, owady, odległe brzęczenie linii). Bateria ma własny, niski puls, który jest emocjonalnym „głosem” gry.
 - **Popiół** pokrywa świat cienką warstwą jak szary szron. Wiosną przebija się przez niego zieleń, latem robi się kurz, jesienią mokra breja, zimą miesza się ze śniegiem.

@@ -72,6 +72,7 @@ Oznaczenia w SWIAT.md: **[ustalone]** to decyzja Wojtka, **[propozycja]** to szk
 | Tytuł gry pojawia się, gdy zapada pierwsza noc (Scena 3), a nie dopiero przy wyjeździe z R-2 (Scena 5): tam było „trochę późno”. | [POCZATEK.md: Scena 3](POCZATEK.md#scena-3-pierwsza-noc-temperatura-wilgoć-mikroboty-ok-9-min), [mapa: przepływ fabuły](mapa-swiata.html#f-noc) |
 | 2026-11-10: gra ma być trochę inkrementalna. Gdy trzeba długo czekać, gracz może zamrozić się (hibernacja) na X lat. Strategia między inkrementalem a czekaniem. Agent zaproponował balans: zyski się nasycają, straty nie; strategia to przygotowanie do snu; długość snu rośnie z postępem; budzik z anteny; raport po przebudzeniu. | [SWIAT.md: Inkrementalność](SWIAT.md#inkrementalność-i-zamrożenie-na-lata-ustalone-2026-11-10-balans-to-propozycja) |
 | 2026-11-10: inkrementalność OK, ale nie dominująca. Alarmy z anteny ciekawe. Pokoleniowo, natura też się zmienia. Wolt wraca co parę lat do tych samych domostw, pokolenia się zmieniają; gdzie pomaga, rodzi się mikrokult albo przychylność i stąd symbole robocika, który pojawia się rzadko i zawsze pomaga. | [SWIAT.md: Inkrementalność](SWIAT.md#inkrementalność-i-zamrożenie-na-lata-ustalone-2026-11-10-balans-to-propozycja), [Długofalowe skutki](SWIAT.md#długofalowe-skutki-propozycja) |
+| 2026-11-10: zasada „dużo, ale bardzo subtelnie”. Nie da się zrobić wszystkiego, ale wiele pomysłów może wejść jako drobne, ciche szczegóły świata, bez komunikatów. | [SWIAT.md: Ton i styl](SWIAT.md#ton-i-styl) |
 
 ## Czeka na decyzję
 
