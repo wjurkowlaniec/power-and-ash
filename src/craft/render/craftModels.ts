@@ -19,10 +19,11 @@ const urls = import.meta.glob('../../assets/craft/**/*.glb', { query: '?url', im
 const FADE: Record<string, number> = { space: 0.72, furniture: 0.6, city: 0.65 };
 const DIM: Record<string, number> = { space: 0.62, furniture: 0.8, city: 0.72 };
 
-export async function loadCraftModels(into: Models, onProgress?: (d: number, t: number) => void): Promise<void> {
+/** `only`: load just these model names (the land yacht demo needs only the cart). */
+export async function loadCraftModels(into: Models, onProgress?: (d: number, t: number) => void, only?: string[]): Promise<void> {
   const loader = new GLTFLoader();
   loader.setMeshoptDecoder(MeshoptDecoder);
-  const entries = Object.entries(urls);
+  const entries = Object.entries(urls).filter(([p]) => !only || only.some(n => p.endsWith(`/${n}.glb`)));
   let done = 0;
   await Promise.all(entries.map(async ([path, url]) => {
     const m = path.match(/craft\/(\w+)\/(\w+)\.glb$/)!;

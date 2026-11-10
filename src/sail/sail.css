@@ -1,0 +1,47 @@
+/* Land yacht demo HUD, on top of the shared src/style.css */
+.speedp { width: 190px; }
+.speedp .spd { display: flex; align-items: baseline; gap: 6px; }
+.speedp .spd b { font-size: 34px; font-weight: 500; line-height: 1; }
+.speedp .spd span { color: var(--dim); font-size: 11px; }
+.speedp .row { margin-top: 3px; }
+.speedp .tipl { margin-top: 10px; display: flex; justify-content: space-between; }
+.tipm { height: 6px; background: #ffffff1a; position: relative; margin-top: 4px; }
+.tipm > i { position: absolute; inset: 0 auto 0 0; background: var(--ink); transition: width .1s; }
+.tipm > b { position: absolute; top: -3px; bottom: -3px; width: 1px; left: 83.3%; background: var(--limit); }
+.tipm.hot > i { background: var(--warn); }
+.tipm.bad > i { background: var(--limit); }
+
+.windp { right: max(16px, env(safe-area-inset-right, 0px)); top: calc(16px + env(safe-area-inset-top, 0px)); width: 300px; }
+.windp .cmp { display: flex; gap: 10px; align-items: center; }
+.windp .rd { flex: 1; display: grid; gap: 3px; font-size: 11px; }
+.windp .here { color: #bfe6ef; min-height: 1.4em; font-size: 11px; }
+.windp .trim { margin-top: 6px; font-size: 11px; min-height: 1.5em; }
+.windp .legend { margin-top: 4px; font-size: 10px; display: flex; flex-wrap: wrap; gap: 4px 8px; align-items: center; }
+.windp .legend i { display: inline-block; width: 10px; height: 3px; margin-right: -4px; }
+
+.coursep { left: max(16px, env(safe-area-inset-left, 0px)); bottom: calc(16px + env(safe-area-inset-bottom, 0px)); width: 300px; pointer-events: auto; display: grid; gap: 6px; }
+.coursep .nav { display: flex; gap: 4px; flex-wrap: wrap; }
+.coursep .big { font-size: 20px; align-items: baseline; }
+.coursep .big .dim { font-size: 11px; }
+.coursep p { margin: 0; font-size: 11px; line-height: 1.5; }
+.btn { all: unset; cursor: pointer; font: inherit; font-size: 11px; padding: 4px 8px; border: 1px solid var(--line); border-radius: 3px; color: var(--ink); background: #ffffff0a; }
+.btn:hover, .btn:focus-visible { border-color: var(--warn); }
+.btn.on { border-color: var(--warn); color: #1b1a17; background: var(--warn); }
+.toast.bad { border: 1px solid var(--limit); color: var(--limit); }
+.toast.good { border: 1px solid var(--ok); color: var(--ok); }
+.help { top: auto; bottom: calc(16px + env(safe-area-inset-bottom, 0px)); left: calc(50% + 160px); max-width: calc(100vw - 700px); color: #1c1d1f; }
+@media (max-width: 900px) { .windp { width: 240px; } .windp .rd { display: none; } .coursep { width: 240px; } }
+
+/* the intro: a pencil sketch on ash-grey paper */
+.intro { position: fixed; inset: 0; z-index: 20; background: #d8d4ca; display: grid; }
+.intro canvas { position: absolute; inset: 0; width: 100%; height: 100%; }
+.intro .cap { position: absolute; left: 50%; bottom: calc(22px + env(safe-area-inset-bottom, 0px)); transform: translateX(-50%); width: min(760px, calc(100vw - 32px)); color: #2b2c2e; display: grid; gap: 6px; }
+.intro .cap .lbl { color: #2b2c2e99; }
+.intro h2 { margin: 0; font-weight: 500; font-size: 22px; letter-spacing: .03em; }
+.intro p { margin: 0; font-size: 13px; line-height: 1.6; color: #2b2c2ecc; min-height: 4.8em; }
+.intro .nav { display: flex; gap: 8px; align-items: center; margin-top: 4px; }
+.intro .btn { color: #2b2c2e; border-color: #2b2c2e44; background: #ffffff33; }
+.intro .btn.go { background: #2b2c2e; color: #e8e4da; border-color: #2b2c2e; }
+.intro .dots { display: flex; gap: 6px; margin: 0 6px; }
+.intro .dot { all: unset; cursor: pointer; width: 8px; height: 8px; border-radius: 50%; border: 1.5px solid #2b2c2e88; }
+.intro .dot.on { background: #2b2c2e; }
