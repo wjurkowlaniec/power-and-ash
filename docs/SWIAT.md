@@ -339,6 +339,35 @@ Hibernacja **[propozycja]**:
 - **Po przebudzeniu:** krótka sekwencja „co się zmieniło”: zarośnięty kabel, nowy dom na palach, ktoś nowy na pomoście. W bunkrach mogą być nowi ludzie, którzy znają Wolta tylko z opowieści, a ktoś bliski mógł umrzeć.
 - Długi sen jest kuszący (produkcja, nauka), ale świat się w tym czasie sypie, a ludzie mogą potrzebować pomocy, której nie dostaną.
 
+### Inkrementalność i zamrożenie na lata **[ustalone 2026-11-10, balans to propozycja]**
+
+**Wojtek:** gra ma być trochę inkrementalna. Gdy okazuje się, że jest dużo czasu do czekania, gracz może zrobić „freeze” (hibernację) na X lat. Strategia między inkrementalem a czekaniem.
+
+**Pętla** **[propozycja]:** przygotuj się, zamroź się na wybraną liczbę lat, obudź się, przeczytaj raport, napraw, zainwestuj, znów zamroź. Czas jest zasobem i walutą jednocześnie.
+
+**Co rośnie w czasie snu:**
+
+- produkcja baz (powoli, do pojemności magazynów),
+- obliczenia baterii z nadwyżki prądu (nowe umiejętności, plany),
+- odkodowywanie pisma z zebranego korpusu,
+- przyroda tam, gdzie działają technologie klimatyczne.
+
+**Co się w tym czasie psuje lub odchodzi:**
+
+- rdza i zużycie wszystkiego, czego nie zabezpieczono,
+- linie i bazy bez opieki, mikroboty w sieci,
+- ludzie: pokolenia się zmieniają, kanały radia milkną ([Radio i milknące głosy](#pomysł-w-rozważaniu-radio-i-milknące-głosy-do-decyzji-wojtek-2026-11-09)), misje przepadają,
+- jeleń się starzeje; długi sen może oznaczać, że Wolt nie zobaczy go już żywego ([Jeleń](#jeleń-ustalone-2026-11-09-szczegóły-propozycja)).
+
+**Jak to zbalansować** **[propozycja agenta]:**
+
+1. **Zyski się nasycają, straty nie.** Produkcja i obliczenia rosną tylko do pojemności magazynów i nadwyżki prądu, więc po kilku latach snu przestają przybywać. Rdza, wymieranie i rozpad sieci rosną dalej. Dzięki temu „śpij jak najdłużej” nigdy nie jest oczywistą odpowiedzią.
+2. **Strategia to przygotowanie do snu.** Przed zamrożeniem gracz decyduje, w co zainwestować: większe magazyny, oliwienie i osłony (wolniejsza rdza), drugi panel (więcej obliczeń), zapas dla bunkrów, odstraszacze. Dobrze przygotowany sen jest długi i opłacalny, źle przygotowany przynosi ruinę.
+3. **Długość snu rośnie z postępem.** Na początku tylko „do wiosny”, potem rok, później kilka lat, a na końcu dekady. Limit wynika z baterii i zimowiska, więc to też jest ulepszenie.
+4. **Budzik.** Antena alarmowa może przerwać sen, gdy coś się dzieje (rój na linii, wezwanie przez radio). Bez anteny śpisz do końca i dowiadujesz się po fakcie.
+5. **Raport po przebudzeniu.** Krótka, cicha lista, jak dziennik: co wyprodukowano, co się nauczyło, co zardzewiało, które kanały zamilkły. Bez liczb na pierwszym planie, raczej obrazy (zarośnięty kabel, pusta ławka w bunkrze).
+6. **Koszt widać w świecie, nie tylko w tabelce.** To wiąże inkrementalność z tonem gry: każdy „skip” coś kosztuje, a to łączy się z [Zakończeniem bez ludzi](#pomysł-w-rozważaniu-zakończenie-bez-ludzi-do-decyzji-wojtek-2026-11-09), gdzie tempo gracza decyduje, ilu ludziom zdąży pomóc.
+
 ## Bazy
 
 **[ustalone, potwierdzone 2026-11-09]** Bez pełnego craftingu od zera, rozwój eksploracyjny (zob. [FABULA.md](FABULA.md)). Bazy to istniejące obiekty, które adaptujesz. Produkują rzeczy potrzebne do rozwoju, ale powoli (nawet rok). Trzeba je zasilać i doglądać. Żeby dostać alarm na odległość, trzeba zbudować antenę. Sprzęt z różnych baz nie jest kompatybilny i trzeba analizować protokoły.
