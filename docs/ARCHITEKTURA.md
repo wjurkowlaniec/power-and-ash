@@ -21,6 +21,7 @@ Każdy PR, który zmienia strukturę kodu, build albo deploy, aktualizuje ten pl
 index.html              wejście gry           → src/game/main.ts
 demo/index.html         wejście tech demo     → src/main.ts
 demo-craft/index.html   wejście demo „Warsztat” → src/craft/main.ts
+demo-sail/index.html    wejście demo „Żegluga” → src/sail/main.ts
 vite.config.ts          build wielostronicowy (gra + demo) i tryb single-file
 src/
   sim/                  WSPÓLNA logika w czystym TS (bez Three.js)
@@ -31,6 +32,7 @@ src/
   game/                 GRA (sceny z POCZATEK.md), opis w docs/GRA.md
   craft/                demo „Warsztat” (wytwarzanie, technologie, moduły), opis w docs/DEMO-WARSZTAT.md
   assets/craft/         modele KayKit tylko dla „Warsztatu”
+  sail/                 demo „Żegluga” (jazda Żaglowozem: teren, pole wiatru, fizyka, trasy, intro), opis w docs/DEMO-ZEGLUGA.md
   assets/models/        skompresowane modele GLB (CC0)
 test/                   testy Vitest (logika)
 tools/pack-models.mjs   konwersja paczek CC0 do src/assets/models
@@ -102,6 +104,12 @@ Drugi poligon (decyzja Wojtka 2026-11-08): wytwarzanie, ekwipunek z wózkiem, ro
 
 Korzysta ze wspólnego silnika (`World`, `Cable`, `solveNetworks`, `findPath`, `drive`, `towDrive`, `Wind`, model i animator Wolta, `GroundFx`, `Sound`). Dodał do niego tylko drobiazgi: `World.add()` (przeszkoda postawiona w trakcie gry), ładunek `'cart'` w `tow.ts`, eksport `fade` z `render/assets.ts`.
 
+## Tech demo „Żegluga” (`/demo-sail/`)
+
+Trzeci poligon (decyzja Wojtka 2026-11-10): jazda Żaglowozem jako rdzeń rozgrywki. Logika w `src/sail/sim/` (teren z polami podłoży, pole wiatru ze szkwałami i cieniem przeszkód, fizyka żaglowozu z przechyłem i poślizgiem, trasy na czas), widok w `src/sail/render/`, intro rysowane na płótnie 2D w `src/sail/intro.ts`. Opis, sterowanie i fizyka: [DEMO-ZEGLUGA.md](DEMO-ZEGLUGA.md).
+
+Korzysta ze wspólnego silnika (`Sail`, model i animator Wolta, `GroundFx`, `Sound`) i z części „Warsztatu” (maszt, płozy, żagiel z balonu, wózek). Zmiana poza `src/sail/`: opcjonalny filtr `only` w `loadCraftModels` (zgodny wstecz).
+
 ## Gra
 
 Sceny z [POCZATEK.md](POCZATEK.md): `src/game/main.ts` (mapa scen, pętla, wygaszanie między scenami, menu główne na ekranie startowym i pauza pod Esc), `menu.ts` (lista scen i tech demo w menu, teksty przez `tr`; nowa scena = nowy wpis w `CHAPTERS`, scena może zgłosić `modal()`, żeby Esc najpierw zamykało jej notatkę), `scene.ts` (interfejs `Scene`), `scenes/*` (klej), `sim/*` (logika scen), `render/*View.ts` (widoki), `notes.ts` (notatki i odkodowanie), `fx.ts`, `audio/sound.ts`. Pełny opis i stan scen: [GRA.md](GRA.md). `?scene=<id>` przeskakuje do sceny z pominięciem menu (`darkness`, `hall`, `station`, `crane`), a w konsoli jest `window.hall` / `window.station`.
@@ -118,6 +126,7 @@ Sceny z [POCZATEK.md](POCZATEK.md): `src/game/main.ts` (mapa scen, pętla, wygas
 | `hall.test.ts`, `station.test.ts` | logika scen gry (hala, martwa stacja) |
 | `notes.test.ts` | notatki, korpus, progi odkodowania |
 | `craft.test.ts` | demo „Warsztat”: ekwipunek, rozbiórka, wytwarzanie, badania, sieć z magazynem, skróty wszystkich 14 etapów, spójność danych, żegluga Żaglowozu |
+| `sail.test.ts` | demo „Żegluga”: podłoża i przeszkody na mapie, cień wiatru za domem, szkwały, szybciej niż wiatr, martwy kąt, koła i płozy w sypkim popiele, przechył i wywrotka, wychył, poślizg, hamulec i zmiana podwozia, odbicie od domu, trasy |
 | `i18n.test.ts` | język poza przeglądarką, korpus notatek niezależny od języka |
 
 Nowa mechanika w logice dostaje test. Testy logiki nie dotykają Three.js.
@@ -125,8 +134,8 @@ Nowa mechanika w logice dostaje test. Testy logiki nie dotykają Three.js.
 ## Build
 
 - `npm run dev`: Vite na localhost, gra pod `/`, demo pod `/demo/`.
-- `npm run build`: `tsc --noEmit` (typy), potem `vite build` do `dist/` z trzema stronami (`rollupOptions.input`: `index.html`, `demo/index.html`, `demo-craft/index.html`). `base: './'`, więc działa pod `/power-and-ash/`.
-- `npm run build:single`: jeden samodzielny plik HTML w `dist-single/` (modele wklejone jako data URI). Domyślnie gra, `PAGE=demo` robi demo, `PAGE=craft` demo „Warsztat”. Przydaje się do publikacji jako artefakt.
+- `npm run build`: `tsc --noEmit` (typy), potem `vite build` do `dist/` z czterema stronami (`rollupOptions.input`: `index.html`, `demo/index.html`, `demo-craft/index.html`, `demo-sail/index.html`). `base: './'`, więc działa pod `/power-and-ash/`.
+- `npm run build:single`: jeden samodzielny plik HTML w `dist-single/` (modele wklejone jako data URI). Domyślnie gra, `PAGE=demo` robi demo, `PAGE=craft` demo „Warsztat”, `PAGE=sail` demo „Żegluga”. Przydaje się do publikacji jako artefakt.
 - Modele: paczki CC0 (zipy z itch.io, chmura nie ma do nich dostępu, więc Wojtek wrzucił je do `~/prv/ash-and-power/assets` na swoim komputerze) rozpakowuje się do `assets-src/` i uruchamia `node tools/pack-models.mjs` (zostawia kolor bazowy, tekstury 256 px WebP, upraszcza siatki, kompresja meshopt). Wynik jest w repo w `src/assets/models/`, więc zwykły build nie potrzebuje paczek.
 - Modele „Warsztatu”: paczki KayKit Space Base / Furniture / City Builder Bits są publicznie na GitHubie (`github.com/KayKit-Game-Assets`), więc chmura je klonuje. `ASSETS_SRC=<katalog z klonami> node tools/pack-craft-models.mjs` pakuje wybrane modele do `src/assets/craft/`.
 

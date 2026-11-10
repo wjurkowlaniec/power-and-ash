@@ -7,11 +7,12 @@ import { resolve } from 'node:path';
 //   index.html       -> the game (scenes from docs/POCZATEK.md), src/game/main.ts
 //   demo/index.html  -> the tech demo (level "Rozruch"), src/main.ts
 //   demo-craft/index.html -> the crafting tech demo ("Warsztat"), src/craft/main.ts
+//   demo-sail/index.html -> the land yacht driving demo ("Żegluga"), src/sail/main.ts
 // `npm run build` -> dist/ for GitHub Pages (relative base so it works under /power-and-ash/)
-// `npm run build:single` -> dist-single/, one self-contained file per page (PAGE=game|demo|craft, default game)
+// `npm run build:single` -> dist-single/, one self-contained file per page (PAGE=game|demo|craft|sail, default game)
 export default defineConfig(({ mode }) => {
   const single = mode === 'single';
-  const page = process.env.PAGE === 'demo' ? 'demo/index.html' : process.env.PAGE === 'craft' ? 'demo-craft/index.html' : 'index.html';
+  const page = process.env.PAGE === 'demo' ? 'demo/index.html' : process.env.PAGE === 'craft' ? 'demo-craft/index.html' : process.env.PAGE === 'sail' ? 'demo-sail/index.html' : 'index.html';
   return {
     base: './',
     plugins: single ? [viteSingleFile()] : [],
@@ -23,7 +24,7 @@ export default defineConfig(({ mode }) => {
       rollupOptions: {
         input: single
           ? resolve(__dirname, page)
-          : { game: resolve(__dirname, 'index.html'), demo: resolve(__dirname, 'demo/index.html'), craft: resolve(__dirname, 'demo-craft/index.html') },
+          : { game: resolve(__dirname, 'index.html'), demo: resolve(__dirname, 'demo/index.html'), craft: resolve(__dirname, 'demo-craft/index.html'), sail: resolve(__dirname, 'demo-sail/index.html') },
       },
     },
     test: { include: ['test/**/*.test.ts'] },
