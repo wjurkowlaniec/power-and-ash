@@ -71,10 +71,10 @@ Oznaczenia w SWIAT.md: **[ustalone]** to decyzja Wojtka, **[propozycja]** to szk
 | **Pomysł w rozważaniu, nie decyzja.** Gdy jest radio i kontakt z ludźmi, proszą o pomoc (mini misje). Z czasem ludzi jest coraz mniej i trzeba dojść dlaczego. Uwagi agentów: lista kanałów, które milkną po hibernacjach; powody warstwowo (popiół, choroby, a ukryty: bateria i sieć wysysają życie jak echo Q-2); ostatni głos na radiu to człowiek po drugiej stronie. | [SWIAT.md: Radio i milknące głosy](SWIAT.md#pomysł-w-rozważaniu-radio-i-milknące-głosy-do-decyzji-wojtek-2026-11-09) |
 | Tytuł gry pojawia się, gdy zapada pierwsza noc (Scena 3), a nie dopiero przy wyjeździe z R-2 (Scena 5): tam było „trochę późno”. | [POCZATEK.md: Scena 3](POCZATEK.md#scena-3-pierwsza-noc-temperatura-wilgoć-mikroboty-ok-9-min), [mapa: przepływ fabuły](mapa-swiata.html#f-noc) |
 | 2026-11-10: gra ma być trochę inkrementalna. Gdy trzeba długo czekać, gracz może zamrozić się (hibernacja) na X lat. Strategia między inkrementalem a czekaniem. Agent zaproponował balans: zyski się nasycają, straty nie; strategia to przygotowanie do snu; długość snu rośnie z postępem; budzik z anteny; raport po przebudzeniu. | [SWIAT.md: Inkrementalność](SWIAT.md#inkrementalność-i-zamrożenie-na-lata-ustalone-2026-11-10-balans-to-propozycja) |
+| 2026-11-10: inkrementalność OK, ale nie dominująca. Alarmy z anteny ciekawe. Pokoleniowo, natura też się zmienia. Wolt wraca co parę lat do tych samych domostw, pokolenia się zmieniają; gdzie pomaga, rodzi się mikrokult albo przychylność i stąd symbole robocika, który pojawia się rzadko i zawsze pomaga. | [SWIAT.md: Inkrementalność](SWIAT.md#inkrementalność-i-zamrożenie-na-lata-ustalone-2026-11-10-balans-to-propozycja), [Długofalowe skutki](SWIAT.md#długofalowe-skutki-propozycja) |
 
 ## Czeka na decyzję
 
-- Balans inkrementalności i zamrożenia (2026-11-10), patrz SWIAT.md.
 - Czy popiół jako skutek katastrofy Q-2 jest OK.
 - Czy wchodzi zwrot „człowiek z innego wymiaru steruje baterią” (2026-11-09).
 - Dlaczego ludzi ubywa (popiół i choroby, bateria, odejście na drugą stronę) (2026-11-09).

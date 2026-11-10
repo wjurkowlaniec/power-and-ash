@@ -341,6 +341,8 @@ Hibernacja **[propozycja]**:
 
 ### Inkrementalność i zamrożenie na lata **[ustalone 2026-11-10, balans to propozycja]**
 
+**Wojtek 2026-11-10:** balans OK, ale inkrementalność **nie ma dominować** w grze, to dodatek do eksploracji i utrzymania. Alarmy z anteny są ciekawe. Ma być pokoleniowo, a natura też może się zmieniać.
+
 **Wojtek:** gra ma być trochę inkrementalna. Gdy okazuje się, że jest dużo czasu do czekania, gracz może zrobić „freeze” (hibernację) na X lat. Strategia między inkrementalem a czekaniem.
 
 **Pętla** **[propozycja]:** przygotuj się, zamroź się na wybraną liczbę lat, obudź się, przeczytaj raport, napraw, zainwestuj, znów zamroź. Czas jest zasobem i walutą jednocześnie.
@@ -447,6 +449,7 @@ Gra trwa wiele lat, więc to, co Wolt robi (albo zaniedbuje), powinno zostawać 
 | **Ekologia** | Popiół z roku na rok cienieje tam, gdzie działają technologie klimatyczne; wraca zieleń, mokradła, owady. Tam, gdzie nic nie zrobiono, zostaje szaro. Mapa po 20 latach wygląda inaczej niż na początku. |
 | **Nieodwracalne decyzje** | Niektóre ruchy zmieniają teren na stałe, np. naprawa zapory zatapia dolinę jeszcze bardziej, a wycięcie Lasu Słupów otwiera przejazd i zabiera gniazda. |
 | **Ludzie i pokolenia** **[przyjęte przez Wojtka 2026-11-09]** | Dzieci, które pamiętają Wolta, dorastają i się starzeją. Wolt staje się legendą i słowem w ich języku. **Ludzie malują na ścianach symbol Wolta** (pomysł Wojtka): najpierw rysunek dziecka, potem znak, który z pokoleniami się upraszcza, aż zostaje prosty piktogram: **kółko, na nim prostokąt, z prostokąta wystaje ręka** (Wojtek 2026-11-09). Gracz może go spotkać w bunkrach i ruinach jako ślad, że ktoś tu o nim pamiętał, a nawet daleko od miejsc, gdzie Wolt był, co znaczy, że legenda wędrowała sama. Kolejne pokolenia traktują go inaczej niż pierwsze. Łączy się z [Zakończeniem bez ludzi](#pomysł-w-rozważaniu-zakończenie-bez-ludzi-do-decyzji-wojtek-2026-11-09). |
+| **Domostwa i mikrokult** **[ustalone 2026-11-10]** | Wolt wraca co parę lat do tych samych domostw i widzi, jak zmieniają się pokolenia. Tam, gdzie pomaga, rodzi się mały kult albo po prostu przychylność: robocik pojawia się rzadko, a zawsze coś naprawia i pomaga. Stąd biorą się symbole na ścianach. Szczegóły do ustalenia: np. zostawione dary przy drzwiach, światło w oknie na jego przyjazd, dzieci, które go rozpoznają z rysunków, a w domostwach, którym nie pomógł, nieufność albo zapomnienie. |
 | **Sam Wolt** | Patyna, łaty i wymienione części zostają na modelu. Po latach gracz widzi na ciele historię swoich napraw. Stare ciała zostają w bazach jak relikwie. |
 | **Pamięć świata** | Miejsca, gdzie coś się stało (grób jelenia, pierwsza zapalona lampa, rozbity wózek), zostają na mapie jako małe znaki. |
 
