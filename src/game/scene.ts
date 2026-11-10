@@ -26,6 +26,8 @@ export interface Scene {
   enter(ctx: Ctx): void;
   update(dt: number, ctx: Ctx): void;
   exit?(ctx: Ctx): void;
+  /** A note or the archive is open: Esc closes that instead of opening the menu. */
+  modal?(): boolean;
   /** Set by the scene when it is over: the id of the next scene. */
   next: string | null;
 }

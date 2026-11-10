@@ -1,0 +1,5 @@
+blank_issues_enabled: true
+contact_links:
+  - name: Zagraj w aktualną wersję
+    url: https://wjurkowlaniec.github.io/power-and-ash/
+    about: Gra na GitHub Pages. Wszystkie linki do testów są w README, w sekcji „Jak testować”.

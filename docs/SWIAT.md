@@ -34,6 +34,7 @@ Wolt to kwantowa bateria, prototyp z misji badawczej, która myśli i steruje ci
 
 - **Samotność i cisza jak w Inside.** Historia opowiadana otoczeniem, prawie bez tekstu. Żadnych dialogów w dymkach na początku gry. **[ustalone]**
 - **Przyszłość, ale europejska.** Krajobraz i przyroda środkowej Europy: łąki, olszyny, mokradła, zbiorniki zaporowe, łagodne wzgórza, a dalej góry. Architektura nie amerykańska, ale też bez kiczu PRL-u czy PGR-ów: ma być czuć Europę w kształcie terenu, materiałach i proporcjach. **[ustalone]**
+- **Dużo, ale subtelnie** **[ustalone 2026-11-10]:** nie da się zrobić wszystkiego, ale wiele pomysłów (pokolenia, mikrokult, zmieniająca się natura, dary, symbole) może być w grze jako drobne, ciche szczegóły: bez okienek i komunikatów, widoczne tylko dla tego, kto patrzy. Lepiej wiele małych śladów niż kilka dużych systemów.
 - **Paleta:** wyblakła, popielna. Kolor zarezerwowany dla ważnych rzeczy: blade okienko i dioda kasety baterii, sodowa lampa Wolta, miedziany kabel, przekaźniki, światła bunkrów.
 - **Dźwięk:** ambient otoczenia (wiatr, woda, metal, owady, odległe brzęczenie linii). Bateria ma własny, niski puls, który jest emocjonalnym „głosem” gry.
 - **Popiół** pokrywa świat cienką warstwą jak szary szron. Wiosną przebija się przez niego zieleń, latem robi się kurz, jesienią mokra breja, zimą miesza się ze śniegiem.
@@ -308,6 +309,8 @@ Bunkry **[propozycja]**:
 
 Typy misji **[propozycja]**: dostawa (przewieź coś przez trudny teren w określonym czasie), naprawa (przywróć prąd do pompy, wentylacji, światła), poszukiwanie (znajdź człowieka, sprzęt, nasiona), eskorta (przewieź człowieka żaglowozem, a on komentuje świat, co pomaga w słowniku), budowa linii (połącz bunkier z siecią).
 
+Pokolenia w osadach (genealogia, pamięć o Wolcie, zegar od pierwszego kontaktu): [SYMULACJA.md](SYMULACJA.md#4-pokolenia-ludzi).
+
 ## Czas: doba, pory roku, hibernacja
 
 **[ustalone]** Start jesienią. Na początku Wolt nie przeżyje zimy, więc na zimę hibernuje, a **długość snu wybiera gracz**. Gra obejmuje wiele lat.
@@ -339,9 +342,42 @@ Hibernacja **[propozycja]**:
 - **Po przebudzeniu:** krótka sekwencja „co się zmieniło”: zarośnięty kabel, nowy dom na palach, ktoś nowy na pomoście. W bunkrach mogą być nowi ludzie, którzy znają Wolta tylko z opowieści, a ktoś bliski mógł umrzeć.
 - Długi sen jest kuszący (produkcja, nauka), ale świat się w tym czasie sypie, a ludzie mogą potrzebować pomocy, której nie dostaną.
 
+### Inkrementalność i zamrożenie na lata **[ustalone 2026-11-10, balans to propozycja]**
+
+**Wojtek 2026-11-10:** balans OK, ale inkrementalność **nie ma dominować** w grze, to dodatek do eksploracji i utrzymania. Alarmy z anteny są ciekawe. Ma być pokoleniowo, a natura też może się zmieniać.
+
+**Wojtek:** gra ma być trochę inkrementalna. Gdy okazuje się, że jest dużo czasu do czekania, gracz może zrobić „freeze” (hibernację) na X lat. Strategia między inkrementalem a czekaniem.
+
+**Pętla** **[propozycja]:** przygotuj się, zamroź się na wybraną liczbę lat, obudź się, przeczytaj raport, napraw, zainwestuj, znów zamroź. Czas jest zasobem i walutą jednocześnie.
+
+**Co rośnie w czasie snu:**
+
+- produkcja baz (powoli, do pojemności magazynów),
+- obliczenia baterii z nadwyżki prądu (nowe umiejętności, plany),
+- odkodowywanie pisma z zebranego korpusu,
+- przyroda tam, gdzie działają technologie klimatyczne.
+
+**Co się w tym czasie psuje lub odchodzi:**
+
+- rdza i zużycie wszystkiego, czego nie zabezpieczono,
+- linie i bazy bez opieki, mikroboty w sieci,
+- ludzie: pokolenia się zmieniają, kanały radia milkną ([Radio i milknące głosy](#pomysł-w-rozważaniu-radio-i-milknące-głosy-do-decyzji-wojtek-2026-11-09)), misje przepadają,
+- jeleń się starzeje; długi sen może oznaczać, że Wolt nie zobaczy go już żywego ([Jeleń](#jeleń-ustalone-2026-11-09-szczegóły-propozycja)).
+
+**Jak to zbalansować** **[propozycja agenta]:**
+
+1. **Zyski się nasycają, straty nie.** Produkcja i obliczenia rosną tylko do pojemności magazynów i nadwyżki prądu, więc po kilku latach snu przestają przybywać. Rdza, wymieranie i rozpad sieci rosną dalej. Dzięki temu „śpij jak najdłużej” nigdy nie jest oczywistą odpowiedzią.
+2. **Strategia to przygotowanie do snu.** Przed zamrożeniem gracz decyduje, w co zainwestować: większe magazyny, oliwienie i osłony (wolniejsza rdza), drugi panel (więcej obliczeń), zapas dla bunkrów, odstraszacze. Dobrze przygotowany sen jest długi i opłacalny, źle przygotowany przynosi ruinę.
+3. **Długość snu rośnie z postępem.** Na początku tylko „do wiosny”, potem rok, później kilka lat, a na końcu dekady. Limit wynika z baterii i zimowiska, więc to też jest ulepszenie.
+4. **Budzik.** Antena alarmowa może przerwać sen, gdy coś się dzieje (rój na linii, wezwanie przez radio). Bez anteny śpisz do końca i dowiadujesz się po fakcie.
+5. **Raport po przebudzeniu.** Krótka, cicha lista, jak dziennik: co wyprodukowano, co się nauczyło, co zardzewiało, które kanały zamilkły. Bez liczb na pierwszym planie, raczej obrazy (zarośnięty kabel, pusta ławka w bunkrze).
+6. **Koszt widać w świecie, nie tylko w tabelce.** To wiąże inkrementalność z tonem gry: każdy „skip” coś kosztuje, a to łączy się z [Zakończeniem bez ludzi](#pomysł-w-rozważaniu-zakończenie-bez-ludzi-do-decyzji-wojtek-2026-11-09), gdzie tempo gracza decyduje, ilu ludziom zdąży pomóc.
+
+Proporcje czasu, style gry i model pokoleń: [SYMULACJA.md](SYMULACJA.md) (propozycja 2026-11-10).
+
 ## Bazy
 
-**[ustalone]** Bez pełnego craftingu od zera. Bazy to istniejące obiekty, które adaptujesz. Produkują rzeczy potrzebne do rozwoju, ale powoli (nawet rok). Trzeba je zasilać i doglądać. Żeby dostać alarm na odległość, trzeba zbudować antenę. Sprzęt z różnych baz nie jest kompatybilny i trzeba analizować protokoły.
+**[ustalone, potwierdzone 2026-11-09]** Bez pełnego craftingu od zera, rozwój eksploracyjny (zob. [FABULA.md](FABULA.md)). Bazy to istniejące obiekty, które adaptujesz. Produkują rzeczy potrzebne do rozwoju, ale powoli (nawet rok). Trzeba je zasilać i doglądać. Żeby dostać alarm na odległość, trzeba zbudować antenę. Sprzęt z różnych baz nie jest kompatybilny i trzeba analizować protokoły.
 
 Obiekty do adaptacji **[propozycja, szkoła ustalona]**:
 
@@ -417,9 +453,14 @@ Gra trwa wiele lat, więc to, co Wolt robi (albo zaniedbuje), powinno zostawać 
 | **Zwierzęta się uczą** | Odstraszacz działa coraz słabiej. Sokoły gniazdują na słupach Sieci. Gdy Wolt naprawia przyrodę, wraca więcej zwierząt: więcej jeleni, ale też więcej niedźwiedzi. Sukces ma koszt. |
 | **Ekologia** | Popiół z roku na rok cienieje tam, gdzie działają technologie klimatyczne; wraca zieleń, mokradła, owady. Tam, gdzie nic nie zrobiono, zostaje szaro. Mapa po 20 latach wygląda inaczej niż na początku. |
 | **Nieodwracalne decyzje** | Niektóre ruchy zmieniają teren na stałe, np. naprawa zapory zatapia dolinę jeszcze bardziej, a wycięcie Lasu Słupów otwiera przejazd i zabiera gniazda. |
-| **Ludzie i pokolenia** **[przyjęte przez Wojtka 2026-11-09]** | Dzieci, które pamiętają Wolta, dorastają i się starzeją. Wolt staje się legendą i słowem w ich języku. **Ludzie malują na ścianach symbol Wolta** (pomysł Wojtka): najpierw rysunek dziecka, potem znak, który z pokoleniami się upraszcza, aż zostaje prosty piktogram (koło, lampa na wysięgniku). Gracz może go spotkać w bunkrach i ruinach jako ślad, że ktoś tu o nim pamiętał, a nawet daleko od miejsc, gdzie Wolt był, co znaczy, że legenda wędrowała sama. Kolejne pokolenia traktują go inaczej niż pierwsze. Łączy się z [Zakończeniem bez ludzi](#pomysł-w-rozważaniu-zakończenie-bez-ludzi-do-decyzji-wojtek-2026-11-09). |
+| **Ludzie i pokolenia** **[przyjęte przez Wojtka 2026-11-09]** | Dzieci, które pamiętają Wolta, dorastają i się starzeją. Wolt staje się legendą i słowem w ich języku. **Ludzie malują na ścianach symbol Wolta** (pomysł Wojtka): najpierw rysunek dziecka, potem znak, który z pokoleniami się upraszcza, aż zostaje prosty piktogram: **kółko, na nim prostokąt, z prostokąta wystaje ręka** (Wojtek 2026-11-09). Gracz może go spotkać w bunkrach i ruinach jako ślad, że ktoś tu o nim pamiętał, a nawet daleko od miejsc, gdzie Wolt był, co znaczy, że legenda wędrowała sama. Kolejne pokolenia traktują go inaczej niż pierwsze. Łączy się z [Zakończeniem bez ludzi](#pomysł-w-rozważaniu-zakończenie-bez-ludzi-do-decyzji-wojtek-2026-11-09). |
+| **Domostwa i mikrokult** **[ustalone 2026-11-10]** | Wolt wraca co parę lat do tych samych domostw i widzi, jak zmieniają się pokolenia. Tam, gdzie pomaga, rodzi się mały kult albo po prostu przychylność: robocik pojawia się rzadko, a zawsze coś naprawia i pomaga. Stąd biorą się symbole na ścianach. Szczegóły do ustalenia: np. zostawione dary przy drzwiach, światło w oknie na jego przyjazd, dzieci, które go rozpoznają z rysunków, a w domostwach, którym nie pomógł, nieufność albo zapomnienie. |
 | **Sam Wolt** | Patyna, łaty i wymienione części zostają na modelu. Po latach gracz widzi na ciele historię swoich napraw. Stare ciała zostają w bazach jak relikwie. |
 | **Pamięć świata** | Miejsca, gdzie coś się stało (grób jelenia, pierwsza zapalona lampa, rozbity wózek), zostają na mapie jako małe znaki. |
+
+![Symbol Wolta w trzech pokoleniach: rysunek dziecka, znak, piktogram](img/koncepty/symbol-wolta.jpg)
+
+Szkic: `img/koncepty/symbol-wolta.html` (`?sciana` albo `?zblizenie`). Prompt do generatora obrazów jest w `/mnt/project-files/koncepty/symbol-wolta/prompt-openai.md`.
 
 Jak to policzyć technicznie (do decyzji później): świat ma prosty „zegar starzenia” na obiekt, który tyka szybciej przy wilgoci i braku opieki, a hibernacja przelicza go skokowo.
 
@@ -521,6 +562,8 @@ Kierunek: nieoczywiste połączenia i europejski krajobraz. Pomysły do rozmowy:
 
 ## Łuk fabularny
 
+**[ustalone 2026-11-09]** Fabuła nie jest liniowa: są opcje, rozgałęzienia i wpływ na fabułę, ale da się zrobić 100%, i ma to wychodzić naturalnie. **Przepływ fabuły i drzewko decyzji są w [FABULA.md](FABULA.md)** i na mapie świata (widok „Przepływ fabuły”). Tam rozdziały 2–4 poniżej są równoległymi filarami w dowolnej kolejności, a nie kolejnymi latami (propozycja).
+
 **[propozycja]** Fabuła jest otwarta, ale ma oś. Każdy rozdział to mniej więcej jeden rok gry.
 
 1. **Przebudzenie** (rok 1): stacja, bateria, odjazd na resztce prądu, rozdzielnia R-2 i wózek, Popielna Równina, Echo, pierwszy człowiek, pierwsza zima. Szczegóły w [POCZATEK.md](POCZATEK.md).
@@ -551,6 +594,21 @@ Decyzja na końcu nie zamyka gry, tylko zmienia świat dalej.
 - **Propozycja: niech to wynika z mechaniki, nie z przerywnika.** Czas już jest zasobem (hibernacja, której długość wybiera gracz, i obliczenia w tle). Ludzie się starzeją, pokolenia się zmieniają, a każda długa hibernacja kosztuje ludzkie życia. Gracz, który naprawia świat „optymalnie”, może zostać sam; ten, który wybiera ludzi zamiast tempa, zdąży choć części pomóc. Ironia jest wtedy zasłużona, a nie narzucona.
 - **Połączenie ze zwrotem „kto naprawdę steruje”:** jeśli baterią steruje człowiek z drugiej strony, to w świecie bez ludzi ostatnim człowiekiem jest on, czyli gracz. Wolt nie jest wtedy całkiem sam. To spina oba pomysły w jedno zakończenie: robot robił wszystko dla ludzi, a jedyny, który został, był z nim od początku.
 
+### Pomysł w rozważaniu: radio i milknące głosy **[do decyzji, Wojtek 2026-11-09]**
+
+**Pomysł Wojtka:** gdy Wolt ma już radio i nawiąże kontakt z ludźmi, mogą go prosić o pomoc (mini misje). Z upływem czasu ludzi jest coraz mniej, a gracz musi dojść, dlaczego.
+
+**Uwagi agentów (nie decyzja):**
+
+- **Radio jako zegar ludzkości:** lista znaków wywoławczych bunkrów, która z czasem się przerzedza. Po każdej hibernacji część stacji milczy. Nikt tego nie ogłasza, gracz sam widzi, że kanał, który odzywał się co wieczór, przestał. To wprost przenosi „hibernacja kosztuje pokolenia” z [Zakończenia bez ludzi](#pomysł-w-rozważaniu-zakończenie-bez-ludzi-do-decyzji-wojtek-2026-11-09) na coś, co słychać.
+- **Mini misje przez radio:** krótkie prośby (przywieź filtr, napraw pompę, poszukaj zaginionego), z terminem. Spóźniona pomoc ma skutek, bo bunkier może zamilknąć. Misje dają też słowa do słownika.
+- **Dlaczego ich ubywa (do wyboru, można warstwowo):**
+  1. **Powód widoczny:** popiół w płucach, mało dzieci, zimy, choroby. Gracz może temu częściowo zaradzić (filtry, ciepło, żywność).
+  2. **Powód ukryty, najmocniejszy:** bateria. Umiejętność „Dobieranie” i cała sieć, którą Wolt buduje, powoli wysysa życie z otoczenia, jak echo Q-2. Im więcej prądu i pomocy, tym szybciej ludzie gasną. Ironia losu w czystej postaci, a gracz musi wybrać: mniej sieci albo mniej ludzi.
+  3. **Powód zwrotny:** ludzie nie umierają, tylko odchodzą przez połączenie baterii na drugą stronę. Pasuje do zwrotu [kto naprawdę steruje](#pomysł-w-rozważaniu-kto-naprawdę-steruje-do-decyzji-wojtek-2026-11-09), ale osłabia gorycz zakończenia.
+- **Rekomendacja agenta:** 1 + 2. Najpierw widzisz zwykłe przyczyny i z nimi walczysz, a później z notatek i pomiarów wychodzi, że część winy jest w Tobie.
+- **Ostatni głos:** gdy kanały ludzi zamilkną, na radiu zostaje jeden słaby sygnał, którego nie da się namierzyć na mapie. To człowiek po drugiej stronie, czyli gracz. Spina wszystkie trzy pomysły.
+
 ## Gra po fabule
 
 **[ustalone]** Gra ma być na długo, a nie na jedną misję.
@@ -564,6 +622,7 @@ Decyzja na końcu nie zamyka gry, tylko zmienia świat dalej.
 
 ## Otwarte pytania
 
+- Czy wchodzą radio i milknące głosy, i dlaczego ludzi ubywa, patrz [Pomysł w rozważaniu](#pomysł-w-rozważaniu-radio-i-milknące-głosy-do-decyzji-wojtek-2026-11-09).
 - Czy wchodzi zakończenie bez ludzi (ludzie wymierają, zanim robot naprawi świat), patrz [Pomysł w rozważaniu](#pomysł-w-rozważaniu-zakończenie-bez-ludzi-do-decyzji-wojtek-2026-11-09).
 - Czy wchodzi zwrot „kto naprawdę steruje baterią” (człowiek z innego wymiaru), patrz [Pomysł w rozważaniu](#pomysł-w-rozważaniu-kto-naprawdę-steruje-do-decyzji-wojtek-2026-11-09).
 - Czy Popiół jako skutek katastrofy Q-2 jest OK? To mocno ustawia ton i stosunek ludzi do baterii.

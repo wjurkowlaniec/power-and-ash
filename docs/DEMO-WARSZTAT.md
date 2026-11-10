@@ -131,7 +131,6 @@ Wojtek (2026-11-08): w tym demie żadnych „biednych brył”, wszystko porząd
 
 ## Czeka na decyzję
 
-- Czy w grze jest crafting od zera. W SWIAT.md ustalone jest „bez pełnego craftingu od zera, adaptacja baz” (2026-11-06), a demo testuje pełny crafting na prośbę Wojtka.
-- Czy rozwój w grze ma widoczne drzewko (jak tu), czy zostaje cichym odkrywaniem w tle (jak w SWIAT.md).
+- ~~Czy w grze jest crafting od zera~~ **Rozstrzygnięte 2026-11-09:** w grze nie ma craftingu od zera, rozwój jest eksploracyjny. Drzewko do klikania też nie wchodzi. Demo zostaje poligonem, a z niego może przejść ekwipunek z wózkiem, rozbiórka, moduły, sieć i antena ([FABULA.md: Co z demem](FABULA.md#co-z-demem-warsztat)).
 - Liczby (moce, czasy, rozmiary stosów, 6 + 12 miejsc) są wymyślone przez agenta, do strojenia.
 - Żaglowóz: szot ręcznie (W/S) czy domyślnie trymuje Q-1; jak ostre ma być przetarcie żagla; czy tak ma wyglądać przejście od wózka do Żaglowozu w grze (POCZATEK.md przewiduje to po Scenie 5).

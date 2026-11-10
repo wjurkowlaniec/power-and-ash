@@ -66,18 +66,27 @@ Oznaczenia w SWIAT.md: **[ustalone]** to decyzja Wojtka, **[propozycja]** to szk
 | Rdza: spowalnia, gdy coś nie jest naoliwione; lekarstwo to oliwienie i wymiana elementów. | [SWIAT.md: Wolt](SWIAT.md#wolt) |
 | Wojtek prosi, żeby przemyśleć długofalowe wpływy. Agent zaproponował listę (rdza i zużycie, infrastruktura bez opieki, wydeptane drogi, zwierzęta, które się uczą i wracają, ekologia, nieodwracalne decyzje, pokolenia ludzi, patyna Wolta, pamięć miejsc). Do oceny. | [SWIAT.md: Długofalowe skutki](SWIAT.md#długofalowe-skutki-propozycja) |
 | Z długofalowych skutków przyjęte „kolejne pokolenia ludzi, dla których Wolt staje się legendą”. Do tego ludzie malują na ścianach symbol Wolta. | [SWIAT.md: Długofalowe skutki](SWIAT.md#długofalowe-skutki-propozycja) |
+| Symbol Wolta na ścianach: kółko, na nim prostokąt, z prostokąta wystaje ręka. | [SWIAT.md: Długofalowe skutki](SWIAT.md#długofalowe-skutki-propozycja), [szkic](img/koncepty/symbol-wolta.jpg) |
+| **W grze nie ma craftingu od zera. Rozwój jest eksploracyjny** (po demie „Warsztat”, potwierdza ustalenie z 2026-11-06). Fabuła nie jest liniowa: są opcje, rozgałęzienia i wpływ na fabułę, ale da się zrobić 100%. Ma to wychodzić naturalnie. Do mapy świata dochodzi drzewko decyzji i przepływ całej fabuły. Agent zaproponował szkielet: 4 akty, 3 filary w dowolnej kolejności (Ludzie, Sieć, Kopuła), 3 klucze do finału, 9 wyborów zostawionych w świecie i Kronikę, w której wybór liczy się jako „rozstrzygnięty”. Szkielet jest do oceny. | [FABULA.md](FABULA.md), [mapa: przepływ fabuły](https://claude.ai/artifact/3Z4w4jbwc3H2CXB8BAyHtW), [SWIAT.md: Bazy](SWIAT.md#bazy) |
+| **Pomysł w rozważaniu, nie decyzja.** Gdy jest radio i kontakt z ludźmi, proszą o pomoc (mini misje). Z czasem ludzi jest coraz mniej i trzeba dojść dlaczego. Uwagi agentów: lista kanałów, które milkną po hibernacjach; powody warstwowo (popiół, choroby, a ukryty: bateria i sieć wysysają życie jak echo Q-2); ostatni głos na radiu to człowiek po drugiej stronie. | [SWIAT.md: Radio i milknące głosy](SWIAT.md#pomysł-w-rozważaniu-radio-i-milknące-głosy-do-decyzji-wojtek-2026-11-09) |
+| Tytuł gry pojawia się, gdy zapada pierwsza noc (Scena 3), a nie dopiero przy wyjeździe z R-2 (Scena 5): tam było „trochę późno”. | [POCZATEK.md: Scena 3](POCZATEK.md#scena-3-pierwsza-noc-temperatura-wilgoć-mikroboty-ok-9-min), [mapa: przepływ fabuły](mapa-swiata.html#f-noc) |
+| 2026-11-10: gra ma być trochę inkrementalna. Gdy trzeba długo czekać, gracz może zamrozić się (hibernacja) na X lat. Strategia między inkrementalem a czekaniem. Agent zaproponował balans: zyski się nasycają, straty nie; strategia to przygotowanie do snu; długość snu rośnie z postępem; budzik z anteny; raport po przebudzeniu. | [SWIAT.md: Inkrementalność](SWIAT.md#inkrementalność-i-zamrożenie-na-lata-ustalone-2026-11-10-balans-to-propozycja) |
+| 2026-11-10: inkrementalność OK, ale nie dominująca. Alarmy z anteny ciekawe. Pokoleniowo, natura też się zmienia. Wolt wraca co parę lat do tych samych domostw, pokolenia się zmieniają; gdzie pomaga, rodzi się mikrokult albo przychylność i stąd symbole robocika, który pojawia się rzadko i zawsze pomaga. | [SWIAT.md: Inkrementalność](SWIAT.md#inkrementalność-i-zamrożenie-na-lata-ustalone-2026-11-10-balans-to-propozycja), [Długofalowe skutki](SWIAT.md#długofalowe-skutki-propozycja) |
+| 2026-11-10: zasada „dużo, ale bardzo subtelnie”. Nie da się zrobić wszystkiego, ale wiele pomysłów może wejść jako drobne, ciche szczegóły świata, bez komunikatów. | [SWIAT.md: Ton i styl](SWIAT.md#ton-i-styl) |
+| 2026-11-10 | Symulacja balansu czasu gracza (6 zajęć, sufity nagrody, style gry z gałęziami per akt) i generator pokoleń ludzi; zegar pokoleń osady rusza od pierwszego kontaktu, przeszłość generuje się wstecz. Liczby to propozycja. | [SYMULACJA.md](SYMULACJA.md), [symulacja.html](symulacja.html) |
 | Wojtek: „dorób w tech demo budowanie statku z żaglem”. Agent odczytał to jako pierwszy Żaglowóz (etap 1 z SWIAT.md: wózek z masztem, żaglem z powłoki balonu meteo i płozami z ramy bojerka) i dodał go do demo „Warsztat” jako etapy 12 (budowa) i 13 (żegluga z wiatrem pozornym, szotem, martwym kątem i halsowaniem). Liczby i model żeglugi są propozycją agenta, do strojenia w testach. | [DEMO-WARSZTAT.md: Żaglowóz](DEMO-WARSZTAT.md#żaglowóz) |
 
 ## Czeka na decyzję
 
 - Czy popiół jako skutek katastrofy Q-2 jest OK.
 - Czy wchodzi zwrot „człowiek z innego wymiaru steruje baterią” (2026-11-09).
+- Dlaczego ludzi ubywa (popiół i choroby, bateria, odejście na drugą stronę) (2026-11-09).
 - Czy wchodzi zakończenie bez ludzi i czy jest stałe, czy zależy od gracza (2026-11-09).
 - Które długofalowe skutki z SWIAT.md wchodzą do gry (2026-11-09).
 - Ślad na równinie i czy zadokowany wózek to ciało, czy osobny pojazd.
 - Mapa świata (później, Wojtek chce ją narysować sam).
 - Żaglowóz w demie „Warsztat” (2026-11-09): czy sterowanie szotem ręcznie (W/S) jest fajne, czy domyślnie ma trymować Q-1; czy przetarcie żagla ma być ostrzejsze; czy tak ma wyglądać przejście od wózka do żaglowozu w grze. [DEMO-WARSZTAT.md: Żaglowóz](DEMO-WARSZTAT.md#żaglowóz)
-- Czy w grze jest crafting od zera (demo „Warsztat” go testuje, a SWIAT.md ustala „bez pełnego craftingu od zera”) i czy rozwój ma widoczne drzewko. [DEMO-WARSZTAT.md: Czeka na decyzję](DEMO-WARSZTAT.md#czeka-na-decyzję)
+- Szkielet fabuły z [FABULA.md](FABULA.md): filary, klucze, wybory, które są nieodwracalne, i czy Kronika 100% jest widoczna (2026-11-09).
 - Pozostałe punkty w [Otwartych pytaniach](SWIAT.md#otwarte-pytania).
 
 ## Sposób pracy, technologia, styl i rozgrywka
@@ -97,6 +106,7 @@ Decyzje z rozmów o prototypie, tech demo i grze (wątki: research, prototyp, wy
 | 2026-11-08 | Wojtek wrzuca myśli losowo i w dowolnym miejscu, a agent je porządkuje i rozdziela na zadania. Ten sposób pracy jest akceptowany („10 na 10”). | |
 | 2026-11-08 | **Stała zasada dokumentacji:** każda decyzja i myśl Wojtka (może być sparafrazowana) trafia do repo, nie tylko do pamięci agenta. Repo ma być samowystarczalne: aktualne dokumenty, rejestr decyzji, instrukcje dla agentów, opis architektury, porządek w kodzie. Każdy PR aktualizuje dokumentację, której dotyczy. | [AGENTS.md](../AGENTS.md), [CLAUDE.md](../CLAUDE.md) |
 | 2026-11-08 | Priorytet: najpierw dopracować bazę (płynne animacje, precyzyjny ruch robota, ślady zależne od podłoża). Gdy baza będzie dobra, Wojtek sam rysuje mapę. | [RUCH-I-ANIMACJA.md](RUCH-I-ANIMACJA.md) |
+| 2026-11-09 | Testerzy spoza projektu (na początek dziewczyna Wojtka) współpracują przez **GitHub Issues** w tym repo: konto na GitHubie, Wojtek dodaje ich jako współpracowników. Błędy formularzem „Błąd” (etykieta `bug`), pomysły i wrażenia formularzem „Pomysł” (etykieta `pomysł`); `do-decyzji` = czeka na Wojtka. W README jest przewodnik testowania z linkami do wszystkich wersji na Pages. | [README.md: Jak testować](../README.md#jak-testować), [.github/ISSUE_TEMPLATE](../.github/ISSUE_TEMPLATE), [AGENTS.md](../AGENTS.md) |
 
 ### Technologia
 
@@ -138,6 +148,8 @@ Decyzje z rozmów o prototypie, tech demo i grze (wątki: research, prototyp, wy
 | 2026-11-07 | Gracz nie może utknąć: ładunek zawsze da się odczepić, zaczepiona opona nie blokuje ruchu, na postoju widać ładowanie, a cel jest czytelny. | [GRA.md](GRA.md) |
 | 2026-11-07 | Scena stacji nie kończy się na turbinie: dalej ciągnie się kabel z masztu do maszynowni. | [POCZATEK.md: Scena 2](POCZATEK.md#scena-2-martwa-stacja-energia-kabel-złom-ok-15-min) |
 | 2026-11-08 | Po najechaniu myszą na złom: co to jest i co da rozebranie. Bilans prądu: co ładuje, a co zużywa, linia po linii, nie tylko suma. | [GRA.md](GRA.md), [PLAN.md](PLAN.md) |
+| 2026-11-09 | Zgłoszenie „clipping”: Wolt wjeżdżał przodem albo szpulą w ściany i szkło komory w hali. Kolizje liczą teraz cały korpus (koło, nos, szpula), w grze i w tech demo. | [RUCH-I-ANIMACJA.md: Kolizje korpusu](RUCH-I-ANIMACJA.md#kolizje-korpusu-srcsimfootprintts) |
+| 2026-11-09 | Gra ma menu główne z wyborem poziomów: nowa gra, Scena 1 (hala), Scena 2 (stacja) i oba tech demo. W grze Esc otwiera to samo menu (pauza, restart sceny, inna scena). Linki `?scene=` dalej skaczą prosto do sceny. | [README.md: Jak testować](../README.md#jak-testować), [ARCHITEKTURA.md: Gra](ARCHITEKTURA.md#gra) |
 | 2026-11-08 | Luźne myśli do mapy świata (nie dosłownie): co 15–30 s gracz ma coś ciekawego do zrobienia, ale na początku podróżuje się żaglem, więc liczą się też postoje i zbieranie po drodze. Napędy zmieniają się z czasem: żagiel, płozy na piasek i lód, inne technologie, na końcu np. kwantowy poduszkowiec. Ironia losu: świat się poddał, ludzie cofnęli się w rozwoju (katastrofa, zmiany klimatu), a jeden robot ulepsza technologię i wyprowadza ich z powrotem, mimo ich oporu, przywracając dobre warunki. | [SWIAT.md: Ironia losu](SWIAT.md#ironia-losu-propozycja-na-podstawie-luźnych-myśli-wojtka-2026-11-08-nie-dosłownie), [Żaglowóz](SWIAT.md#żaglowóz), [Kolejne obszary](SWIAT.md#kolejne-obszary-do-wymyślenia), [mapa świata](https://claude.ai/artifact/3Z4w4jbwc3H2CXB8BAyHtW) |
 
 ## Czeka na decyzję (sposób pracy, styl, rozgrywka)
