@@ -11,6 +11,8 @@ import { ROPE } from '../../sim/tow';
 import { CraftGame, Target, Building, Scrap, Drop, Link } from '../sim/craftGame';
 import { BUILD, BuildingId, SCRAP } from '../data';
 import { buildingModel, BuildingModel, scrapModel, itemModel, moduleOnWolt } from './craftModels';
+import { mastRig, runnerRig, balloonSailTexture, rod } from './yachtModels';
+import { Sail } from '../../render/sail';
 
 const CABLE_Y = 0.06;
 const CAM_OFFSET = new THREE.Vector3(0, 40, 44);
@@ -46,7 +48,16 @@ export class CraftView {
   private dropMeshes = new Map<Drop, THREE.Object3D>();
   private cableMeshes = new Map<object, { mesh: THREE.Mesh; key: string; curve: THREE.CurvePath<THREE.Vector3> }>();
   private cart: THREE.Group;
+  private cartBody = new THREE.Group();
   private cartWheels: THREE.Object3D[] = [];
+  /** The land yacht's rig on the cart, rebuilt when a part goes on. */
+  private rig = new THREE.Group();
+  private rigKey = '';
+  private sail: Sail | null = null;
+  private pennant: THREE.Group | null = null;
+  private sailTex: THREE.Texture | null = null;
+  private groundB: GroundFx;
+  private sailZoom = 1;
   private rope: THREE.Mesh | null = null;
   private pulses: THREE.InstancedMesh;
   private ghost: THREE.Group | null = null;
@@ -84,6 +95,8 @@ export class CraftView {
     this.wolt = woltMonoModel(); s.add(this.wolt.group);
     this.anim = new WoltAnimator(this.wolt);
     this.ground = new GroundFx(() => SURFACES.ash); s.add(this.ground.group);
+    // the second runner (or wheel) of the land yacht leaves its own track
+    this.groundB = new GroundFx(() => SURFACES.ash); s.add(this.groundB.group);
 
     this.cart = this.buildCart(); s.add(this.cart);
     this.pickables.push({ obj: this.cart, target: () => ({ kind: 'cart' }) });
@@ -147,9 +160,11 @@ export class CraftView {
         o.position.set(x, 0, y); s.add(o); k++;
       }
     };
-    scatter(['Pebble_Square_1', 'Pebble_Square_3', 'Pebble_Square_5', 'Pebble_Round_2', 'Pebble_Round_4'], 60, [0.5, 1.3], 0.4);
-    scatter(['Grass_Wispy_Short', 'Grass_Wispy_Tall'], 80, [0.35, 0.7], 0.5);
-    scatter(['Stone_Chunks_Small', 'Parts_Cog', 'trash_A', 'box_A'], 14, [0.5, 0.9], 0.6);
+    // the plain around the workshop is bigger than the workshop: thinner there, not empty
+    const k = Math.min(3.5, (W * H) / (46 * 34));
+    scatter(['Pebble_Square_1', 'Pebble_Square_3', 'Pebble_Square_5', 'Pebble_Round_2', 'Pebble_Round_4'], Math.round(60 * k), [0.5, 1.3], 0.4);
+    scatter(['Grass_Wispy_Short', 'Grass_Wispy_Tall'], Math.round(80 * k), [0.35, 0.7], 0.5);
+    scatter(['Stone_Chunks_Small', 'Parts_Cog', 'trash_A', 'box_A'], Math.round(14 * k), [0.5, 0.9], 0.6);
     // the fog ring: dead trees close, half-buried ruins and wind turbines far
     const ring = (names: string[], n: number, a: number, b: number, fn: (o: THREE.Object3D) => void, sides = 4) => {
       for (let k = 0; k < n; k++) {
@@ -160,7 +175,7 @@ export class CraftView {
         o.position.set(x, 0, z); fn(o); s.add(o);
       }
     };
-    ring(['DeadTree_1', 'DeadTree_2', 'DeadTree_3', 'DeadTree_4', 'DeadTree_5'], 26, 2, 14, o => o.scale.setScalar(0.5 + rnd() * 0.4), 3); // not south: the tilted camera would put them over the HUD
+    ring(['DeadTree_1', 'DeadTree_2', 'DeadTree_3', 'DeadTree_4', 'DeadTree_5'], 60, 2, 14, o => o.scale.setScalar(0.5 + rnd() * 0.4), 3); // not south: the tilted camera would put them over the HUD
     ring(['Building_Small_1', 'Building_Medium_2_001', 'Building_Large_2'], 6, 24, 40, o => { o.position.y = -6 - rnd() * 8; o.rotation.z = (rnd() - 0.5) * 0.25; }, 3);
     ring(['windturbine_tall'], 4, 20, 34, o => { o.scale.setScalar(2.2); o.rotation.z = (rnd() - 0.5) * 0.3; }, 3);
     // the workshop yard: cable drums, cargo, a parked lander base gone to rust
@@ -195,16 +210,66 @@ export class CraftView {
 
   private buildCart(): THREE.Group {
     const g = new THREE.Group();
+    const b = this.cartBody;
     const m = this.models;
     if (m.has('spacetruck_trailer')) {
       const t = fit(m, 'spacetruck_trailer', 1.15, 1.9, 0.75);
-      g.add(t);
+      b.add(t);
       for (const n of ['front_left', 'front_right', 'rear_left', 'rear_right']) { const w = t.getObjectByName('spacetruck_trailer_wheel_' + n); if (w) this.cartWheels.push(w); }
-    } else g.add(mesh(new THREE.BoxGeometry(1.1, 0.5, 1.8), mat(PAL.steel), 0, 0.4, 0));
+    } else b.add(mesh(new THREE.BoxGeometry(1.1, 0.5, 1.8), mat(PAL.steel), 0, 0.4, 0));
     // a drawbar to the hitch and a tarp-covered load that grows with the slots used
-    g.add(mesh(new THREE.BoxGeometry(0.05, 0.05, 0.6), mat(0x1e2022), 0, 0.3, 1.2));
-    const load = new THREE.Group(); load.name = 'load'; g.add(load);
+    b.add(mesh(new THREE.BoxGeometry(0.05, 0.05, 0.6), mat(0x1e2022), 0, 0.3, 1.2));
+    const load = new THREE.Group(); load.name = 'load'; b.add(load);
+    g.add(b);
+    g.add(this.rig);
     return g;
+  }
+
+  /** Height of the cart's bed above the ground (before runners lift it). */
+  static readonly DECK = 0.56;
+  static readonly MAST_H = 3.7;
+  static readonly BOOM_Y = 1.2;   // above the deck: clears Wolt's head
+  static readonly MAST_Z = 0.5;
+  static readonly WOLT_Z = -0.35;
+
+  /** Rebuild the mast, sail and runners on the cart when the rig changes. */
+  private syncRig() {
+    const r = this.g.cart.rig;
+    const key = `${+r.mast}${+r.sail}${+r.runners}`;
+    if (key === this.rigKey) return;
+    this.rigKey = key;
+    this.rig.clear();
+    this.sail = null; this.pennant = null;
+    const lift = r.runners ? 0.14 : 0;
+    this.cartBody.position.y = lift;
+    const deck = CraftView.DECK + lift;
+    const steel = mat(0x50565b, { r: 0.5, m: 0.6 });
+    let anchors = [new THREE.Vector3(-0.56, deck - 0.05, CraftView.MAST_Z - 0.15), new THREE.Vector3(0.56, deck - 0.05, CraftView.MAST_Z - 0.15), new THREE.Vector3(0, deck - 0.05, 1.45)];
+    if (r.runners) {
+      const rr = runnerRig();
+      this.rig.add(rr.group);
+      anchors = rr.ends;
+    }
+    if (r.mast) {
+      const mr = mastRig(CraftView.MAST_H);
+      mr.group.position.set(0, deck, CraftView.MAST_Z);
+      this.rig.add(mr.group);
+      this.pennant = mr.pennant;
+      const head = mr.head.clone().add(mr.group.position);
+      for (const a of anchors) this.rig.add(rod(head, a, 0.007, steel, 4));
+      // a turnbuckle where each shroud meets its anchor
+      for (const a of anchors) { const t = rod(a, a.clone().lerp(head, 0.06), 0.016, steel, 6); this.rig.add(t); }
+    }
+    if (r.mast && r.sail) {
+      if (!this.sailTex) this.sailTex = balloonSailTexture();
+      const sail = new Sail(1.95, CraftView.MAST_H - CraftView.BOOM_Y - 0.15, this.sailTex);
+      // the sail's frame has the bow along +x: turn it onto the cart's +z
+      const holder = new THREE.Group(); holder.rotation.y = -Math.PI / 2;
+      holder.position.set(0, deck + CraftView.BOOM_Y, CraftView.MAST_Z);
+      holder.add(sail.group);
+      this.rig.add(holder);
+      this.sail = sail;
+    }
   }
 
   private buildDust(): THREE.Points {
@@ -221,7 +286,7 @@ export class CraftView {
     this.renderer.setSize(w, h);
     this.viewSize = Math.max(9, Math.min(13, 11 * (900 / Math.max(h, 500)) ** 0.2));
     const a = w / h;
-    const vs = (a < 1 ? this.viewSize / a * 0.95 : this.viewSize) * this.zoom;
+    const vs = (a < 1 ? this.viewSize / a * 0.95 : this.viewSize) * this.zoom * this.sailZoom;
     Object.assign(this.camera, { left: -vs * a, right: vs * a, top: vs, bottom: -vs });
     this.camera.updateProjectionMatrix();
   }
@@ -263,15 +328,20 @@ export class CraftView {
     this.syncEntities();
     this.updateDayNight();
 
-    const want = new THREE.Vector3(g.pos.x, 0, g.pos.y);
+    // under sail the camera pulls back a little, and looks ahead of the bow
+    const zt = g.aboard ? 1 + Math.min(0.45, g.yacht.v * 0.06) : 1;
+    if (Math.abs(zt - this.sailZoom) > 0.002) { this.sailZoom += (zt - this.sailZoom) * Math.min(1, dt * 1.5); this.resize(); }
+    const lead = g.aboard ? Math.min(4, g.yacht.v * 0.5) : 0;
+    const want = new THREE.Vector3(g.pos.x + Math.cos(g.facing) * lead, 0, g.pos.y + Math.sin(g.facing) * lead);
     if (this.camTarget.lengthSq() === 0) this.camTarget.copy(want);
     this.camTarget.lerp(want, 1 - Math.exp(-dt * 4));
     this.camera.position.copy(this.camTarget).add(CAM_OFFSET);
     this.camera.lookAt(this.camTarget);
     this.sun.target.position.copy(this.camTarget);
 
-    this.updateWolt(dt, t, aim);
     this.updateCart(dt);
+    this.updateWolt(dt, t, aim);
+    this.updateYacht(dt, t);
     this.updateBuildings(dt, t);
     this.updateScrap(t);
     this.updateCables(t);
@@ -358,8 +428,15 @@ export class CraftView {
 
   private updateWolt(dt: number, t: number, aim: V2 | null) {
     const g = this.g, w = this.wolt;
-    w.group.position.set(g.pos.x, 0, g.pos.y);
-    w.group.rotation.y = Math.PI / 2 - g.facing;
+    if (g.aboard) {
+      // on the deck: the wheel sits in the socket behind the mast and turns with the yacht
+      const p = new THREE.Vector3(0, CraftView.DECK + this.cartBody.position.y, CraftView.WOLT_Z).applyMatrix4(this.cart.matrixWorld);
+      w.group.position.copy(p);
+      w.group.rotation.y = this.cart.rotation.y;
+    } else {
+      w.group.position.set(g.pos.x, 0, g.pos.y);
+      w.group.rotation.y = Math.PI / 2 - g.facing;
+    }
     w.group.updateMatrixWorld(true);
     const p = w.group.position;
     if (!this.prevPos) { this.prevPos = p.clone(); this.prevYaw = w.group.rotation.y; }
@@ -392,13 +469,14 @@ export class CraftView {
     // the floodlight module: further, wider
     const lampMod = g.hasModule('m_lamp');
     w.spot.distance = lampMod ? 26 : 14; w.spot.angle = lampMod ? 0.85 : 0.6;
+    if (g.aboard) { this.speed = 0; this.accel = 0; this.yawRate = 0; }
     this.anim.update({
       dt, time: t, speed: this.speed, yawRate: this.yawRate, accel: this.accel, strain: g.strain,
       cableTo, tension, pullFrom, reelSpin: this.reelSpin, arm, energy: g.energyPct(),
       lamp: g.light && !g.empty() ? 1 : g.isNight() && !g.empty() ? 0.25 : 0,
-      lookAt: aim && !g.order ? new THREE.Vector3(aim.x, 0, aim.y) : null,
+      lookAt: aim && !g.order && !g.aboard ? new THREE.Vector3(aim.x, 0, aim.y) : null,
     });
-    this.ground.wheel({ x: p.x, z: p.z, yaw: yw, speed: this.speed, accel: this.accel, yawRate: this.yawRate, slip: this.anim.slip }, dt);
+    if (!g.aboard) this.ground.wheel({ x: p.x, z: p.z, yaw: yw, speed: this.speed, accel: this.accel, yawRate: this.yawRate, slip: this.anim.slip }, dt);
 
     // modules show on the body
     for (const [id, part] of this.moduleParts) if (!g.modules.includes(id as never)) { w.body.remove(part); this.moduleParts.delete(id); }
@@ -407,6 +485,7 @@ export class CraftView {
 
   private updateCart(dt: number) {
     const g = this.g, c = this.cart;
+    this.syncRig();
     c.position.set(g.cart.pos.x, 0, g.cart.pos.y);
     let dr = (Math.PI / 2 - g.cart.angle) - c.rotation.y;
     dr = Math.atan2(Math.sin(dr), Math.cos(dr));
@@ -414,11 +493,13 @@ export class CraftView {
     c.rotation.y += turn;
     const moved = this.cartPrev ? Math.hypot(g.cart.pos.x - this.cartPrev.x, g.cart.pos.y - this.cartPrev.y) : 0;
     this.cartPrev = { ...g.cart.pos };
-    for (const w of this.cartWheels) w.rotation.x += moved / 0.09;
+    if (!g.cart.rig.runners) for (const w of this.cartWheels) w.rotation.x += moved / 0.09; // on runners the wheels hang clear
+    c.updateMatrixWorld(true);
     // unrepaired: sagging on a seized wheel
     c.rotation.z = g.cart.repaired ? 0 : 0.08;
     // what is in it: crates under a tarp
     const load = c.getObjectByName('load')!;
+    load.visible = !g.aboard; // Wolt's socket is where the crates ride
     const used = g.cart.inv.used();
     if (used !== this.cartUsed) {
       this.cartUsed = used;
@@ -439,6 +520,40 @@ export class CraftView {
   }
   private cartPrev: V2 | null = null;
   private cartUsed = -1;
+
+  /** The sail fills with the apparent wind, the pennant streams, the runners leave tracks. */
+  private updateYacht(dt: number, t: number) {
+    const g = this.g, y = g.yacht;
+    const a = Math.PI / 2 - this.cart.rotation.y; // the cart's heading as drawn
+    const v = g.aboard ? y.v : 0;
+    const ax = Math.cos(g.wind.dir) * g.wind.strength - Math.cos(a) * v, ay = Math.sin(g.wind.dir) * g.wind.strength - Math.sin(a) * v;
+    const app = Math.hypot(ax, ay), appDir = Math.atan2(ay, ax);
+    if (this.pennant) this.pennant.rotation.y = -appDir - this.cart.rotation.y + Math.sin(t * 7) * 0.08 * Math.min(1, app / 6);
+    if (this.sail) {
+      // parked, the sheet is loose and the sail weathervanes; aboard it is trimmed
+      const fill = g.aboard ? y.fill : 0;
+      this.sail.update(dt, t, appDir - a, app * (0.25 + 0.75 * fill), g.aboard ? y.sheet : undefined);
+      // see-through when it stands between the camera and Wolt
+      const chest = this.wolt.group.position.clone(); chest.y += 0.7;
+      const s = chest.project(this.camera);
+      this.raycaster.setFromCamera(new THREE.Vector2(s.x, s.y), this.camera);
+      const hit = this.raycaster.intersectObject(this.sail.cloth, false).length > 0;
+      this.sail.setFade(hit ? 0.3 : 1, dt);
+    }
+    if (g.aboard) {
+      // tracks: two runners at the plank ends (or the two rear wheels)
+      const yaw = this.cart.rotation.y, half = g.cart.rig.runners ? 1.2 : 0.5, back = g.cart.rig.runners ? -0.5 : -0.55;
+      const sx = Math.cos(yaw), sz = -Math.sin(yaw), fx = Math.sin(yaw), fz = Math.cos(yaw);
+      const at = (side: number) => ({ x: this.cart.position.x + sx * half * side + fx * back, z: this.cart.position.z + sz * half * side + fz * back });
+      const l = at(-1), r = at(1);
+      const f = { yaw, speed: v, accel: 0, yawRate: 0, slip: 0 };
+      this.ground.wheel({ ...l, ...f }, dt);
+      this.groundB.wheel({ ...r, ...f }, dt);
+    }
+    this.groundB.setWind(Math.cos(g.wind.dir) * g.wind.strength * 0.3, Math.sin(g.wind.dir) * g.wind.strength * 0.3);
+    this.groundB.setScale(pxPerMetre(this.renderer, this.camera));
+    this.groundB.update(dt);
+  }
 
   private updateBuildings(dt: number, t: number) {
     const g = this.g;

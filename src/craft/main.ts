@@ -4,7 +4,8 @@ import { tr, num, langSwitch } from '../i18n';
 import { loadModels, Models } from '../render/assets';
 import { Sound } from '../audio/ambient';
 import { dist } from '../sim/vec';
-import { Target, Action, BATTERY, COMPUTE_MIN, CART_REACH } from './sim/craftGame';
+import { Target, Action, BATTERY, COMPUTE_MIN, CART_REACH, AUTO_TRIM } from './sim/craftGame';
+import { SAIL } from './sim/sailing';
 import { Inventory } from './sim/inventory';
 import { STAGES, yardAtStage, stageDone } from './sim/stages';
 import { ITEMS, ItemId, RECIPES, Recipe, TECHS, TechId, OBS, ObsId, SCRAP, BUILD, BuildingId, ModuleId, CONTACTS, POWER } from './data';
@@ -21,15 +22,15 @@ const esc = (s: string) => s.replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;
 
 $('startSub').textContent = tr('Tech demo · Warsztat: wytwarzanie i rozwój', 'Tech demo · Workshop: crafting and progress');
 $('startText').innerHTML = tr(
-  `<p>Wolt w zrujnowanym warsztacie. Ekwipunek jest malutki (6 miejsc), dopóki nie naprawisz wózka. Rozbieraj złom, rób narzędzia, kable, rozgałęźniki, maszyny i panel słoneczny. Q-1 uczy się z tego, co rozbierasz, i liczy nowe technologie na nadwyżce prądu. Ulepszaj samego Wolta modułami, aż postawisz maszt i złapiesz sygnał.</p>
+  `<p>Wolt w zrujnowanym warsztacie. Ekwipunek jest malutki (6 miejsc), dopóki nie naprawisz wózka. Rozbieraj złom, rób narzędzia, kable, rozgałęźniki, maszyny i panel słoneczny. Q-1 uczy się z tego, co rozbierasz, i liczy nowe technologie na nadwyżce prądu. Ulepszaj samego Wolta modułami, aż postawisz maszt i złapiesz sygnał. Na końcu zbuduj z wózka Żaglowóz i wyjedź na wietrze w popielną równinę.</p>
    <p>Etapy po lewej przeprowadzają przez wszystko po kolei. Każdy można też otworzyć od razu.</p>
    <p class="keys"><b>LPM</b> jedź / użyj &nbsp; <b>PPM</b> menu &nbsp; <b>WASD</b> ruch &nbsp; <b>E</b> rozbieraj &nbsp; <b>C</b> wytwarzanie &nbsp; <b>T</b> technologie &nbsp; <b>U</b> Wolt &nbsp; <b>N</b> sieć &nbsp; <b>R</b> radio &nbsp; <b>I</b> wózek</p>`,
-  `<p>Wolt in a ruined workshop. The inventory is tiny (6 slots) until you fix the cart. Take scrap apart, make tools, cables, splitters, machines and a solar panel. Q-1 learns from what you salvage and computes new technologies on surplus power. Upgrade Wolt himself with modules, until you raise a mast and catch a signal.</p>
+  `<p>Wolt in a ruined workshop. The inventory is tiny (6 slots) until you fix the cart. Take scrap apart, make tools, cables, splitters, machines and a solar panel. Q-1 learns from what you salvage and computes new technologies on surplus power. Upgrade Wolt himself with modules, until you raise a mast and catch a signal. Last, turn the cart into a land yacht and sail out onto the ash plain.</p>
    <p>The stages on the left walk through everything in order. Any of them can also be opened directly.</p>
    <p class="keys"><b>LMB</b> drive / use &nbsp; <b>RMB</b> menu &nbsp; <b>WASD</b> move &nbsp; <b>E</b> salvage &nbsp; <b>C</b> crafting &nbsp; <b>T</b> technologies &nbsp; <b>U</b> Wolt &nbsp; <b>N</b> grid &nbsp; <b>R</b> radio &nbsp; <b>I</b> cart</p>`);
 $('startSmall').textContent = tr('prototyp · logika w czystym TS, render Three.js · modele CC0: Kay Lousberg, Quaternius', 'prototype · logic in plain TS, Three.js rendering · CC0 models: Kay Lousberg, Quaternius');
-$('help').innerHTML = tr('<b>LPM</b> jedź / użyj · <b>PPM</b> menu · <b>WASD</b> · <b>E</b> rozbieraj · <b>C T U N R</b> panele · <b>L</b> światło · <b>Alt</b> prąd · <b>Esc</b> anuluj · <b>H</b> pomoc',
-  '<b>LMB</b> drive / use · <b>RMB</b> menu · <b>WASD</b> · <b>E</b> salvage · <b>C T U N R</b> panels · <b>L</b> light · <b>Alt</b> power · <b>Esc</b> cancel · <b>H</b> help');
+$('help').innerHTML = tr('<b>LPM</b> jedź / użyj · <b>PPM</b> menu · <b>WASD</b> · <b>E</b> rozbieraj · <b>C T U N R</b> panele · <b>L</b> światło · <b>Alt</b> prąd · <b>Esc</b> anuluj · <b>H</b> pomoc<br>Żaglowóz: <b>A/D</b> ster · <b>W/S</b> szot · <b>Spacja</b> hamulec · <b>F</b> Q-1 trymuje · <b>E</b> zejdź',
+  '<b>LMB</b> drive / use · <b>RMB</b> menu · <b>WASD</b> · <b>E</b> salvage · <b>C T U N R</b> panels · <b>L</b> light · <b>Alt</b> power · <b>Esc</b> cancel · <b>H</b> help<br>Land yacht: <b>A/D</b> steer · <b>W/S</b> sheet · <b>Space</b> brake · <b>F</b> Q-1 trims · <b>E</b> step off');
 $('start').querySelector('.card')!.appendChild(langSwitch());
 
 const goBtn = $('go') as HTMLButtonElement;
@@ -82,7 +83,7 @@ function targetName(t: Target): string {
     case 'self': return 'Wolt';
     case 'scrap': return SCRAP[t.s.kind].name;
     case 'build': return BUILD[t.b.kind].name;
-    case 'cart': return tr('wózek serwisowy', 'service cart');
+    case 'cart': return game.cart.rig.mast && game.cart.rig.sail ? tr('Żaglowóz', 'land yacht') : tr('wózek serwisowy', 'service cart');
     case 'drop': return tr('pakunek', 'bundle');
   }
 }
@@ -136,6 +137,7 @@ const toggleTab = (t: Tab) => { tab = tab === t ? null : t; sideKey = ''; };
 addEventListener('keydown', e => {
   if ((e.target as HTMLElement).tagName === 'SELECT') return;
   if (e.code === 'AltLeft' || e.code === 'AltRight') { view.overlay = true; e.preventDefault(); }
+  if (e.code === 'Space' && running) e.preventDefault(); // the yacht's brake, not a page scroll
   if (e.repeat) return;
   keys.add(e.code);
   if (!running) return;
@@ -147,6 +149,7 @@ addEventListener('keydown', e => {
     case 'KeyR': toggleTab('radio'); break;
     case 'KeyI': toggleTab('cart'); break;
     case 'KeyL': game.toggleLight(); break;
+    case 'KeyF': if (game.aboard) game.toggleTrim(); break;
     case 'KeyM': sound.toggleMute(); break;
     case 'KeyH': { const h = $('help'); h.hidden = !h.hidden; break; }
     case 'Escape': if (game.placing) game.placing = null; else if (game.held) { game.held = null; } else if (!$('ctx').hidden) closeMenu(); else tab = null; sideKey = ''; break;
@@ -302,7 +305,8 @@ function craftPanel(): string {
   let h = `<h3>${tr('Wytwarzanie', 'Crafting')}</h3><div class="dim" style="font-size:11px">${where}</div>`;
   if (j) h += `<div class="job"><div class="row"><span>${icon(j.r.out, '')} ${ITEMS[j.r.out].name}${j.left ? ` (+${j.left})` : ''}</span><button class="btn" data-x="cancel">${tr('anuluj', 'cancel')}</button></div><div class="meter"><i style="width:${j.t / j.total * 100}%"></i></div></div>`;
   const groups: [string, (r: Recipe) => boolean][] = [
-    [tr('Części i kabel', 'Parts and cable'), r => ITEMS[r.out].kind === 'part'],
+    [tr('Części i kabel', 'Parts and cable'), r => ITEMS[r.out].kind === 'part' && r.tech !== 'sailing'],
+    [tr('Żaglowóz (montuje się na wózku)', 'Land yacht (fitted onto the cart)'), r => r.tech === 'sailing'],
     [tr('Narzędzia', 'Tools'), r => ITEMS[r.out].kind === 'tool'],
     [tr('Budowle i maszyny', 'Buildings and machines'), r => ITEMS[r.out].kind === 'building'],
     [tr('Moduły Wolta', 'Wolt\'s modules'), r => ITEMS[r.out].kind === 'module'],
@@ -466,7 +470,13 @@ function infoCard(t: Target): string {
         ${n && n.nodes.length > 1 ? `<div class="row"><span>${tr('sieć', 'grid')} ${n.id}</span><b class="${n.balance >= 0 ? 'okc' : 'limit'}">${g.fmtW(n.balance)}</b></div>` : ''}
         ${b.kind === 'recycler' ? `<div class="row"><span>${tr('w zasypie', 'in the hopper')}</span><b>${b.hopper}</b></div>` : ''}`;
     }
-    case 'cart': return `<div class="h">${tr('WÓZEK SERWISOWY', 'SERVICE CART')}</div><div class="dim">${g.cart.repaired ? tr(`+12 miejsc, także na duże rzeczy. ${g.cart.inv.used()}/12 zajęte.`, `+12 slots, big things too. ${g.cart.inv.used()}/12 used.`) : tr('zatarte koła: 2 łożyska + 2 żelaza', 'seized wheels: 2 bearings + 2 iron')}</div>`;
+    case 'cart': {
+      const r = g.cart.rig, mk = (b: boolean) => b ? '<span class="okc">✓</span>' : '○';
+      const yacht = r.mast && r.sail;
+      return `<div class="h">${yacht ? tr('ŻAGLOWÓZ', 'LAND YACHT') : tr('WÓZEK SERWISOWY', 'SERVICE CART')}</div><div class="dim">${g.cart.repaired ? tr(`+12 miejsc, także na duże rzeczy. ${g.cart.inv.used()}/12 zajęte.`, `+12 slots, big things too. ${g.cart.inv.used()}/12 used.`) : tr('zatarte koła: 2 łożyska + 2 żelaza', 'seized wheels: 2 bearings + 2 iron')}</div>
+        ${g.cart.repaired && (g.techs.has('sailing') || r.mast || r.runners) ? `<div class="sub">${tr('Żaglowóz', 'Land yacht')}</div><div>${mk(r.mast)} ${tr('maszt z bomem', 'mast and boom')} · ${mk(r.sail)} ${tr('żagiel', 'sail')} · ${mk(r.runners)} ${tr('płozy', 'runners')}</div>
+        ${r.sail ? `<div class="row"><span>${tr('przetarcie żagla', 'sail wear')}</span><b class="${g.yacht.wear > 0.5 ? 'limit' : ''}">${Math.round(g.yacht.wear * 100)}%</b></div>` : ''}` : ''}`;
+    }
     case 'drop': return `<div class="h">${tr('PAKUNEK', 'BUNDLE')}</div><div class="dim">${t.d.items.map(s => `${s.n} ${ITEMS[s.id].name}`).join(', ')}</div>`;
     case 'self': return `<div class="h">WOLT</div><div class="dim">${Math.round(g.energy)}/${g.battery()} Wh</div>`;
     default: return '';
@@ -514,6 +524,59 @@ function tipAndToasts() {
   }
 }
 
+// ---------------------------------------------------------------- the land yacht: a compass and the trim, while aboard
+const sailEl = document.createElement('div');
+sailEl.className = 'panel sailp'; sailEl.hidden = true;
+$('hud').appendChild(sailEl);
+let sailKey = '';
+function sailPanel() {
+  const g = game;
+  if (!g.aboard || !running) { sailEl.hidden = true; sailKey = ''; return; }
+  sailEl.hidden = false;
+  const y = g.yacht, deg = (a: number) => Math.round(a * 180 / Math.PI);
+  const key = JSON.stringify([n1(y.v), Math.round(y.app), deg(y.betaTrue), deg(y.boom), deg(y.best), deg(y.sheet), y.side, Math.round(y.fill * 20), y.auto, Math.round(y.wear * 100), Math.floor(g.sailed.dist), deg(g.wind.dir - y.heading)]);
+  if (key === sailKey) return;
+  sailKey = key;
+  // the compass: the bow points up, starboard is to the right
+  const R = 52, C = 60;
+  const at = (rel: number, r: number) => `${(C + Math.sin(rel) * r).toFixed(1)},${(C - Math.cos(rel) * r).toFixed(1)}`;
+  const windTo = g.wind.dir - y.heading, from = windTo + Math.PI;
+  const appTo = Math.atan2(Math.sin(g.wind.dir) * g.wind.strength - Math.sin(y.heading) * y.v, Math.cos(g.wind.dir) * g.wind.strength - Math.cos(y.heading) * y.v) - y.heading;
+  const nogo = SAIL.stall * 2.1;
+  const arrow = (rel: number, color: string, w: number) => `<line x1="${at(rel + Math.PI, R - 4).split(',')[0]}" y1="${at(rel + Math.PI, R - 4).split(',')[1]}" x2="${at(rel, R - 14).split(',')[0]}" y2="${at(rel, R - 14).split(',')[1]}" stroke="${color}" stroke-width="${w}"/>
+    <polygon points="${at(rel, R - 6)} ${at(rel + 0.18, R - 17)} ${at(rel - 0.18, R - 17)}" fill="${color}"/>`;
+  const mast = { x: C, y: C - 8 };
+  const boomEnd = (b: number, side: number) => { const rel = Math.PI - side * b; return `${(mast.x + Math.sin(rel) * 30).toFixed(1)},${(mast.y - Math.cos(rel) * 30).toFixed(1)}`; };
+  const svg = `<svg viewBox="0 0 120 120" width="120" height="120">
+    <circle cx="${C}" cy="${C}" r="${R}" fill="#0000" stroke="#ffffff22"/>
+    <path d="M${C},${C} L${at(from - nogo, R)} A${R},${R} 0 0 1 ${at(from + nogo, R)} Z" fill="#e0705a22"/>
+    ${arrow(windTo, '#ffffff55', 1.5)}${arrow(appTo, '#bfe6ef', 2)}
+    <path d="M${C},${C - 26} L${C + 9},${C + 18} L${C - 9},${C + 18} Z" fill="#c9c3b6" opacity=".85"/>
+    <line x1="${mast.x}" y1="${mast.y}" x2="${boomEnd(y.best, y.side).split(',')[0]}" y2="${boomEnd(y.best, y.side).split(',')[1]}" stroke="#7fd99a" stroke-width="2" stroke-dasharray="3 3"/>
+    <line x1="${mast.x}" y1="${mast.y}" x2="${boomEnd(y.boom, y.side).split(',')[0]}" y2="${boomEnd(y.boom, y.side).split(',')[1]}" stroke="#e8a64e" stroke-width="3"/>
+    <circle cx="${mast.x}" cy="${mast.y}" r="3" fill="#1e2022" stroke="#e8a64e"/>
+  </svg>`;
+  const trim = y.betaTrue < nogo ? `<span class="limit">${tr('martwy kąt: wiatr prosto w dziób, skręć (A/D)', 'in irons: the wind is dead ahead, bear away (A/D)')}</span>`
+    : y.auto ? `<span class="okc">${tr(`Q-1 trymuje szot (${n1(AUTO_TRIM, 1)} Wh/s)`, `Q-1 trims the sheet (${n1(AUTO_TRIM, 1)} Wh/s)`)}</span>`
+      : y.fill < 0.2 ? `<span class="tense">${tr('żagiel łopocze: wybierz szot (W)', 'the sail is flapping: haul in (W)')}</span>`
+        : y.sheet < y.best - 0.15 ? `<span class="tense">${tr('za ciasno: ciągnie w bok, poluzuj (S)', 'too tight: it only pulls sideways, ease out (S)')}</span>`
+          : y.sheet > y.best + 0.15 ? `<span class="tense">${tr('za luźno: wybierz szot (W)', 'too loose: haul in (W)')}</span>`
+            : `<span class="okc">${tr('żagiel pracuje', 'the sail is drawing')}</span>`;
+  sailEl.innerHTML = `<div class="lbl"><span>${tr('ŻAGLOWÓZ', 'LAND YACHT')}</span><span>${n1(y.v)} m/s</span></div>
+    <div class="cmp">${svg}<div class="rd">
+      <div class="row"><span>${tr('wiatr', 'wind')}</span><b>${n1(g.wind.strength, 0)} m/s</b></div>
+      <div class="row"><span>${tr('pozorny', 'apparent')}</span><b>${n1(y.app, 0)} m/s</b></div>
+      <div class="row"><span>${tr('kąt do wiatru', 'off the wind')}</span><b>${deg(y.betaTrue)}°</b></div>
+      <div class="row"><span>${tr('bom / najlepiej', 'boom / best')}</span><b>${deg(y.boom)}° / ${deg(y.best)}°</b></div>
+      <div class="row"><span>${tr('ciąg żagla', 'sail pull')}</span><b>${Math.round(y.drive * 100)}%</b></div>
+      <div class="row"><span>${tr('przetarcie', 'wear')}</span><b class="${y.wear > 0.5 ? 'limit' : ''}">${Math.round(y.wear * 100)}%</b></div>
+      <div class="row"><span>${tr('przejechane', 'sailed')}</span><b>${Math.floor(g.sailed.dist)} m</b></div>
+    </div></div>
+    <div class="trim">${trim}</div>
+    <div class="dim keys">${tr('<b>A/D</b> ster · <b>LPM</b> kurs · <b>W/S</b> szot · <b>Spacja</b> hamulec · <b>F</b> Q-1 trymuje · <b>E</b> zejdź', '<b>A/D</b> steer · <b>LMB</b> course · <b>W/S</b> sheet · <b>Space</b> brake · <b>F</b> Q-1 trims · <b>E</b> step off')}</div>
+    <div class="dim legend"><i style="background:#bfe6ef"></i>${tr('wiatr pozorny', 'apparent wind')} <i style="background:#ffffff55"></i>${tr('rzeczywisty', 'true')} <i style="background:#e8a64e"></i>${tr('bom', 'boom')} <i style="background:#7fd99a"></i>${tr('najlepszy', 'best')}</div>`;
+}
+
 // ---------------------------------------------------------------- loop
 let last = performance.now();
 let stepT = 0;
@@ -531,7 +594,7 @@ function loop(now: number) {
       if (aim && dragT <= 0) { game.command({ kind: 'ground', at: aim }, 'walk'); dragT = 0.15; }
     }
     const prev = { ...game.pos };
-    game.update(dt, { x: mx, y: my }, keys.has('ShiftLeft') || keys.has('ShiftRight'), keys.has('KeyE'));
+    game.update(dt, { x: mx, y: my }, keys.has('ShiftLeft') || keys.has('ShiftRight'), keys.has('KeyE'), keys.has('Space'));
     const rolled = dist(prev, game.pos);
     if (rolled > 1e-4) { stepT -= rolled; if (stepT <= 0) { if (Math.random() < 0.7) sound.squeak(false, game.hitched ? 0.5 : 0); stepT = 0.9 + Math.random() * 0.6; } }
     if (game.salvage && Math.random() < dt * 9) sound.scrape();
@@ -540,14 +603,16 @@ function loop(now: number) {
       switch (e) {
         case 'build': case 'module': sound.play('plug'); break;
         case 'research': case 'radio': sound.online(); break;
-        case 'hook': sound.play('plug'); break;
+        case 'hook': case 'board': sound.play('plug'); break;
+        case 'bump': sound.play('salvage'); break;
         case 'unhook': sound.play('unplug'); break;
         default: sound.play(e);
       }
     }
     game.events.length = 0;
     const near = game.buildings.filter(b => game.powered(b)).reduce((m, b) => Math.max(m, 1 - dist(b.port, game.pos) / 10), 0);
-    sound.update(dt, { humNear: Math.max(0.03, near), wind: game.wind.strength / 12, tension: 0 });
+    // under sail the wind in the rigging is the apparent wind
+    sound.update(dt, { humNear: Math.max(0.03, near), wind: (game.aboard ? game.yacht.app : game.wind.strength) / 12, tension: 0 });
     hover = mouse && $('ctx').hidden ? view.pickTarget(mouse.x, mouse.y) : null;
     const done = stageDone(game, game.stage);
     if (done && !wasDone && game.stage < STAGES.length - 1) game.toast(tr('Etap zaliczony. „Dalej” po lewej otwiera następny.', 'Stage complete. "Next" on the left opens the following one.'));
@@ -561,6 +626,7 @@ function loop(now: number) {
   side();
   hoverCard(running ? hover : null);
   tipAndToasts();
+  sailPanel();
   requestAnimationFrame(loop);
 }
 requestAnimationFrame(loop);

@@ -6,6 +6,7 @@ import { Models, fit, fade } from '../../render/assets';
 import { mat, mesh } from '../../render/models';
 import { PAL } from '../../render/palette';
 import { ItemId, BuildKind, ScrapKind } from '../data';
+import { sailclothIcon, yachtMastIcon, sailIcon, runnersIcon, iceYachtWreck, fallenBalloon } from './yachtModels';
 
 /**
  * Models for the crafting demo. Stock CC0 models from Kay Lousberg's KayKit packs
@@ -365,6 +366,10 @@ export function itemModel(id: ItemId, models: Models): THREE.Object3D {
     case 'cutter': return cutter();
     case 'solder': return solderIron();
     case 'meter': return multimeter();
+    case 'sailcloth': return sailclothIcon();
+    case 'yachtmast': return yachtMastIcon();
+    case 'sail': return sailIcon();
+    case 'runners': return runnersIcon();
     case 'm_lamp': case 'm_arm': case 'm_cells': case 'm_radio': case 'm_remote': case 'm_ai': return moduleModel(id);
     default: return buildingModel(id as BuildKind, models).group;
   }
@@ -464,6 +469,8 @@ export function scrapModel(kind: ScrapKind, w: number, h: number, models: Models
     }
     case 'server': { const s = fit(models, 'Prop_Computer', 0.9, 0.9, 1.6); s.rotation.x = -0.25; g.add(s); break; }
     case 'radiobox': g.add(fit(models, 'Prop_AccessPoint', 0.9, 0.9, 1.3)); break;
+    case 'iceyacht': g.add(iceYachtWreck(w, h)); break;
+    case 'balloon': g.add(fallenBalloon(w, h, seed)); break;
     case 'buried': {
       // a low ridge in the ash with a glint of copper sheath where it breaks the surface
       const ridge = mesh(new THREE.CapsuleGeometry(0.22, h - 0.6, 4, 10).rotateX(Math.PI / 2).scale(1, 0.35, 1), mat(0x8f8b82, { r: 1 }), 0, 0, 0);

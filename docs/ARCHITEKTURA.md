@@ -76,7 +76,7 @@ Używają go i gra, i tech demo. Zmiana tutaj musi zostawić obie strony działa
 | `loads.ts` | modele holowanych ładunków i liny |
 | `groundFx.ts` | ślady koła i opony zależne od podłoża, pył przy buksowaniu |
 | `deck.ts` | pokład żaglowozu: stalowa rama z dwuteowników, europalety |
-| `sail.ts`, `sailTexture.ts` | żagiel falujący w shaderze za wiatrem i wypłowiała reklama wymyślonej oranżady „Zefir” |
+| `sail.ts`, `sailTexture.ts` | żagiel falujący w shaderze za wiatrem i wypłowiała reklama wymyślonej oranżady „Zefir”; opcjonalnie własna tekstura i `sheet` (szot ogranicza bom), z czego korzysta Żaglowóz w „Warsztacie” |
 | `view.ts` | **tylko tech demo**: cała scena 3D poziomu „Rozruch” |
 
 ### Pozostałe wspólne
@@ -98,7 +98,7 @@ Stały poligon do testowania mechanik i technologii (decyzja Wojtka 2026-11-06).
 
 ## Tech demo „Warsztat” (`/demo-craft/`)
 
-Drugi poligon (decyzja Wojtka 2026-11-08): wytwarzanie, ekwipunek z wózkiem, rozbiórka z narzędziami, sieć z rozgałęźnikami i magazynami, drzewko technologii, moduły Wolta, antena. 12 etapów do przeklikania. Cały kod w `src/craft/` (dane w `data.ts`, logika w `sim/`, widok w `render/`), opis, sterowanie i jak dodawać rzeczy: [DEMO-WARSZTAT.md](DEMO-WARSZTAT.md).
+Drugi poligon (decyzja Wojtka 2026-11-08): wytwarzanie, ekwipunek z wózkiem, rozbiórka z narzędziami, sieć z rozgałęźnikami i magazynami, drzewko technologii, moduły Wolta, antena, budowa Żaglowozu na wózku i żegluga (`sim/sailing.ts`). 14 etapów do przeklikania. Cały kod w `src/craft/` (dane w `data.ts`, logika w `sim/`, widok w `render/`), opis, sterowanie i jak dodawać rzeczy: [DEMO-WARSZTAT.md](DEMO-WARSZTAT.md).
 
 Korzysta ze wspólnego silnika (`World`, `Cable`, `solveNetworks`, `findPath`, `drive`, `towDrive`, `Wind`, model i animator Wolta, `GroundFx`, `Sound`). Dodał do niego tylko drobiazgi: `World.add()` (przeszkoda postawiona w trakcie gry), ładunek `'cart'` w `tow.ts`, eksport `fade` z `render/assets.ts`.
 
@@ -117,7 +117,7 @@ Sceny z [POCZATEK.md](POCZATEK.md): `src/game/main.ts` (mapa scen, pętla, wygas
 | `level1.test.ts` | tech demo: przejście całego poziomu „Rozruch” w symulacji, bateria Wolta, mysz, obrót |
 | `hall.test.ts`, `station.test.ts` | logika scen gry (hala, martwa stacja) |
 | `notes.test.ts` | notatki, korpus, progi odkodowania |
-| `craft.test.ts` | demo „Warsztat”: ekwipunek, rozbiórka, wytwarzanie, badania, sieć z magazynem, skróty wszystkich 12 etapów, spójność danych |
+| `craft.test.ts` | demo „Warsztat”: ekwipunek, rozbiórka, wytwarzanie, badania, sieć z magazynem, skróty wszystkich 14 etapów, spójność danych, żegluga Żaglowozu |
 | `i18n.test.ts` | język poza przeglądarką, korpus notatek niezależny od języka |
 
 Nowa mechanika w logice dostaje test. Testy logiki nie dotykają Three.js.

@@ -263,7 +263,7 @@ Etapy **[propozycja]**:
 |---|---|---|
 | – | sam monocykl, ładunek na oponie za hakiem | okolice stacji, za mało prądu na dalej |
 | 0 | **wózek serwisowy** z rozdzielni R-2: cztery małe koła z silnikami w piastach, mała platforma, gniazdo dokowania dla monocyklu, własna bateria **[ustalone 2026-11-07]** | twardy grunt, dłuższe trasy, ładunek; grzęźnie w sypkim popiele |
-| 1 | wózek z masztem i żaglem z powłoki balonu meteo, płozy z ramy starego bojerka | popiół i wydmy, jazda na wiatr, oszczędzanie baterii |
+| 1 | wózek z masztem i żaglem z powłoki balonu meteo, płozy z ramy starego bojerka (do zagrania w demie „Warsztat”, etapy 12–13, [DEMO-WARSZTAT.md](DEMO-WARSZTAT.md#żaglowóz)) | popiół i wydmy, jazda na wiatr, oszczędzanie baterii |
 | 2 | **sanie żaglowe**: dłuższa rama, prawdziwe płótno (wyblakła reklama „Zefir” z Zatopionej Wsi), wymienne płozy albo koła, mała bateria | dłuższe trasy, nocowanie przy pojeździe, pierwszy panel |
 | 3 | **Żaglowóz**: kadłub z ładownią, fabrykator na pokładzie, turbina, panele, nawijak kabli | prawdziwa ruchoma baza, wyprawy na wiele dni |
 | 4 | Żaglowóz rozbudowany: napęd elektryczny na bezwietrzne odcinki, kotwica i wyciągarka, izolacja, grzałki, powłoka | góry, mokradła, zima |

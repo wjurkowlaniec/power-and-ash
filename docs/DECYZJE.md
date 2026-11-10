@@ -74,6 +74,7 @@ Oznaczenia w SWIAT.md: **[ustalone]** to decyzja Wojtka, **[propozycja]** to szk
 | 2026-11-10: inkrementalność OK, ale nie dominująca. Alarmy z anteny ciekawe. Pokoleniowo, natura też się zmienia. Wolt wraca co parę lat do tych samych domostw, pokolenia się zmieniają; gdzie pomaga, rodzi się mikrokult albo przychylność i stąd symbole robocika, który pojawia się rzadko i zawsze pomaga. | [SWIAT.md: Inkrementalność](SWIAT.md#inkrementalność-i-zamrożenie-na-lata-ustalone-2026-11-10-balans-to-propozycja), [Długofalowe skutki](SWIAT.md#długofalowe-skutki-propozycja) |
 | 2026-11-10: zasada „dużo, ale bardzo subtelnie”. Nie da się zrobić wszystkiego, ale wiele pomysłów może wejść jako drobne, ciche szczegóły świata, bez komunikatów. | [SWIAT.md: Ton i styl](SWIAT.md#ton-i-styl) |
 | 2026-11-10 | Symulacja balansu czasu gracza (6 zajęć, sufity nagrody, style gry z gałęziami per akt) i generator pokoleń ludzi; zegar pokoleń osady rusza od pierwszego kontaktu, przeszłość generuje się wstecz. Liczby to propozycja. | [SYMULACJA.md](SYMULACJA.md), [symulacja.html](symulacja.html) |
+| Wojtek: „dorób w tech demo budowanie statku z żaglem”. Agent odczytał to jako pierwszy Żaglowóz (etap 1 z SWIAT.md: wózek z masztem, żaglem z powłoki balonu meteo i płozami z ramy bojerka) i dodał go do demo „Warsztat” jako etapy 12 (budowa) i 13 (żegluga z wiatrem pozornym, szotem, martwym kątem i halsowaniem). Liczby i model żeglugi są propozycją agenta, do strojenia w testach. | [DEMO-WARSZTAT.md: Żaglowóz](DEMO-WARSZTAT.md#żaglowóz) |
 
 ## Czeka na decyzję
 
@@ -84,6 +85,7 @@ Oznaczenia w SWIAT.md: **[ustalone]** to decyzja Wojtka, **[propozycja]** to szk
 - Które długofalowe skutki z SWIAT.md wchodzą do gry (2026-11-09).
 - Ślad na równinie i czy zadokowany wózek to ciało, czy osobny pojazd.
 - Mapa świata (później, Wojtek chce ją narysować sam).
+- Żaglowóz w demie „Warsztat” (2026-11-09): czy sterowanie szotem ręcznie (W/S) jest fajne, czy domyślnie ma trymować Q-1; czy przetarcie żagla ma być ostrzejsze; czy tak ma wyglądać przejście od wózka do żaglowozu w grze. [DEMO-WARSZTAT.md: Żaglowóz](DEMO-WARSZTAT.md#żaglowóz)
 - Szkielet fabuły z [FABULA.md](FABULA.md): filary, klucze, wybory, które są nieodwracalne, i czy Kronika 100% jest widoczna (2026-11-09).
 - Pozostałe punkty w [Otwartych pytaniach](SWIAT.md#otwarte-pytania).
 

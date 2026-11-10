@@ -7,7 +7,7 @@ Top-down gra survivalowa w przeglądarce. Automat serwisowy Wolt ciągnie kable 
 
 **Tech demo:** https://wjurkowlaniec.github.io/power-and-ash/demo/ (poziom „Rozruch”, poligon do testowania mechanik)
 
-**Tech demo „Warsztat”:** https://wjurkowlaniec.github.io/power-and-ash/demo-craft/ (wytwarzanie, ekwipunek i wózek, rozbiórka, sieć, drzewko technologii, moduły Wolta, antena; 12 etapów po kolei, opis w [docs/DEMO-WARSZTAT.md](docs/DEMO-WARSZTAT.md))
+**Tech demo „Warsztat”:** https://wjurkowlaniec.github.io/power-and-ash/demo-craft/ (wytwarzanie, ekwipunek i wózek, rozbiórka, sieć, drzewko technologii, moduły Wolta, antena; budowa i żegluga Żaglowozu; 14 etapów po kolei, opis w [docs/DEMO-WARSZTAT.md](docs/DEMO-WARSZTAT.md))
 
 Gra i demo są w jednym repo i dzielą kod silnika (`src/sim`, `src/render`, `src/audio`). Gra ma swoje wejście `index.html` → `src/game/main.ts`, demo `demo/index.html` → `src/main.ts`. W grze `?scene=hall` przeskakuje do wybranej sceny (do testów), a przytrzymana spacja pomija Scenę 0.
 
