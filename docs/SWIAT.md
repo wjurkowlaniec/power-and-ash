@@ -309,6 +309,8 @@ Bunkry **[propozycja]**:
 
 Typy misji **[propozycja]**: dostawa (przewieź coś przez trudny teren w określonym czasie), naprawa (przywróć prąd do pompy, wentylacji, światła), poszukiwanie (znajdź człowieka, sprzęt, nasiona), eskorta (przewieź człowieka żaglowozem, a on komentuje świat, co pomaga w słowniku), budowa linii (połącz bunkier z siecią).
 
+Pokolenia w osadach (genealogia, pamięć o Wolcie, zegar od pierwszego kontaktu): [SYMULACJA.md](SYMULACJA.md#4-pokolenia-ludzi).
+
 ## Czas: doba, pory roku, hibernacja
 
 **[ustalone]** Start jesienią. Na początku Wolt nie przeżyje zimy, więc na zimę hibernuje, a **długość snu wybiera gracz**. Gra obejmuje wiele lat.
@@ -370,6 +372,8 @@ Hibernacja **[propozycja]**:
 4. **Budzik.** Antena alarmowa może przerwać sen, gdy coś się dzieje (rój na linii, wezwanie przez radio). Bez anteny śpisz do końca i dowiadujesz się po fakcie.
 5. **Raport po przebudzeniu.** Krótka, cicha lista, jak dziennik: co wyprodukowano, co się nauczyło, co zardzewiało, które kanały zamilkły. Bez liczb na pierwszym planie, raczej obrazy (zarośnięty kabel, pusta ławka w bunkrze).
 6. **Koszt widać w świecie, nie tylko w tabelce.** To wiąże inkrementalność z tonem gry: każdy „skip” coś kosztuje, a to łączy się z [Zakończeniem bez ludzi](#pomysł-w-rozważaniu-zakończenie-bez-ludzi-do-decyzji-wojtek-2026-11-09), gdzie tempo gracza decyduje, ilu ludziom zdąży pomóc.
+
+Proporcje czasu, style gry i model pokoleń: [SYMULACJA.md](SYMULACJA.md) (propozycja 2026-11-10).
 
 ## Bazy
 
