@@ -1,0 +1,403 @@
+<!doctype html><html lang="pl"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"></head><body>
+<!-- Kopia artefaktu (źródło: /mnt/project-files/symulacja/symulacja.html). Przy zmianie aktualizuj oba. Opis modelu: SYMULACJA.md -->
+<title>Symulacja czasu i pokoleń</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Saira+Condensed:wght@400;500;600;700&family=Spectral:ital,wght@0,400;0,500;0,600;1,400&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<style>
+/* Układ: jedna kolumna jak dziennik misji Zorza: 1) proporcje czasu, 2) oś gracza z gałęziami, 3) pokolenia ludzi. Paleta z mapy świata. */
+:root{
+  --bg:#e2e4e0; --surface:#eceeea; --surface2:#f4f5f2; --ink:#222725; --muted:#5d6661; --line:#b7bdb8;
+  --c-eks:#53697a; --c-lud:#b07a26; --c-utr:#a4503a; --c-bud:#5f7f45; --c-kmi:#6c6496; --c-cze:#8f9693;
+  --good:#2f8a5c; --warn:#b07a26; --bad:#a4443a; --q:#2f8a5c;
+  --f-display:"Saira Condensed","Arial Narrow",system-ui,sans-serif;
+  --f-body:"Spectral",Georgia,"Times New Roman",serif;
+  --f-mono:"IBM Plex Mono",ui-monospace,Menlo,Consolas,monospace;
+}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
+  --bg:#131615; --surface:#1a1e1c; --surface2:#202523; --ink:#dce1dc; --muted:#97a19b; --line:#36403b;
+  --c-eks:#8fa7b6; --c-lud:#e0a64e; --c-utr:#d97a5e; --c-bud:#92c171; --c-kmi:#a69bd6; --c-cze:#7b8380;
+  --good:#7fd3a0; --warn:#e0a64e; --bad:#dd6e5e; --q:#7fd3a0; color-scheme:dark}}
+:root[data-theme="dark"]{
+  --bg:#131615; --surface:#1a1e1c; --surface2:#202523; --ink:#dce1dc; --muted:#97a19b; --line:#36403b;
+  --c-eks:#8fa7b6; --c-lud:#e0a64e; --c-utr:#d97a5e; --c-bud:#92c171; --c-kmi:#a69bd6; --c-cze:#7b8380;
+  --good:#7fd3a0; --warn:#e0a64e; --bad:#dd6e5e; --q:#7fd3a0; color-scheme:dark}
+*{box-sizing:border-box}
+body{background:var(--bg);color:var(--ink);font:16px/1.55 var(--f-body);margin:0}
+.wrap{max-width:1080px;margin:0 auto;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));padding-block:28px 64px;display:grid;gap:40px}
+h1,h2,h3{font-family:var(--f-display);font-weight:600;letter-spacing:.01em;text-wrap:balance;margin:0;line-height:1.1}
+h1{font-size:clamp(30px,5vw,46px)}
+h2{font-size:28px;display:flex;gap:12px;align-items:baseline}
+h2 .n{font-family:var(--f-mono);font-size:14px;color:var(--muted);font-weight:500}
+h3{font-size:19px}
+p{margin:0;max-width:68ch}
+.lead{color:var(--muted);font-size:17px}
+.eyebrow{font-family:var(--f-mono);font-size:12px;letter-spacing:.12em;text-transform:uppercase;color:var(--muted)}
+section{display:grid;gap:16px}
+.note{font-size:14px;color:var(--muted)}
+.mono{font-family:var(--f-mono);font-variant-numeric:tabular-nums}
+.panel{background:var(--surface);border:1px solid var(--line);border-radius:6px;padding:16px;min-width:0}
+.grid2{display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:16px}
+.scroll{overflow-x:auto}
+table{border-collapse:collapse;width:100%;font-size:14px}
+th,td{text-align:left;padding:6px 8px;border-bottom:1px solid var(--line);vertical-align:top}
+th{font-family:var(--f-display);font-weight:600;font-size:15px;letter-spacing:.02em}
+td.num,th.num{text-align:right;font-family:var(--f-mono);font-variant-numeric:tabular-nums;white-space:nowrap}
+.sw{display:inline-block;width:11px;height:11px;border-radius:2px;margin-right:6px;vertical-align:-1px}
+.legend{display:flex;flex-wrap:wrap;gap:6px 16px;font-size:14px}
+.controls{display:flex;flex-wrap:wrap;gap:10px 14px;align-items:end}
+label.f{display:grid;gap:3px;font-size:13px;color:var(--muted);font-family:var(--f-mono)}
+select,input,button{font:14px var(--f-mono);color:var(--ink);background:var(--surface2);border:1px solid var(--line);border-radius:4px;padding:6px 8px}
+button{cursor:pointer}
+button:hover{border-color:var(--ink)}
+:focus-visible{outline:2px solid var(--q);outline-offset:2px}
+.acts{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:10px}
+.chip{display:inline-block;font:12px var(--f-mono);padding:2px 7px;border-radius:999px;border:1px solid currentColor}
+.chip.good{color:var(--good)}.chip.warn{color:var(--warn)}.chip.bad{color:var(--bad)}.chip.mute{color:var(--muted)}
+svg text{font-family:var(--f-mono);fill:var(--ink)}
+svg .mut{fill:var(--muted)}
+.kpis{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:10px}
+.kpi{border-left:2px solid var(--line);padding:2px 0 2px 10px}
+.kpi b{display:block;font:600 26px var(--f-display)}
+.kpi span{font-size:13px;color:var(--muted)}
+.nudges{display:grid;gap:6px;font-size:14px}
+.nudge{display:grid;grid-template-columns:auto 1fr;gap:8px}
+.person{font-size:14px;display:grid;gap:6px}
+.person h3{font-size:20px}
+ul.ev{margin:0;padding-left:18px}
+.tabs{display:flex;flex-wrap:wrap;gap:6px}
+.tabs button[aria-pressed="true"]{background:var(--ink);color:var(--bg);border-color:var(--ink)}
+pre{font:12px/1.45 var(--f-mono);background:var(--surface2);border:1px solid var(--line);border-radius:4px;padding:10px;max-height:260px;overflow:auto;margin:0}
+@media (prefers-reduced-motion:reduce){*{transition:none!important}}
+</style>
+
+<div class="wrap">
+<header style="display:grid;gap:10px">
+  <div class="eyebrow">Popiół i Prąd · model do strojenia · 2026-11-10</div>
+  <h1>Symulacja czasu gracza i pokoleń ludzi</h1>
+  <p class="lead">Ile czasu gracz spędza na czym, jak to się zmienia, gdy wkręci się w budowę albo w czekanie, i co w tym czasie dzieje się z ludźmi w domostwach. Wszystkie liczby to propozycja, a nie ustalenie.</p>
+</header>
+
+<section id="proporcje">
+  <h2><span class="n">1</span>Proporcje czasu: cel</h2>
+  <p>Sześć rodzajów zajęć. „Czekanie i sen” liczy realne minuty gracza (przygotowanie do snu, raport, przewijanie nocy), a nie lata świata. Freeze kosztuje minuty, a zabiera lata.</p>
+  <div class="grid2">
+    <div class="panel scroll"><table id="tblTarget"></table></div>
+    <div class="panel" style="display:grid;gap:10px;align-content:start">
+      <h3>Zasady balansu</h3>
+      <ul class="ev" style="font-size:15px;display:grid;gap:4px">
+        <li><b>Rdzeń to ruch i ludzie.</b> Eksploracja z ludźmi to ok. połowa czasu.</li>
+        <li><b>Każde zajęcie ma sufit nagrody.</b> Powyżej niego gra łagodnie wypycha dalej (pełny magazyn, sygnał z radia), ale nie zabrania.</li>
+        <li><b>Czekanie nigdy nie dominuje:</b> sufit 1,5× normy. Śpioch zyskuje lata świata, nie godziny.</li>
+        <li><b>Minimum wystarcza.</b> Gracz, który zrobi trochę i pójdzie dalej, dochodzi do końca.</li>
+        <li><b>Rytm sesji:</b> 15–30 s jazdy między rzeczami, co 10–20 min coś nowego, co godzinę mały cel.</li>
+      </ul>
+    </div>
+  </div>
+</section>
+
+<section id="os">
+  <h2><span class="n">2</span>Oś gracza z rozgałęzieniami</h2>
+  <p>Wybierz scenariusz albo ustaw styl gry osobno w każdym akcie. To jest gałąź: ten sam gracz może przelecieć Przebudzenie, wkręcić się w budowę w Sieci i znowu ruszyć dalej.</p>
+  <div class="panel" style="display:grid;gap:14px">
+    <div class="controls">
+      <label class="f" for="scen">Scenariusz<select id="scen"></select></label>
+    </div>
+    <div class="acts" id="actSel"></div>
+  </div>
+  <div class="kpis" id="kpis"></div>
+  <div class="legend" id="legend"></div>
+  <div class="panel scroll"><svg id="timeline" role="img" aria-label="Oś czasu gracza: godziny w aktach i lata świata"></svg></div>
+  <div class="grid2">
+    <div class="panel" style="display:grid;gap:8px;align-content:start"><h3>Gdzie gra wypycha dalej</h3><div class="nudges" id="nudges"></div></div>
+    <div class="panel scroll"><h3 style="margin-bottom:8px">Mieszanka tej ścieżki</h3><table id="tblMix"></table></div>
+  </div>
+  <div class="panel scroll"><h3 style="margin-bottom:8px">Porównanie scenariuszy (ludzie: średnia z 20 ziaren)</h3><table id="tblCompare"></table></div>
+</section>
+
+<section id="ludzie">
+  <h2><span class="n">3</span>Pokolenia ludzi</h2>
+  <p>Zegar pokoleń osady rusza w chwili, gdy osada pojawia się w grze (pierwszy kontakt). Wcześniejsze pokolenia generują się jako przeszłość: dziadkowie z datami śmierci, którzy są tylko w opowieściach. Od kontaktu świat liczy rok po roku: narodziny, śmierci, odejścia, wizyty Wolta i pamięć o nim. Wizyty wynikają ze ścieżki gracza powyżej.</p>
+  <div class="panel controls">
+    <label class="f" for="seed">Ziarno<input id="seed" value="popiol-1" size="12"></label>
+    <button id="reseed" type="button">Losuj nowe</button>
+    <button id="copyJson" type="button">Kopiuj JSON</button>
+    <span class="note" id="copyMsg" aria-live="polite"></span>
+  </div>
+  <div class="tabs" id="setTabs" role="group" aria-label="Osady"></div>
+  <div class="kpis" id="setKpis"></div>
+  <div class="panel scroll"><svg id="tree" role="img" aria-label="Linie życia mieszkańców osady"></svg></div>
+  <div class="grid2">
+    <div class="panel person" id="person"></div>
+    <div class="panel" style="display:grid;gap:8px"><h3>Kronika osady</h3><div id="chron" style="max-height:340px;overflow:auto;font-size:14px"></div></div>
+  </div>
+  <details class="panel"><summary class="mono" style="cursor:pointer">Schemat danych (JSON) do późniejszych interakcji</summary><pre id="schema"></pre></details>
+</section>
+</div>
+
+<script>
+// ===== Dane modelu =====
+const CATS=[
+ {k:'eks',n:'Eksploracja i jazda',d:'odkrywanie, trasy żaglowozem, teren, pogoda'},
+ {k:'lud',n:'Ludzie i misje',d:'rozmowy, słownik, dostawy, naprawy dla domostw, radio'},
+ {k:'utr',n:'Utrzymanie',d:'rdza, oliwienie, kable, objazd sieci, energia'},
+ {k:'bud',n:'Budowa i adaptacja',d:'bazy, przeróbki znalezisk, żaglowóz, linie (nie crafting od zera)'},
+ {k:'kmi',n:'Zagadki i kmina',d:'jak przejechać, jak zasilić, notatki, odkodowywanie'},
+ {k:'cze',n:'Czekanie i sen',d:'przygotowanie do freeze, raport, noc, obliczenia w tle'}];
+// cap: ile razy normy opcjonalnej gra jeszcze nagradza; powyżej tylko piaskownica
+const CAP={eks:2,lud:2,utr:1.5,bud:1.6,kmi:1.6,cze:1.5};
+const ACTS=[
+ {n:'Przebudzenie',s:'1',req:2.5,opt:2.5,yrs:1,mix:{eks:32,lud:5,utr:18,bud:15,kmi:20,cze:10}},
+ {n:'Ludzie',s:'2',req:4,opt:4,yrs:1,mix:{eks:32,lud:22,utr:14,bud:12,kmi:14,cze:6}},
+ {n:'Sieć',s:'3',req:5.5,opt:6,yrs:3,mix:{eks:33,lud:17,utr:17,bud:16,kmi:11,cze:6}},
+ {n:'Kopuła',s:'4',req:5.5,opt:6,yrs:3,mix:{eks:30,lud:18,utr:16,bud:18,kmi:10,cze:8}},
+ {n:'Zorza',s:'5',req:4.5,opt:4,yrs:3,mix:{eks:35,lud:18,utr:10,bud:7,kmi:25,cze:5}},
+ {n:'Po fabule',s:'∞',req:0,opt:12,yrs:25,mix:{eks:32,lud:18,utr:18,bud:18,kmi:6,cze:8}}];
+const PROF={
+ wz:{n:'Wzorcowy',m:{eks:1,lud:1,utr:1,bud:1,kmi:1,cze:1}},
+ wed:{n:'Wędrowiec',m:{eks:1.8,lud:.8,utr:.7,bud:.6,kmi:1,cze:.7}},
+ maj:{n:'Majsterkowicz',m:{eks:.7,lud:.6,utr:1.5,bud:3,kmi:1,cze:1}},
+ spi:{n:'Śpioch',m:{eks:.7,lud:.5,utr:.8,bud:1.3,kmi:.8,cze:3}},
+ opi:{n:'Opiekun',m:{eks:1,lud:2,utr:1.2,bud:.8,kmi:.8,cze:.6}},
+ prz:{n:'Przelotny',m:{eks:.3,lud:.3,utr:.25,bud:.25,kmi:.3,cze:.25}}};
+const SCEN=[
+ {n:'Wzorcowy gracz',p:['wz','wz','wz','wz','wz','wz']},
+ {n:'Przelotny: trochę i dalej',p:['prz','prz','prz','prz','prz','prz']},
+ {n:'Wkręcił się w budowę w Sieci, potem dalej',p:['wz','wz','maj','wz','wz','wz']},
+ {n:'Majsterkowicz od początku',p:['maj','maj','maj','maj','maj','maj']},
+ {n:'Wkręcił się w czekanie po Kopule',p:['wz','wz','wz','spi','wz','spi']},
+ {n:'Śpioch od drugiej zimy',p:['wz','spi','spi','spi','spi','spi']},
+ {n:'Wędrowiec',p:['wed','wed','wed','wed','wed','wed']},
+ {n:'Opiekun ludzi',p:['wz','opi','opi','opi','opi','opi']}];
+const NUDGE={
+ eks:'mapa okolicy odkryta, echo wskazuje nowy sygnał za pasmem',
+ lud:'prośby spełnione, ludzie opowiadają o innej osadzie',
+ utr:'sieć sprawna, rdza wróci dopiero po zimie',
+ bud:'magazyn pełny, kolejny plan wymaga części z nowego obszaru',
+ kmi:'korpus pisma za mały, potrzeba nowych notatek',
+ cze:'zyski snu się nasyciły, antena budzi: wezwanie z radia'};
+
+// ===== Model czasu =====
+function simTime(path){
+  let y=0;const acts=[];
+  ACTS.forEach((a,i)=>{
+    const m=PROF[path[i]].m;const h={},sand={};let tot=0,stot=0;const over=[];
+    CATS.forEach(c=>{const f=a.mix[c.k]/100;const eff=Math.min(m[c.k],CAP[c.k]);
+      h[c.k]=a.req*f+a.opt*f*eff;tot+=h[c.k];
+      const ex=m[c.k]>CAP[c.k]?a.opt*f*(m[c.k]-CAP[c.k])*.35:0;sand[c.k]=ex;stot+=ex;if(ex>0)over.push(c.k)});
+    const yrs=a.yrs*Math.max(.8,Math.pow(m.cze,.8));
+    acts.push({i,a,prof:path[i],h,sand,tot,stot,y0:y,y1:y+yrs,over});y+=yrs});
+  const sum={};CATS.forEach(c=>sum[c.k]=acts.reduce((s,a)=>s+a.h[c.k]+a.sand[c.k],0));
+  const total=Object.values(sum).reduce((s,v)=>s+v,0);
+  const main=acts.slice(0,5).reduce((s,a)=>s+a.tot+a.stot,0);
+  return {acts,sum,total,main,years:y,storyYears:acts[4].y1}}
+
+// ===== Generator ludzi =====
+function rng(seed){let h=1779033703^seed.length;for(let i=0;i<seed.length;i++){h=Math.imul(h^seed.charCodeAt(i),3432918353);h=h<<13|h>>>19}
+  let a=h>>>0;return()=>{a|=0;a=a+0x6D2B79F5|0;let t=Math.imul(a^a>>>15,1|a);t=t+Math.imul(t^t>>>7,61|t)^t;return((t^t>>>14)>>>0)/4294967296}}
+const IM_K=['Ola','Mira','Wanda','Jaga','Zofia','Lena','Dana','Hela','Nina','Ina','Wera','Ilka','Rada','Zlata','Wiesia','Marta','Iga','Lida','Bożena','Sława','Ula','Tola','Jasna','Ewka'];
+const IM_M=['Bogdan','Jarek','Mirek','Witek','Staś','Leon','Igor','Tomek','Radek','Wawrzek','Kuba','Olek','Bronek','Zbych','Lech','Iwo','Ostap','Borys','Janek','Sławek','Dobrosz','Gniewko','Maks','Wit'];
+const CECHY=['ciekawski','nieufny','gawędziarz','milczący','zaradny','pobożny','uparty','łagodny','chciwy','marzyciel','bojaźliwy','dowcipny'];
+const OSADY=[
+ {k:'pale',n:'Dom na palach',gdzie:'Zatopiona Wieś',act:0,at:.6,st:-.2,rody:['Palowy','Wierzbic','Mostek'],role:['rybak','rybaczka','sieciarz','zbieracz trzciny','dziecko'],pomoc:['podniósł zalaną pompę','naprawił latarnię na pomoście','przywiózł sieć z miedzianą żyłką','połatał dach z blachy']},
+ {k:'szk',n:'Szkoła',gdzie:'schron pod szkołą',act:1,at:0,st:.3,rody:['Ławecki','Kreda','Dzwonek','Rybień'],role:['nauczycielka','rybak','kucharz','pompiarz','dziecko'],pomoc:['przywrócił światło w klasie','naprawił pompę zęzową','przywiózł leki','uruchomił stary rzutnik']},
+ {k:'roz',n:'Rozdzielnia',gdzie:'stacja przy Lesie Słupów',act:2,at:0,st:0,rody:['Miedziak','Kablarz','Bezpiecznik'],role:['technik','techniczka','spawacz','strażnik bramy','dziecko'],pomoc:['oczyścił linię z mikrobotów','przyniósł miedź','naprawił wentylację','pokazał, jak działa przetwornica']},
+ {k:'kop',n:'Kopuła',gdzie:'Szklarnia przy Szklanym Zalewie',act:3,at:0,st:.4,rody:['Szklarek','Rosa','Kiełek','Sadownik'],role:['ogrodniczka','ogrodnik','szklarz','nasiennik','dziecko'],pomoc:['zasilił Szklarnię przez zimę','wymienił pękniętą taflę','przywiózł nasiona z ruin','naprawił nawadnianie']},
+ {k:'kla',n:'Klasztor',gdzie:'piwnice przy cerkwiach',act:4,at:0,st:-.5,rody:['Dzwonnik','Popielny','Strażyc'],role:['strażnik','strażniczka','kronikarz','pszczelarz','dziecko'],pomoc:['zostawił lampę bez słowa','odprowadził zagubionego pasterza','naprawił dzwon','przyniósł wosk z ruin']}];
+const PRZYCZYNY={zima:'mróz w złą zimę',goraczka:'gorączka',wypadek:'wypadek',starosc:'starość',mikro:'mikroboty',cicha:'nikt nie wie (osłabła i zgasła)',dziecko:'choroba w dzieciństwie'};
+
+function simPeople(seed,T){
+  const R=rng(seed),RW=rng(seed+'/wizyty'),pick=a=>a[Math.floor(R()*a.length)],ri=(a,b)=>a+Math.floor(R()*(b-a+1));
+  const P=[];let nid=1;const end=Math.ceil(T.years);
+  const S=OSADY.map(o=>{const ac=T.acts[o.act];return {...o,kontakt:Math.round((ac.y0+(ac.y1-ac.y0)*o.at)*10)/10,pamiec:Math.max(0,o.st),wizyty:[],pomocDo:-1,kron:[],nadPol:0,symbol:0,wymarli:null}});
+  const mk=(o,plec,ur,ojciec,matka,rod)=>{const p={id:'p'+(nid++),imie:pick(plec==='k'?IM_K:IM_M),rod,plec,ur,zm:null,przyczyna:null,osada:o.k,rola:null,rodzice:[ojciec,matka].filter(Boolean).map(x=>x.id),partner:null,dzieci:[],cechy:[pick(CECHY),pick(CECHY)].filter((v,i,a)=>a.indexOf(v)===i),spotkania:[],stosunek:0,pamiec:'nie zna',wydarzenia:[]};
+    [ojciec,matka].forEach(r=>r&&r.dzieci.push(p.id));P.push(p);return p};
+  const byId=id=>P.find(p=>p.id===id);
+  const role=(o,p)=>{const r=o.role.filter(x=>x!=='dziecko');let c=pick(r);if(p.plec==='k'&&c==='rybak')c='rybaczka';if(p.plec==='m'&&c==='rybaczka')c='rybak';return c};
+  // przeszłość przy pierwszym kontakcie
+  S.forEach(o=>{const t=Math.floor(o.kontakt);const nf=ri(2,4);
+    for(let f=0;f<nf;f++){const rod=o.rody[f%o.rody.length];const wiek=ri(24,52);
+      const dz1=mk(o,'m',t-wiek-ri(22,34),null,null,rod),bk1=mk(o,'k',dz1.ur+ri(-3,3),null,null,pick(o.rody));
+      [dz1,bk1].forEach(a=>{a.zm=Math.min(t-1,a.ur+ri(45,80));a.przyczyna=pick(['zima','goraczka','starosc','wypadek']);a.rola=role(o,a);a.wydarzenia.push({rok:a.zm,opis:'zmarł(a) przed przybyciem Wolta, zostały opowieści'})});
+      dz1.partner=bk1.id;bk1.partner=dz1.id;
+      const on=mk(o,'m',t-wiek,dz1,bk1,rod),ona=mk(o,'k',t-wiek+ri(-4,4),null,null,pick(o.rody));
+      on.partner=ona.id;ona.partner=on.id;on.rola=role(o,on);ona.rola=role(o,ona);
+      const ndz=ri(0,4);for(let d=0;d<ndz;d++){const ur=Math.max(ona.ur+18,t-ri(0,Math.min(20,wiek-18)));if(ur>t)continue;
+        const c=mk(o,R()<.5?'k':'m',ur,on,ona,R()<.7?rod:ona.rod);c.wydarzenia.push({rok:ur,opis:'urodził(a) się'})}}
+    if(R()<.7){const st=mk(o,R()<.6?'k':'m',t-ri(62,78),null,null,pick(o.rody));st.rola=st.plec==='k'?'najstarsza w osadzie':'najstarszy w osadzie'}
+    P.filter(p=>p.osada===o.k&&p.zm===null).forEach(p=>p.stosunek=o.st+(R()-.5)*.3)});
+  // wizyty Wolta wynikają z godzin z ludźmi w każdym akcie
+  T.acts.forEach(a=>{const known=S.filter(o=>o.kontakt<a.y1);if(!known.length)return;
+    const n=Math.round((a.h.lud+a.sand.lud)*1.6);
+    for(let i=0;i<n;i++){const o=known[Math.floor(RW()*known.length)];const y=Math.max(o.kontakt,a.y0)+RW()*(a.y1-Math.max(o.kontakt,a.y0));o.wizyty.push(Math.round(y*10)/10)}});
+  S.forEach(o=>{o.wizyty.push(o.kontakt);o.wizyty=[...new Set(o.wizyty)].sort((x,y)=>x-y)});
+  const alive=(o,y)=>P.filter(p=>p.osada===o.k&&p.ur<=y&&p.zm===null);
+  const hazard=(age,y,o)=>{let h=age<5?.025:age<15?.004:age<50?.006:.01*Math.exp((age-50)/9);
+    const drain=1+y*.012;const help=y<=o.pomocDo?.45:1;return h*drain*help};
+  for(let y=Math.floor(Math.min(...S.map(o=>o.kontakt)));y<=end;y++){
+    const zima=R()<.18?1.8:1;
+    S.forEach(o=>{if(y<Math.floor(o.kontakt)||o.wymarli!==null)return;
+      // wizyty w tym roku
+      o.wizyty.filter(v=>Math.floor(v)===y).forEach((v,i)=>{const first=v===o.kontakt;const opis=first?'pierwszy kontakt z Woltem':`Wolt ${pick(o.pomoc)}`;
+        o.kron.push({rok:y,typ:first?'kontakt':'wizyta',opis});o.pomocDo=y+3;o.pamiec=Math.min(1,o.pamiec+(first?.05:.22));
+        alive(o,y).forEach(p=>{p.spotkania.push(y);p.stosunek=Math.min(1,p.stosunek+(first?.05:.18));p.wydarzenia.push({rok:y,opis:first?'zobaczył(a) Wolta pierwszy raz':`widział(a), jak Wolt ${opis.slice(5)}`})})});
+      // śmierci
+      alive(o,y).forEach(p=>{const age=y-p.ur;let h=hazard(age,y,o)*(age>=15?zima:1);
+        if(R()<h){p.zm=y;const r=R();p.przyczyna=age<10?'dziecko':age>68?(r<.7?'starosc':'zima'):zima>1&&r<.4?'zima':r<.2+y*.004?'cicha':pick(['goraczka','wypadek','mikro','zima']);
+          p.wydarzenia.push({rok:y,opis:'zmarł(a): '+PRZYCZYNY[p.przyczyna]});o.kron.push({rok:y,typ:'smierc',opis:`zmarł(a) ${p.imie} ${p.rod} (${age} l.)`})}});
+      // pary
+      const wolni=alive(o,y).filter(p=>!p.partner&&y-p.ur>=18&&y-p.ur<=40);
+      wolni.filter(p=>p.plec==='k').forEach(k=>{if(R()>.18)return;
+        let pool=wolni.filter(m=>m.plec==='m'&&!m.partner&&!sib(k,m));
+        if(!pool.length){const inne=S.filter(x=>x!==o&&x.kontakt<=y&&x.wymarli===null);for(const x of inne){pool=alive(x,y).filter(m=>m.plec==='m'&&!m.partner&&y-m.ur>=18&&y-m.ur<=42);if(pool.length)break}}
+        if(!pool.length)return;const m=pick(pool);if(m.osada!==o.k){m.wydarzenia.push({rok:y,opis:`przeniósł się do osady ${o.n}`});S.find(x=>x.k===m.osada).kron.push({rok:y,typ:'odejscie',opis:`${m.imie} ${m.rod} odszedł do osady ${o.n}`});m.osada=o.k}
+        k.partner=m.id;m.partner=k.id;k.wydarzenia.push({rok:y,opis:`związała się z ${m.imie}`});m.wydarzenia.push({rok:y,opis:`związał się z ${k.imie}`})});
+      // odejścia samotnych
+      alive(o,y).filter(p=>!p.partner&&y-p.ur>=22&&y-p.ur<=45).forEach(p=>{if(R()<.025){p.zm=y;p.przyczyna='odejscie';p.wydarzenia.push({rok:y,opis:'odszedł(a) w popiół i nie wrócił(a)'});o.kron.push({rok:y,typ:'odejscie',opis:`${p.imie} ${p.rod} odszedł(a) w popiół`})}});
+      // narodziny
+      const fert=Math.max(.25,1-y*.009);
+      alive(o,y).filter(k=>k.plec==='k'&&k.partner&&y-k.ur>=18&&y-k.ur<=42).forEach(k=>{const m=byId(k.partner);if(!m||m.zm!==null)return;
+        if(R()<.16*fert){const c=mk(o,R()<.5?'k':'m',y,m,k,R()<.6?m.rod:k.rod);
+          const pm=(m.stosunek+k.stosunek)/2;c.stosunek=pm*.6+o.pamiec*.4-.05;c.wydarzenia.push({rok:y,opis:'urodził(a) się'});
+          o.kron.push({rok:y,typ:'narodziny',opis:`urodził(a) się ${c.imie} (rodzice: ${m.imie} i ${k.imie})`})}});
+      // pamięć i symbol
+      o.pamiec=Math.max(0,o.pamiec-.03);
+      alive(o,y).forEach(p=>{p.stosunek+= (o.pamiec*.8-.1-p.stosunek)*.05});
+      o.nadPol=o.pamiec>.45?o.nadPol+1:Math.max(0,o.nadPol-2);
+      const ns=o.nadPol>=40?3:o.nadPol>=18?2:(o.pamiec>.35&&alive(o,y).some(p=>y-p.ur<14&&p.spotkania.length))?1:o.symbol;
+      if(ns>o.symbol){o.symbol=ns;o.kron.push({rok:y,typ:'symbol',opis:['','dziecko rysuje Wolta na ścianie','na drzwiach pojawia się znak Wolta','znak upraszcza się w piktogram: kółko, prostokąt, ręka'][ns]})}
+      if(!alive(o,y).length&&o.wymarli===null){o.wymarli=y;o.kron.push({rok:y,typ:'koniec',opis:'osada opustoszała'})}
+    })}
+  function sib(a,b){return a.rodzice.some(r=>b.rodzice.includes(r))}
+  // pamięć osoby
+  P.forEach(p=>{const o=S.find(x=>x.k===p.osada);p.rola=p.rola||(p.zm!==null&&p.zm-p.ur<14?'dziecko':role(o,p));
+    if(p.spotkania.length)p.pamiec='spotkał(a) osobiście';
+    else if(p.rodzice.some(r=>{const q=byId(r);return q&&q.spotkania.length}))p.pamiec='z opowieści rodziców';
+    else if(o.symbol>=2&&(p.zm??end)>o.kontakt)p.pamiec='z legendy i znaku na ścianie';
+    else if((p.zm??end)<o.kontakt)p.pamiec='zmarł(a) przed Woltem';
+    p.stosunek=Math.round(Math.max(-1,Math.min(1,p.stosunek))*100)/100;
+    p.wydarzenia.sort((a,b)=>a.rok-b.rok)});
+  S.forEach(o=>{const al=alive(o,end);const avg=al.length?al.reduce((s,p)=>s+p.stosunek,0)/al.length:0;
+    o.zywi=al.length;o.status=o.wymarli!==null?'opustoszała':o.symbol>=2&&avg>.3?'mikrokult':avg>.25?'przychylni':avg>-.1?'obojętni':'nieufni';o.lacznie=P.filter(p=>p.osada===o.k).length});
+  return {P,S,end}}
+
+// ===== Rysowanie =====
+const $=id=>document.getElementById(id);
+const fmt=(v,d=1)=>v.toLocaleString('pl-PL',{minimumFractionDigits:d,maximumFractionDigits:d});
+const col=k=>`var(--c-${k})`;
+let path=SCEN[0].p.slice(),seed='popiol-1',cur='szk',sel=null,T,W;
+
+function renderTarget(){
+  const tot=ACTS.slice(0,5).reduce((s,a)=>s+a.req+a.opt,0);
+  const rows=CATS.map(c=>{const h=ACTS.slice(0,5).reduce((s,a)=>s+(a.req+a.opt)*a.mix[c.k]/100,0);
+    return `<tr><td><span class="sw" style="background:${col(c.k)}"></span><b>${c.n}</b><div class="note">${c.d}</div></td><td class="num">${fmt(h/tot*100,0)}%</td><td class="num">${fmt(h)} h</td><td class="num">×${fmt(CAP[c.k])}</td></tr>`}).join('');
+  $('tblTarget').innerHTML=`<thead><tr><th>Zajęcie</th><th class="num">Udział</th><th class="num">Godziny</th><th class="num">Sufit</th></tr></thead><tbody>${rows}<tr><td><b>Fabuła wzorcowo</b></td><td class="num">100%</td><td class="num">${fmt(tot)} h</td><td></td></tr></tbody>`}
+
+function renderControls(){
+  $('scen').innerHTML=SCEN.map((s,i)=>`<option value="${i}">${s.n}</option>`).join('')+'<option value="-1">Własna ścieżka</option>';
+  $('actSel').innerHTML=ACTS.map((a,i)=>`<label class="f" for="a${i}">Akt ${a.s}: ${a.n}<select id="a${i}" data-i="${i}">${Object.entries(PROF).map(([k,p])=>`<option value="${k}">${p.n}</option>`).join('')}</select></label>`).join('');
+  $('legend').innerHTML=CATS.map(c=>`<span><span class="sw" style="background:${col(c.k)}"></span>${c.n}</span>`).join('')+'<span><span class="sw" style="background:repeating-linear-gradient(45deg,var(--muted) 0 2px,transparent 2px 5px)"></span>piaskownica ponad sufit</span>';
+  $('scen').onchange=e=>{const i=+e.target.value;if(i>=0){path=SCEN[i].p.slice();sync();update()}};
+  document.querySelectorAll('#actSel select').forEach(s=>s.onchange=e=>{path[+e.target.dataset.i]=e.target.value;const m=SCEN.findIndex(s=>s.p.join()===path.join());$('scen').value=m;update()})}
+function sync(){path.forEach((p,i)=>$('a'+i).value=p)}
+
+function renderTimeline(){
+  const W0=960,L=110,R=20,top=26,bh=46;const maxH=Math.max(...SCEN.map(s=>simTime(s.p).total),T.total);
+  const sx=v=>L+(W0-L-R)*v/maxH;
+  let s='',x=0;
+  // godziny
+  T.acts.forEach(a=>{const x0=x;CATS.forEach(c=>{const w=a.h[c.k];if(w>0)s+=`<rect x="${sx(x)}" y="${top}" width="${Math.max(0,sx(x+w)-sx(x)-.5)}" height="${bh}" fill="${col(c.k)}"><title>${a.a.n}: ${CATS.find(z=>z.k===c.k).n} ${fmt(w)} h</title></rect>`;x+=w});
+    if(a.stot>0){s+=`<rect x="${sx(x)}" y="${top}" width="${sx(x+a.stot)-sx(x)}" height="${bh}" fill="url(#hatch)"><title>${a.a.n}: piaskownica ${fmt(a.stot)} h</title></rect>`;x+=a.stot}
+    s+=`<line x1="${sx(x0)}" x2="${sx(x0)}" y1="${top-8}" y2="${top+bh+6}" stroke="var(--ink)" stroke-width="1"/>`;
+    const wpx=sx(x)-sx(x0);s+=`<text x="${sx(x0)+3}" y="${top-6}" font-size="11">${wpx>70?`Akt ${a.a.s} ${a.a.n}`:wpx>22?a.a.s:''}</text>`;
+    s+=`<text x="${sx(x0)+3}" y="${top+bh+18}" font-size="10" class="mut">${wpx>60?PROF[a.prof].n:''}</text>`});
+  s+=`<text x="0" y="${top+bh/2+4}" font-size="12">godziny gry</text>`;
+  // oś godzin
+  const ty=top+bh+40;for(let h=0;h<=maxH;h+=10){s+=`<line x1="${sx(h)}" x2="${sx(h)}" y1="${ty-6}" y2="${ty}" stroke="var(--muted)"/><text x="${sx(h)}" y="${ty+13}" font-size="10" text-anchor="middle" class="mut">${h} h</text>`}
+  s+=`<line x1="${L}" x2="${sx(maxH)}" y1="${ty}" y2="${ty}" stroke="var(--muted)"/>`;
+  // lata świata
+  const yT=ty+44,maxY=Math.max(...SCEN.map(s=>simTime(s.p).years),T.years);const sy=v=>L+(W0-L-R)*v/maxY;
+  s+=`<text x="0" y="${yT+5}" font-size="12">lata świata</text><line x1="${L}" x2="${sy(maxY)}" y1="${yT}" y2="${yT}" stroke="var(--line)" stroke-width="10" stroke-linecap="round"/>`;
+  T.acts.forEach((a,i)=>{s+=`<line x1="${sy(a.y0)}" x2="${sy(a.y1)}" y1="${yT}" y2="${yT}" stroke="${i%2?'var(--c-eks)':'var(--c-cze)'}" stroke-width="10"><title>${a.a.n}: lata ${fmt(a.y0)}–${fmt(a.y1)}</title></line>`;
+    if(sy(a.y1)-sy(a.y0)>18)s+=`<text x="${(sy(a.y0)+sy(a.y1))/2}" y="${yT+22}" font-size="10" text-anchor="middle" class="mut">${a.a.s}</text>`});
+  for(let y=0;y<=maxY;y+=10)s+=`<text x="${sy(y)}" y="${yT+36}" font-size="10" text-anchor="middle" class="mut">${y}</text>`;
+  // wizyty w osadach
+  const vy=yT+70;s+=`<text x="0" y="${vy-16}" font-size="12">wizyty Wolta w osadach</text>`;
+  W.S.forEach((o,i)=>{const yy=vy+i*13;s+=`<text x="${L-6}" y="${yy+4}" font-size="9.5" text-anchor="end" class="mut">${o.n}</text><line x1="${sy(o.kontakt)}" x2="${sy(o.wymarli??W.end)}" y1="${yy}" y2="${yy}" stroke="var(--line)" stroke-width="2"/>`;
+    o.wizyty.forEach(v=>s+=`<circle cx="${sy(v)}" cy="${yy}" r="2.6" fill="var(--c-lud)"><title>${o.n}: rok ${fmt(v)}</title></circle>`);
+    if(o.wymarli!==null)s+=`<text x="${sy(o.wymarli)+4}" y="${yy+3.5}" font-size="9.5" fill="var(--bad)">×</text>`});
+  const Hh=vy+W.S.length*13+8;
+  $('timeline').setAttribute('viewBox',`0 0 ${W0} ${Hh}`);$('timeline').style.minWidth='720px';$('timeline').style.width='100%';
+  $('timeline').innerHTML=`<defs><pattern id="hatch" width="6" height="6" patternUnits="userSpaceOnUse" patternTransform="rotate(45)"><rect width="6" height="6" fill="var(--surface2)"/><rect width="2" height="6" fill="var(--muted)"/></pattern></defs>`+s}
+
+function renderKpis(){
+  const cz=T.sum.cze/T.total*100,core=(T.sum.eks+T.sum.lud)/T.total*100;
+  const alive=W.S.reduce((s,o)=>s+o.zywi,0),dead=W.S.filter(o=>o.wymarli!==null).length,kult=W.S.filter(o=>o.status==='mikrokult').length;
+  $('kpis').innerHTML=[
+   [fmt(T.main)+' h','fabuła (akty 1–5)'],[fmt(T.total)+' h','razem z grą po fabule'],
+   [fmt(T.storyYears,0)+' lat','świata do końca fabuły'],[fmt(T.years,0)+' lat','świata razem'],
+   [`${fmt(core,0)}% <span class="chip ${core>=45?'good':'warn'}">${core>=45?'rdzeń':'mało'}</span>`,'eksploracja i ludzie'],
+   [`${fmt(cz,0)}% <span class="chip ${cz<=10?'good':'bad'}">${cz<=10?'w normie':'dominuje'}</span>`,'czekanie (realny czas)'],
+   [`${alive}`,`ludzi żyje na końcu, ${dead}/5 osad pustych, ${kult} z mikrokultem`]].map(k=>`<div class="kpi"><b>${k[0]}</b><span>${k[1]}</span></div>`).join('');
+  const nz=[];T.acts.forEach(a=>a.over.forEach(k=>nz.push(`<div class="nudge"><span class="chip warn">Akt ${a.a.s}</span><span><b>${CATS.find(c=>c.k===k).n}</b> ponad sufit o ${fmt(a.sand[k])} h. Gra: ${NUDGE[k]}.</span></div>`)));
+  $('nudges').innerHTML=nz.length?nz.join(''):'<p class="note">Ta ścieżka nie przekracza sufitów. Gracz idzie dalej sam z siebie.</p>';
+  $('tblMix').innerHTML=`<thead><tr><th>Zajęcie</th>${T.acts.map(a=>`<th class="num">${a.a.s}</th>`).join('')}<th class="num">Razem</th></tr></thead><tbody>`+
+   CATS.map(c=>`<tr><td><span class="sw" style="background:${col(c.k)}"></span>${c.n}</td>${T.acts.map(a=>`<td class="num">${fmt((a.h[c.k]+a.sand[c.k])/(a.tot+a.stot)*100,0)}%</td>`).join('')}<td class="num"><b>${fmt(T.sum[c.k]/T.total*100,0)}%</b></td></tr>`).join('')+
+   `<tr><td>Godziny</td>${T.acts.map(a=>`<td class="num">${fmt(a.tot+a.stot)}</td>`).join('')}<td class="num"><b>${fmt(T.total)}</b></td></tr></tbody>`}
+
+function renderCompare(){
+  const N=20;const rows=SCEN.map(sc=>{const t=simTime(sc.p);let al=0,pu=0,ku=0;
+    for(let i=0;i<N;i++){const w=simPeople(seed+'#'+i,t);al+=w.S.reduce((s,o)=>s+o.zywi,0);pu+=w.S.filter(o=>o.wymarli!==null).length;ku+=w.S.filter(o=>o.status==='mikrokult').length}
+    return `<tr${sc.p.join()===path.join()?' style="background:var(--surface2)"':''}><td>${sc.n}</td><td class="num">${fmt(t.main)}</td><td class="num">${fmt(t.total)}</td><td class="num">${fmt(t.sum.cze/t.total*100,0)}%</td><td class="num">${fmt(t.storyYears,0)}</td><td class="num">${fmt(t.years,0)}</td><td class="num">${fmt(al/N,0)}</td><td class="num">${fmt(pu/N)}</td><td class="num">${fmt(ku/N)}</td></tr>`}).join('');
+  $('tblCompare').innerHTML=`<thead><tr><th>Scenariusz</th><th class="num">Fabuła h</th><th class="num">Razem h</th><th class="num">Czekanie</th><th class="num">Lata fabuły</th><th class="num">Lata razem</th><th class="num">Żywi</th><th class="num">Puste osady</th><th class="num">Mikrokult</th></tr></thead><tbody>${rows}</tbody>`}
+
+const STAT_CHIP={mikrokult:'good',przychylni:'good',obojętni:'mute',nieufni:'warn',opustoszała:'bad'};
+function attCol(v){return v>.35?'var(--good)':v>-.1?'var(--c-cze)':'var(--bad)'}
+function renderPeople(){
+  $('setTabs').innerHTML=W.S.map(o=>`<button type="button" data-k="${o.k}" aria-pressed="${o.k===cur}">${o.n} <span class="chip ${STAT_CHIP[o.status]}">${o.status}</span></button>`).join('');
+  $('setTabs').querySelectorAll('button').forEach(b=>b.onclick=()=>{cur=b.dataset.k;sel=null;renderPeople()});
+  const o=W.S.find(x=>x.k===cur);const ppl=W.P.filter(p=>(p.osada===cur||p.wydarzenia.some(e=>e.opis.includes(o.n)))&&(p.zm??W.end)>=Math.floor(o.kontakt)-40).sort((a,b)=>a.ur-b.ur);
+  const gens=[...new Set(ppl.map(p=>p.pamiec))];
+  $('setKpis').innerHTML=[[fmt(o.kontakt)+' r.','pierwszy kontakt ('+o.gdzie+')'],[o.wizyty.length,'wizyt Wolta'],[o.lacznie,'osób w historii'],[o.zywi,'żyje na końcu (rok '+W.end+')'],[['brak','rysunek dziecka','znak na drzwiach','piktogram'][o.symbol],'symbol Wolta']].map(k=>`<div class="kpi"><b>${k[0]}</b><span>${k[1]}</span></div>`).join('');
+  const y0=Math.max(Math.min(...ppl.map(p=>p.ur)),Math.floor(o.kontakt)-40),y1=W.end,W0=960,L=150,Rr=20,rh=11,top=24;const sx=y=>L+(W0-L-Rr)*(y-y0)/(y1-y0);
+  const row={};ppl.forEach((p,i)=>row[p.id]=top+i*rh);
+  let s='';
+  for(let y=Math.ceil(y0/10)*10;y<=y1;y+=10)s+=`<line x1="${sx(y)}" x2="${sx(y)}" y1="${top-8}" y2="${top+ppl.length*rh}" stroke="var(--line)"/><text x="${sx(y)}" y="${top-12}" font-size="10" text-anchor="middle" class="mut">${y<0?y:'rok '+y}</text>`;
+  s+=`<rect x="${sx(o.kontakt)}" y="${top-8}" width="${sx(y1)-sx(o.kontakt)}" height="${ppl.length*rh+8}" fill="var(--c-cze)" opacity=".12"/>`;
+  o.wizyty.forEach(v=>s+=`<line x1="${sx(v)}" x2="${sx(v)}" y1="${top-6}" y2="${top+ppl.length*rh}" stroke="var(--c-lud)" stroke-width="1" opacity=".55"><title>Wizyta Wolta, rok ${fmt(v)}</title></line>`);
+  ppl.forEach(p=>{const r=row[p.id];p.rodzice.forEach(pid=>{if(row[pid]!==undefined)s+=`<path d="M${sx(Math.max(p.ur,y0))} ${row[pid]} V${r}" stroke="var(--muted)" stroke-width=".6" fill="none" opacity=".6"/>`})});
+  ppl.forEach(p=>{const r=row[p.id],e=p.zm??y1,act=sel===p.id;
+    s+=`<g data-id="${p.id}" style="cursor:pointer" tabindex="0"><rect x="0" y="${r-rh/2}" width="${W0}" height="${rh}" fill="${act?'var(--surface2)':'transparent'}"/>`+
+     `<text x="${L-8}" y="${r+3.5}" font-size="9.5" text-anchor="end"${p.osada!==cur?' class="mut"':''}>${p.imie} ${p.rod}</text>`+
+     `<line x1="${sx(Math.max(p.ur,y0))}" x2="${Math.max(sx(e),sx(Math.max(p.ur,y0))+2)}" y1="${r}" y2="${r}" stroke="${attCol(p.stosunek)}" stroke-width="${act?6:4}" stroke-linecap="round"/>`+
+     p.spotkania.map(y=>`<circle cx="${sx(y)}" cy="${r}" r="2" fill="var(--ink)"/>`).join('')+
+     (p.zm!==null?`<text x="${sx(e)+4}" y="${r+3.5}" font-size="9" class="mut">${p.przyczyna==='odejscie'?'→':'†'}</text>`:'')+`</g>`});
+  const H=top+ppl.length*rh+10;
+  $('tree').setAttribute('viewBox',`0 0 ${W0} ${H}`);$('tree').style.minWidth='720px';$('tree').style.width='100%';$('tree').innerHTML=s;
+  $('tree').querySelectorAll('g[data-id]').forEach(g=>{const f=()=>{sel=g.dataset.id;renderPeople()};g.onclick=f;g.onkeydown=e=>{if(e.key==='Enter')f()}});
+  if(!sel){const c=ppl.filter(p=>p.spotkania.length).sort((a,b)=>b.spotkania.length-a.spotkania.length)[0]||ppl[0];sel=c.id;return renderPeople()}
+  const p=W.P.find(x=>x.id===sel),by=id=>W.P.find(x=>x.id===id),nm=q=>q?`${q.imie} ${q.rod}`:'?';
+  const age=(p.zm??W.end)-p.ur;
+  $('person').innerHTML=`<div class="eyebrow">${p.id} · ${p.plec==='k'?'kobieta':'mężczyzna'} · ${p.rola}</div><h3>${p.imie} ${p.rod}</h3>
+   <div class="mono" style="font-size:13px">ur. ${p.ur<0?p.ur+' (przed przebudzeniem)':'rok '+p.ur} · ${p.zm!==null?(p.przyczyna==='odejscie'?'odeszła/odszedł':'zm.')+' rok '+p.zm+' ('+age+' l.)':'żyje ('+age+' l.)'}</div>
+   ${p.przyczyna&&p.przyczyna!=='odejscie'?`<div>Przyczyna: ${PRZYCZYNY[p.przyczyna]}</div>`:''}
+   <div>Rodzice: ${p.rodzice.length?p.rodzice.map(r=>nm(by(r))).join(' i '):'nieznani'} · Partner(ka): ${p.partner?nm(by(p.partner)):'brak'}</div>
+   <div>Dzieci: ${p.dzieci.length?p.dzieci.map(d=>by(d).imie).join(', '):'brak'}</div>
+   <div>Cechy: ${p.cechy.join(', ')} · Pamięć o Wolcie: <b>${p.pamiec}</b> · Stosunek: <span class="chip ${p.stosunek>.35?'good':p.stosunek>-.1?'mute':'bad'}">${fmt(p.stosunek,2)}</span></div>
+   <ul class="ev">${p.wydarzenia.map(e=>`<li><span class="mono">${e.rok}</span> ${e.opis}</li>`).join('')}</ul>`;
+  $('chron').innerHTML=o.kron.sort((a,b)=>a.rok-b.rok).map(e=>`<div style="display:grid;grid-template-columns:3.5em 1fr;gap:6px;padding:2px 0;border-bottom:1px solid var(--line)${e.typ==='symbol'||e.typ==='koniec'?';font-weight:600':''}"><span class="mono">${e.rok}</span><span>${e.opis}</span></div>`).join('')}
+
+const SCHEMA={osada:{k:'szk',n:'Szkoła',kontakt:'rok pierwszego kontaktu (start zegara pokoleń)',wizyty:['lata wizyt Wolta'],pamiec:'0..1 pamięć zbiorowa, maleje 0,03/rok, wizyta +0,22',symbol:'0 brak, 1 rysunek dziecka, 2 znak, 3 piktogram',status:'mikrokult | przychylni | obojętni | nieufni | opustoszała',kron:[{rok:0,typ:'kontakt|wizyta|narodziny|smierc|odejscie|symbol|koniec',opis:'...'}]},
+ osoba:{id:'p12',imie:'Mira',rod:'Ławecki',plec:'k|m',ur:-23,zm:'rok albo null',przyczyna:'zima|goraczka|wypadek|starosc|mikro|cicha|dziecko|odejscie',osada:'szk',rola:'nauczycielka',rodzice:['id'],partner:'id',dzieci:['id'],cechy:['ciekawski'],spotkania:['lata, gdy widział(a) Wolta'],pamiec:'spotkał(a) osobiście | z opowieści rodziców | z legendy i znaku na ścianie | nie zna',stosunek:'-1..1',wydarzenia:[{rok:7,opis:'...'}]}};
+
+function update(){T=simTime(path);W=simPeople(seed,T);renderTimeline();renderKpis();renderCompare();renderPeople()}
+renderTarget();renderControls();sync();
+$('seed').onchange=e=>{seed=e.target.value||'popiol';sel=null;update()};
+$('reseed').onclick=()=>{seed='popiol-'+Math.floor(Math.random()*9999);$('seed').value=seed;sel=null;update()};
+$('copyJson').onclick=()=>{const d=JSON.stringify({ziarno:seed,sciezka:path,osady:W.S.map(({rody,role,pomoc,nadPol,pomocDo,st,act,at,...o})=>o),osoby:W.P},null,1);
+  navigator.clipboard.writeText(d).then(()=>$('copyMsg').textContent=`Skopiowano ${W.P.length} osób.`).catch(()=>{$('schema').textContent=d;$('schema').closest('details').open=true;$('copyMsg').textContent='Schowek niedostępny: JSON jest niżej, zaznacz i skopiuj.'})};
+$('schema').textContent=JSON.stringify(SCHEMA,null,1);
+update();
+</script>
+</body></html>

@@ -73,6 +73,7 @@ Oznaczenia w SWIAT.md: **[ustalone]** to decyzja Wojtka, **[propozycja]** to szk
 | 2026-11-10: gra ma być trochę inkrementalna. Gdy trzeba długo czekać, gracz może zamrozić się (hibernacja) na X lat. Strategia między inkrementalem a czekaniem. Agent zaproponował balans: zyski się nasycają, straty nie; strategia to przygotowanie do snu; długość snu rośnie z postępem; budzik z anteny; raport po przebudzeniu. | [SWIAT.md: Inkrementalność](SWIAT.md#inkrementalność-i-zamrożenie-na-lata-ustalone-2026-11-10-balans-to-propozycja) |
 | 2026-11-10: inkrementalność OK, ale nie dominująca. Alarmy z anteny ciekawe. Pokoleniowo, natura też się zmienia. Wolt wraca co parę lat do tych samych domostw, pokolenia się zmieniają; gdzie pomaga, rodzi się mikrokult albo przychylność i stąd symbole robocika, który pojawia się rzadko i zawsze pomaga. | [SWIAT.md: Inkrementalność](SWIAT.md#inkrementalność-i-zamrożenie-na-lata-ustalone-2026-11-10-balans-to-propozycja), [Długofalowe skutki](SWIAT.md#długofalowe-skutki-propozycja) |
 | 2026-11-10: zasada „dużo, ale bardzo subtelnie”. Nie da się zrobić wszystkiego, ale wiele pomysłów może wejść jako drobne, ciche szczegóły świata, bez komunikatów. | [SWIAT.md: Ton i styl](SWIAT.md#ton-i-styl) |
+| 2026-11-10 | Symulacja balansu czasu gracza (6 zajęć, sufity nagrody, style gry z gałęziami per akt) i generator pokoleń ludzi; zegar pokoleń osady rusza od pierwszego kontaktu, przeszłość generuje się wstecz. Liczby to propozycja. | [SYMULACJA.md](SYMULACJA.md), [symulacja.html](symulacja.html) |
 
 ## Czeka na decyzję
 
