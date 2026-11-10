@@ -62,6 +62,33 @@ Czysty TS, testy w `test/sail.test.ts`.
 
 Żaglowóz używa części z demo „Warsztat” (`mastRig`, `runnerRig`, `balloonSailTexture` z `src/craft/render/yachtModels.ts`, model wózka `spacetruck_trailer`) i wspólnego silnika (`Sail`, `woltMonoModel`, `WoltAnimator`, `GroundFx`, `Sound`). W `loadCraftModels` doszedł opcjonalny filtr `only`, żeby to demo ładowało tylko wózek.
 
+## Pomysł: Wolt jako przednie koło (do decyzji, Wojtek 2026-11-10)
+
+Wojtek: „nie lepiej, żeby Wolt się wczepiał w Żaglowóz? Przednie koło jego”. Zamiast siedzieć na pokładzie, monocykl wjeżdża w widelec z przodu i sam staje się przednim, skrętnym kołem. Kapsuła jedzie na widelcu, lampa świeci przed żaglowozem, ramię sięga do szotu.
+
+**Ocena agenta: dobry pomysł, lepszy niż pasażer.**
+
+Za:
+- Pasuje do świata: wózek ma już gniazdo dokowania dla monocyklu (SWIAT.md), ciała Wolta to moduły na ramie, a Żaglowóz staje się kolejnym „ciałem”.
+- Sterowanie ma sens fizyczny: skręca koło Wolta, więc przyczepność przodu to przyczepność Wolta. Na sypkim popiele wąskie koło grzęźnie i przód ucieka.
+- Nowe decyzje w jeździe:
+  - Silnik w piaście Wolta może pchać, gdy wiatr siada (w flaucie, w cieniu za wsią, przy wyjściu z martwego kąta), ale zjada baterię.
+  - Hamowanie kołem Wolta odzyskuje trochę energii.
+  - Wiąże to żeglugę z bilansem prądu z reszty gry.
+- Moment wczepienia i odczepienia to ładna animacja: klik, zamek, światło.
+
+Koszty i co trzeba rozwiązać:
+- Znika wychył na nawietrzną (Shift), bo Wolt nie może się przesunąć. Zastępstwa do wyboru:
+  - przesuwny balast na pokładzie;
+  - ramię Wolta, które przechyla maszt;
+  - samo luzowanie szotu, odpadanie od wiatru i trym Q-1.
+- Płozy: w bojerze przednia płoza skręca. Propozycja: na koło Wolta nakłada się krótką płozę. Druga opcja to zostawić koło, a wtedy przód grzęźnie na wydmach i to też jest wyzwanie.
+- Rozstaw i stabilność bez zmian, ale masa przesuwa się do przodu: mniej podsterowności, łatwiej o obrót.
+
+Jak by to weszło:
+- **Demo „Żegluga”:** Wolt rysowany w widelcu zamiast na pokładzie, skręt jego kołem. Nowe klawisze: napęd silnikiem (zużywa baterię, pasek energii w HUD) i hamowanie z odzyskiem. Wychył zastąpiony jednym z powyższych. Intro: scena przechyłu bez wychyłu.
+- **Demo „Warsztat”:** zamiast „wsiądź” jest „wczep się z przodu” (Wolt podjeżdża tyłem do widelca wózka), a zejście to odczepienie.
+
 ## Do sprawdzenia przez Wojtka
 
 - Czy czucie jazdy jest dobre: prędkości (do ~70 km/h), jak łatwo się przewrócić, czy poślizg na solnisku nie jest za mocny.
