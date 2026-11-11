@@ -1,7 +1,7 @@
 import './game.css';
 import { Fx } from './fx';
 import { GameSound } from './audio/sound';
-import { Ctx, Scene } from './scene';
+import { Ctx, Input, Scene } from './scene';
 import { Darkness } from './scenes/darkness';
 import { Todo } from './scenes/todo';
 import { HallScene } from './scenes/hall';
@@ -40,7 +40,7 @@ else {
   onMenu(m, p => { if ('scene' in p) start(p.scene); });
 }
 
-const input = { keys: new Set<string>(), pressed: new Set<string>(), mouse: null as { x: number; y: number } | null };
+const input: Input = { keys: new Set<string>(), pressed: new Set<string>(), mouse: null, click: null, lmb: false, cursor: null };
 addEventListener('keydown', e => {
   if (e.code === 'Space') e.preventDefault();
   if (e.repeat) return;
@@ -48,8 +48,17 @@ addEventListener('keydown', e => {
   if (e.code === 'KeyM') ctx.sound.toggleMute();
 });
 addEventListener('keyup', e => input.keys.delete(e.code));
-addEventListener('blur', () => input.keys.clear());
-addEventListener('pointermove', e => { input.mouse = { x: e.clientX / innerWidth * 2 - 1, y: -(e.clientY / innerHeight) * 2 + 1 }; });
+addEventListener('blur', () => { input.keys.clear(); input.lmb = false; });
+addEventListener('pointermove', e => {
+  input.mouse = { x: e.clientX / innerWidth * 2 - 1, y: -(e.clientY / innerHeight) * 2 + 1 };
+  input.cursor = { x: e.clientX, y: e.clientY };
+});
+// point-and-click: only clicks on the 3D view (HUD panels, notes and menus keep theirs)
+addEventListener('pointerdown', e => {
+  if (e.button !== 0 || (e.target as HTMLElement).tagName !== 'CANVAS' || wake.isConnected || !pause.hidden) return;
+  input.click = { x: e.clientX, y: e.clientY }; input.cursor = { ...input.click }; input.lmb = true;
+});
+addEventListener('pointerup', e => { if (e.button === 0) input.lmb = false; });
 
 const ctx: Ctx = { fx: new Fx(document.body), sound: new GameSound(), models, app: $('app'), hud: $('hud'), input };
 
@@ -96,7 +105,7 @@ function setPaused(on: boolean) {
     pause.innerHTML = menuHtml(true, scene?.id);
     pause.querySelector<HTMLElement>('button')?.focus();
   }
-  input.keys.clear();
+  input.keys.clear(); input.lmb = false;
 }
 addEventListener('keydown', e => {
   if (e.code !== 'Escape' || e.repeat || !scene || wake.isConnected) return;
@@ -118,7 +127,7 @@ function loop(now: number) {
       if (leaving.t >= FADE_OUT) { const to = leaving.to; leaving = null; go(to); }
     }
   }
-  input.pressed.clear();
+  input.pressed.clear(); input.click = null;
   ctx.sound.update(dt);
   ctx.fx.frame(dt);
   requestAnimationFrame(loop);

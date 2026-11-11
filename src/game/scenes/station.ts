@@ -1,5 +1,6 @@
 import { Ctx, Scene } from '../scene';
-import { Station, WOLT_POWER, FAB_POWER, TURBINE_POWER, MACHINE_POWER, Flow } from '../sim/station';
+import { Station, WOLT_POWER, FAB_POWER, TURBINE_POWER, MACHINE_POWER, PLAYER_R, Flow } from '../sim/station';
+import { MouseWalk } from './mouse';
 import { StationView } from '../render/stationView';
 import { NOTES, journal, noteHtml, journalHtml } from '../notes';
 import { story } from '../state';
@@ -20,6 +21,7 @@ export class StationScene implements Scene {
   private justOpened = false;
   private journalOpen = false;
   private towAcc = 0;
+  private mouse = new MouseWalk(PLAYER_R);
 
   enter(c: Ctx) {
     this.view = new StationView(this.st, c.app, c.models);
@@ -40,6 +42,7 @@ export class StationScene implements Scene {
   modal() { return !!this.st.reading || this.journalOpen; }
 
   exit(c: Ctx) {
+    this.mouse.dispose();
     this.view.dispose();
     this.el.remove();
     c.sound.wind = 0.6;
@@ -47,7 +50,7 @@ export class StationScene implements Scene {
 
   update(dt: number, c: Ctx) {
     const st = this.st, k = c.input.keys, pr = c.input.pressed;
-    if (st.reading && ['KeyE', 'Escape', 'Space'].some(x => pr.has(x)) && !this.justOpened) { st.closeNote(); pr.delete('KeyE'); }
+    if (st.reading && (['KeyE', 'Escape', 'Space'].some(x => pr.has(x)) || c.input.click) && !this.justOpened) { st.closeNote(); pr.delete('KeyE'); c.input.click = null; }
     this.justOpened = false;
     if (pr.has('KeyJ')) {
       if (this.journalOpen || st.reading) { this.journalOpen = false; st.closeNote(); }
@@ -61,9 +64,14 @@ export class StationScene implements Scene {
     const busy = !!st.reading || this.journalOpen;
     const mx = busy ? 0 : (k.has('KeyD') || k.has('ArrowRight') ? 1 : 0) - (k.has('KeyA') || k.has('ArrowLeft') ? 1 : 0);
     const my = busy ? 0 : (k.has('KeyS') || k.has('ArrowDown') ? 1 : 0) - (k.has('KeyW') || k.has('ArrowUp') ? 1 : 0);
+    // the mouse: a click on the ground goes there, a click on a thing goes and uses it
+    const still = busy || st.leaving > 0 || st.done;
+    if (still) this.mouse.cancel();
+    const m = still ? null : this.mouse.update(dt, c.input, st, this.view, mx !== 0 || my !== 0);
     st.update(dt, {
-      move: { x: mx, y: my }, run: k.has('ShiftLeft') || k.has('ShiftRight'),
-      use: !busy && k.has('KeyE'), usePressed: !busy && pr.has('KeyE'), drop: !busy && pr.has('KeyQ'),
+      move: m ? m.move : { x: mx, y: my }, run: k.has('ShiftLeft') || k.has('ShiftRight'),
+      use: !busy && (k.has('KeyE') || !!m?.use), usePressed: !busy && (pr.has('KeyE') || !!m?.usePressed), drop: !busy && pr.has('KeyQ'),
+      stopIn: m?.stopIn,
     });
     for (const e of st.events) this.onEvent(e, c);
     st.events.length = 0;
@@ -128,7 +136,7 @@ export class StationScene implements Scene {
         <div class="sub">${tr('odbiorniki', 'consumers')}</div>${line(g.loads[0], MACHINE_POWER)}${line(g.loads[1], FAB_POWER)}
         <div class="row sum"><span>${tr('bilans', 'balance')}</span><b class="${g.balance > 0 ? 'pos' : 'dim'}">${g.balance > 0 ? tr(`+${g.balance} W zapasu`, `+${g.balance} W spare`) : st.turbine ? tr(`turbina ${TURBINE_POWER} W czeka na kabel`, `turbine ${TURBINE_POWER} W waits for a cable`) : tr('brak zasilania', 'no power')}</b></div>`;
     }
-    $('sKeys').innerHTML = tr('<b>WASD</b> ruch · <b>E</b> użyj · <b>J</b> archiwum', '<b>WASD</b> move · <b>E</b> use · <b>J</b> archive') + (st.towing ? tr(' · <b>Q</b> odczep oponę', ' · <b>Q</b> unhitch the tyre') : st.cableHeld ? tr(' · <b>Q</b> połóż kabel', ' · <b>Q</b> put the cable down') : '');
+    $('sKeys').innerHTML = tr('<b>klik</b> / <b>WASD</b> ruch · <b>E</b> użyj · <b>J</b> archiwum', '<b>click</b> / <b>WASD</b> move · <b>E</b> use · <b>J</b> archive') + (st.towing ? tr(' · <b>Q</b> odczep oponę', ' · <b>Q</b> unhitch the tyre') : st.cableHeld ? tr(' · <b>Q</b> połóż kabel', ' · <b>Q</b> put the cable down') : '');
     const hint = st.hint(), tip = $('sTip');
     tip.hidden = !hint;
     if (hint) {

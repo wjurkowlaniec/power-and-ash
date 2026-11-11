@@ -19,6 +19,12 @@ export interface Input {
   /** Keys pressed this frame (cleared after each update). */
   pressed: Set<string>;
   mouse: { x: number; y: number } | null;
+  /** Left click on the 3D view this frame, in screen px (cleared after each update). */
+  click: { x: number; y: number } | null;
+  /** Left button held down since a click on the 3D view. */
+  lmb: boolean;
+  /** Cursor in screen px. */
+  cursor: { x: number; y: number } | null;
 }
 
 export interface Scene {

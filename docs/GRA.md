@@ -38,6 +38,7 @@ Gra i tech demo to jedno repo i jeden build Vite z dwiema stronami (`vite.config
 | Plik / katalog | Rola |
 |---|---|
 | `main.ts` | ładuje modele, wejście z klawiatury, mapa scen `scenes`, pętla gry |
+| `sim/clickWalk.ts`, `scenes/mouse.ts` | point-and-click: klik → ten sam kierunek i E co z klawiatury (test: `test/clickWalk.test.ts`) |
 | `scene.ts` | interfejsy `Scene` (`enter` / `update` / `exit` / `next`) i `Ctx` (fx, dźwięk, modele, HUD, wejście) |
 | `state.ts` | to, co przechodzi między scenami w jednym przejściu gry (np. naładowanie baterii) |
 | `sim/*.ts` | **czysta logika** sceny, bez Three.js, z testami w `test/` (`Hall`, `Station`) |
@@ -112,12 +113,17 @@ Kierunek artystyczny i dźwiękowy (wspólny dla całego projektu): nastrój jak
 
 | Klawisz | Akcja |
 |---|---|
-| WASD / strzałki | jazda |
+| LPM na terenie | jedź tam (przytrzymaj: Wolt jedzie za kursorem) |
+| LPM na rzeczy | podjedź i użyj (kursor zmienia się w rączkę nad rzeczą; przy dźwigni i transformatorze E trzyma się samo) |
+| LPM obok notatki | odłóż notatkę |
+| WASD / strzałki | jazda (przerywa jazdę myszą) |
 | Shift | szybciej |
 | E | użyj (krótko) albo przytrzymaj (naprawa, dźwignia) |
 | Q | odczep oponę / połóż kabel |
 | J | archiwum notatek, cyfry otwierają zapis |
 | Esc / E / spacja | odłóż notatkę |
+
+Mysz (`src/game/sim/clickWalk.ts` + `src/game/scenes/mouse.ts`) nie ma własnej ścieżki w logice scen: zamienia klik na ten sam kierunek i to samo E, które daje klawiatura (A* `findPath` do celu, hamowanie na znaczniku przez `stopIn` w `drive`). Sceny mają `usables()` (co teraz da się użyć, z pozycją) i `current()` (co E użyłoby teraz): Wolt staje, gdy kliknięta rzecz staje się tą, której E by użyło. Stuknięcie palcem na telefonie działa tak samo.
 | M | dźwięk wł./wył. |
 | spacja (przytrzymaj) | pomiń Scenę 0 |
 

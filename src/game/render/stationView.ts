@@ -131,6 +131,16 @@ export class StationView {
     return { x: (v.x + 1) / 2 * innerWidth, y: (1 - v.y) / 2 * innerHeight };
   }
 
+  /** Screen px → ground point (the floor plane), for mouse clicks. */
+  pick(x: number, y: number): V2 | null {
+    const ray = new THREE.Raycaster();
+    ray.setFromCamera(new THREE.Vector2(x / innerWidth * 2 - 1, -(y / innerHeight) * 2 + 1), this.camera);
+    const d = ray.ray.direction.y;
+    if (Math.abs(d) < 1e-6) return null;
+    const p = ray.ray.at(-ray.ray.origin.y / d, new THREE.Vector3());
+    return { x: p.x, y: p.z };
+  }
+
   // ---------- building
 
   private buildGround() {
