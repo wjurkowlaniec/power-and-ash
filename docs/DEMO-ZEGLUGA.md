@@ -21,6 +21,10 @@ Poligon głównej rozgrywki: jazda Żaglowozem po różnym terenie. Wojtek (2026
 ![Żaglowóz z bliska: Wolt w siodle na dziobie, skrzynia balastu na szynie, olinowanie](img/zegluga/olinowanie.jpg)
 
 - **Wolt jest przednim kołem.** Nie siedzi na pokładzie, tylko jest wczepiony pod głowicę sterową na dziobie (rama A z burt wózka, siodło zaciśnięte na jego szynach dokowania). Skręca całym sobą, jego koło się toczy. Na płozach jego koło stoi w krótkiej płozie przypiętej pasami.
+- **Wczepianie i odczepianie (G, na postoju)**, Wojtek 2026-11-11: „dodałeś też animacje budowania i wczepiania się?”. Demo zaczyna się od tego, że Wolt stoi obok dziobu, podjeżdża przed głowicę, obraca się tyłem, cofa pod siodło, szczęki zaciskają się na jego szynach dokowania, podpórki dziobu składają się wzdłuż ramy, a koniec szota wchodzi na jego bęben (ok. 4,5 s). **G** na postoju odczepia go tym samym ruchem wstecz: Żaglowóz stoi wtedy na podpórkach z puszczonym żaglem i nie rusza, dopóki Wolt nie wróci. Link z `?go` pomija tę animację.
+
+![Wczepianie: Wolt obok, przed głowicą, cofa, szczęki się zamykają](img/zegluga/wczepianie.jpg)
+
 - **Silnik w piaście Wolta (E, wstecz Q)** pcha, gdy wiatr siądzie: najmocniej z miejsca (1,3 m/s²), coraz słabiej do ~6,5 m/s, i zjada baterię (pełna starcza na ~75 s pchania). Hamowanie (Spacja) odzyskuje trochę energii. Na płozach silnik nie pcha, bo koło nie dotyka ziemi. Wąska opona Wolta grzęźnie w sypkim popiele i błocie: dziób wyjeżdża tam szerzej, a silnik ciągnie słabiej.
 - **Przesuwny balast (Shift)** zamiast wychyłu: skrzynia z baterią jeździ po szynie w poprzek burt. Shift ciągnie ją na nawietrzną (dojazd trwa ok. 0,4 s), puszczenie wraca ją na środek. Po zwrocie balast zostaje po zawietrznej i wtedy pomaga wiatrowi przewrócić żaglowóz, więc trzeba puścić i wcisnąć Shift jeszcze raz. HUD pokazuje położenie balastu i ostrzega „zawietrzna!”.
 - **Olinowanie jest poprowadzone lina po linie, tak jak naprawdę by szło** (Wojtek: „sznurki, ma być tak dokładnie oddane”). Z bliska (kółko myszy przybliża teraz dużo mocniej) widać:
@@ -30,7 +34,7 @@ Poligon głównej rozgrywki: jazda Żaglowozem po różnym terenie. Wojtek (2026
   - **linka balastu**: pętla bez końca z obu stron skrzyni przez bloczki na końcach szyny i wokół kabestanu, który się obraca, gdy balast jedzie.
 - Żagiel jest wolnolikowy (dolny lik nie jest przyszyty do bomu), dlatego wybrzusza się też przy bomie; trzymają go róg halsowy i szotowy.
 
-Do zrobienia później: to samo w demie „Warsztat” (zamiast „wsiądź” ma być „wczep się z przodu”, a Żaglowóz ma dostać to samo olinowanie) i w grze.
+Do zrobienia później: animacja budowania Żaglowozu część po części (maszt, olinowanie, szyna balastu) i to samo w demie „Warsztat” (zamiast „wsiądź” ma być „wczep się z przodu”, a Żaglowóz ma dostać to samo olinowanie) i w grze.
 
 ## Sterowanie
 
@@ -43,6 +47,7 @@ Do zrobienia później: to samo w demie „Warsztat” (zamiast „wsiądź” m
 | E / Q | silnik Wolta: naprzód / wstecz (zjada baterię, nie działa na płozach) |
 | Spacja | hamulec (odzyskuje trochę energii) |
 | R | koła ↔ płozy (tylko na postoju, ~2,5 s) |
+| G | Wolt odczepia się / wczepia (tylko na postoju, ~4,5 s) |
 | C | następna trasa (albo przyciski w panelu trasy) |
 | T | trasa od nowa |
 | V | siła wiatru: słaby, zwykły, mocny |

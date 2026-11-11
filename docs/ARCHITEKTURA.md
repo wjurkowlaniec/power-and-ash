@@ -126,7 +126,7 @@ Sceny z [POCZATEK.md](POCZATEK.md): `src/game/main.ts` (mapa scen, pętla, wygas
 | `hall.test.ts`, `station.test.ts` | logika scen gry (hala, martwa stacja) |
 | `notes.test.ts` | notatki, korpus, progi odkodowania |
 | `craft.test.ts` | demo „Warsztat”: ekwipunek, rozbiórka, wytwarzanie, badania, sieć z magazynem, skróty wszystkich 14 etapów, spójność danych, żegluga Żaglowozu |
-| `sail.test.ts` | demo „Żegluga”: podłoża i przeszkody na mapie, cień wiatru za domem, szkwały, szybciej niż wiatr, martwy kąt, koła i płozy w sypkim popiele, przechył i wywrotka, balast, silnik i bateria Wolta, przód na sypkim popiele, poślizg, hamulec i zmiana podwozia, odbicie od domu, trasy |
+| `sail.test.ts` | demo „Żegluga”: podłoża i przeszkody na mapie, cień wiatru za domem, szkwały, szybciej niż wiatr, martwy kąt, koła i płozy w sypkim popiele, przechył i wywrotka, balast, silnik i bateria Wolta, wczepianie i odczepianie, przód na sypkim popiele, poślizg, hamulec i zmiana podwozia, odbicie od domu, trasy |
 | `i18n.test.ts` | język poza przeglądarką, korpus notatek niezależny od języka |
 
 Nowa mechanika w logice dostaje test. Testy logiki nie dotykają Three.js.

@@ -60,7 +60,7 @@ const sail = () => { running = true; keys.clear(); };
 goBtn.addEventListener('click', () => {
   sound.start(); roll.start(); $('start').remove();
   if (new URLSearchParams(location.search).has('go')) sail();
-  else intro.show(sail);
+  else { game.arrive(); intro.show(sail); } // the first thing you see: Wolt rides in and locks on
 });
 
 // ---------------------------------------------------------------- input
@@ -73,6 +73,7 @@ addEventListener('keydown', e => {
     case 'KeyI': running = false; intro.show(sail); break;
     case 'KeyF': game.toggleAuto(); toast(game.yacht.auto ? tr('Q-1 trymuje szot', 'Q-1 trims the sheet') : tr('Szot ręcznie', 'Sheet by hand')); break;
     case 'KeyR': if (game.swap()) toast(game.yacht.gear === 'wheels' ? tr('Wolt zakłada płozy…', 'Wolt fits the runners…') : tr('Wolt zakłada koła…', 'Wolt fits the wheels…')); else toast(tr('Najpierw stań (Spacja)', 'Stop first (Space)')); break;
+    case 'KeyG': if (game.dock()) toast(game.yacht.docking > 0 ? tr('Wolt wczepia się w dziób…', 'Wolt docks into the bow…') : tr('Wolt odczepia się…', 'Wolt lets go…')); else toast(tr('Najpierw stań (Spacja)', 'Stop first (Space)')); break;
     case 'KeyC': game.cycleCourse(); courseKey = ''; announceCourse(); break;
     case 'KeyT': case 'Backspace': if (game.run) { game.restart(); toast(tr('Od nowa', 'Restart')); } break;
     case 'KeyV': windLevel = (windLevel + 1) % WINDS.length; game.wind.strength = WINDS[windLevel].k; toast(WINDS[windLevel].name); break;
@@ -121,8 +122,8 @@ function announceCourse() {
 }
 
 $('help').innerHTML = tr(
-  '<b>I</b> intro · <b>A/D</b> ster · <b>W/S</b> wybierz/luzuj szot · <b>F</b> Q-1 trymuje · <b>Shift</b> balast na nawietrzną · <b>E</b> silnik Wolta (<b>Q</b> wstecz) · <b>Spacja</b> hamulec (ładuje baterię) · <b>R</b> koła↔płozy · <b>C</b> trasa · <b>T</b> od nowa · <b>V</b> siła wiatru · <b>kółko</b> zoom (z bliska widać olinowanie) · <b>H</b> ukryj',
-  '<b>I</b> intro · <b>A/D</b> steer · <b>W/S</b> haul in/ease the sheet · <b>F</b> Q-1 trims · <b>Shift</b> ballast to windward · <b>E</b> Wolt’s motor (<b>Q</b> reverse) · <b>Space</b> brake (charges the battery) · <b>R</b> wheels↔runners · <b>C</b> course · <b>T</b> restart · <b>V</b> wind strength · <b>wheel</b> zoom (up close you see the rigging) · <b>H</b> hide');
+  '<b>I</b> intro · <b>A/D</b> ster · <b>W/S</b> wybierz/luzuj szot · <b>F</b> Q-1 trymuje · <b>Shift</b> balast na nawietrzną · <b>E</b> silnik Wolta (<b>Q</b> wstecz) · <b>Spacja</b> hamulec (ładuje baterię) · <b>R</b> koła↔płozy · <b>G</b> odczep/wczep Wolta · <b>C</b> trasa · <b>T</b> od nowa · <b>V</b> siła wiatru · <b>kółko</b> zoom (z bliska widać olinowanie) · <b>H</b> ukryj',
+  '<b>I</b> intro · <b>A/D</b> steer · <b>W/S</b> haul in/ease the sheet · <b>F</b> Q-1 trims · <b>Shift</b> ballast to windward · <b>E</b> Wolt’s motor (<b>Q</b> reverse) · <b>Space</b> brake (charges the battery) · <b>R</b> wheels↔runners · <b>G</b> undock/dock Wolt · <b>C</b> course · <b>T</b> restart · <b>V</b> wind strength · <b>wheel</b> zoom (up close you see the rigging) · <b>H</b> hide');
 
 // the course picker
 let courseKey = '';
@@ -157,7 +158,7 @@ $('course').addEventListener('pointerdown', e => e.stopPropagation());
 let hudKey = '';
 function hud() {
   const y = game.yacht, w = game.here;
-  const key = JSON.stringify([Math.round(y.speed * 10), Math.round(y.app), Math.round(w.speed * 2), deg(y.heading), deg(y.boom), deg(y.best), deg(y.appDir), deg(game.wind.dir), y.auto, y.gear, Math.round(y.tip * 20), y.surface, Math.round(w.shadow * 5), Math.round(w.gust * 5), y.capsized > 0, Math.ceil(y.swap), y.sliding, Math.round(y.energy * 100), Math.round(y.thrust * 4), y.regen, Math.round(y.ballast * 4)]);
+  const key = JSON.stringify([Math.round(y.speed * 10), Math.round(y.app), Math.round(w.speed * 2), deg(y.heading), deg(y.boom), deg(y.best), deg(y.appDir), deg(game.wind.dir), y.auto, y.gear, Math.round(y.tip * 20), y.surface, Math.round(w.shadow * 5), Math.round(w.gust * 5), y.capsized > 0, Math.ceil(y.swap), y.sliding, y.dock < 1, y.docking, Math.round(y.energy * 100), Math.round(y.thrust * 4), y.regen, Math.round(y.ballast * 4)]);
   if (key === hudKey) return;
   hudKey = key;
   // the compass: north up like the map; the hull points along the heading
@@ -180,7 +181,8 @@ function hud() {
     <circle cx="${mx.toFixed(1)}" cy="${my.toFixed(1)}" r="3" fill="#1e2022" stroke="#e8a64e"/>
   </svg>`;
   const trim = y.capsized > 0 ? `<span class="limit">${tr('wywrotka! Wolt stawia go na koła…', 'capsized! Wolt is righting it…')}</span>`
-    : y.swap > 0 ? `<span class="tense">${y.gear === 'wheels' ? tr('zakładanie płóz…', 'fitting the runners…') : tr('zakładanie kół…', 'fitting the wheels…')} ${Math.ceil(y.swap)} s</span>`
+    : y.dock < 1 ? `<span class="tense">${y.docking > 0 ? tr('Wolt wczepia się…', 'Wolt is docking…') : y.docking < 0 ? tr('Wolt odczepia się…', 'Wolt is letting go…') : tr('Wolt odczepiony: G wczepia', 'Wolt is clear: G docks')}</span>`
+      : y.swap > 0 ? `<span class="tense">${y.gear === 'wheels' ? tr('zakładanie płóz…', 'fitting the runners…') : tr('zakładanie kół…', 'fitting the wheels…')} ${Math.ceil(y.swap)} s</span>`
       : Math.abs(y.tip) > 1 || Math.abs(y.heel) > 0.02 ? `<span class="limit">${tr('unosi się! luzuj (S), odpadnij (A/D), balast (Shift)', 'lifting! ease (S), bear away (A/D), ballast (Shift)')}</span>`
         : y.betaTrue < nogo ? `<span class="limit">${tr('martwy kąt: wiatr w dziób, odpadnij', 'in irons: wind dead ahead, bear away')}</span>`
           : y.auto ? `<span class="okc">${tr('Q-1 trymuje szot', 'Q-1 trims the sheet')}</span>`
@@ -229,6 +231,8 @@ function frame(now: number) {
     if (ev.capsized) { toast(tr('Wywrotka!', 'Capsized!'), 'bad'); view.kick(1); sound.play('deny'); sound.scrape(); }
     if (ev.bumped > 2) { view.kick(ev.bumped / 8); sound.scrape(); }
     if (ev.landed > 0.4) { view.kick(ev.landed / 2); sound.squeak(true, 1); }
+    if (ev.docked > 0) { toast(tr('Wolt wczepiony: jest przednim kołem', 'Wolt locked in: he is the front wheel'), 'good'); sound.play('plug'); view.kick(0.25); }
+    if (ev.docked < 0) { toast(tr('Wolt odczepiony. Żaglowóz stoi na podpórkach (G wczepia)', 'Wolt is clear. The yacht stands on its props (G docks)')); sound.play('light'); }
     if (ev.swapped) { toast(game.yacht.gear === 'runners' ? tr('Płozy założone', 'Runners on') : tr('Koła założone', 'Wheels on')); sound.play('craft'); }
     if (ev.gate >= 0) {
       if (ev.gate === 0) { toast(tr('Start!', 'Go!')); sound.play('plug'); }
