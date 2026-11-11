@@ -17,6 +17,7 @@ export const DEMOS: { href: string; title: string; sub: string }[] = [
   { href: `./demo/${q}`, title: tr('Tech demo · Rozruch', 'Tech demo · Start-up'), sub: tr('kable, złom, fabrykator, Żaglowóz', 'cables, scrap, fabricator, the land yacht') },
   { href: `./demo-craft/${q}`, title: tr('Tech demo · Warsztat', 'Tech demo · Workshop'), sub: tr('wytwarzanie, wózek, sieć, 12 etapów', 'crafting, cart, grid, 12 stages') },
   { href: `./demo-sail/${q}`, title: tr('Tech demo · Żegluga', 'Tech demo · Sailing'), sub: tr('jazda Żaglowozem, szkwały, trasy na czas', 'land yacht sailing, gusts, timed courses') },
+  { href: `./demo-sun/${q}`, title: tr('Tech demo · Słońce', 'Tech demo · Sunlight'), sub: tr('przewieź ładunek w słońcu, omijaj cienie chmur', 'carry a load in the sun, dodge the cloud shadows') },
 ];
 
 const item = (attr: string, title: string, sub: string) =>

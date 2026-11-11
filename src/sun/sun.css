@@ -1,0 +1,16 @@
+/* Demo "Słońce": on top of src/style.css and src/sail/sail.css */
+.sunp { right: max(16px, env(safe-area-inset-right, 0px)); top: calc(16px + env(safe-area-inset-top, 0px)); width: 240px; display: grid; gap: 6px; }
+.sunp .big { font-size: 26px; font-weight: 500; line-height: 1; }
+.sunp .state { font-size: 11px; min-height: 1.5em; }
+.sunp canvas { width: 216px; height: 216px; border-radius: 3px; display: block; }
+.bufm { height: 8px; background: #ffffff1a; position: relative; }
+.bufm > i { position: absolute; inset: 0 auto 0 0; background: var(--ok); transition: width .1s linear; }
+.bufm.hot > i { background: var(--warn); }
+.bufm.bad > i { background: var(--limit); animation: blink .5s steps(2) infinite; }
+.lightm { height: 6px; background: #ffffff1a; position: relative; }
+.lightm > i { position: absolute; inset: 0 auto 0 0; background: #e9dcae; transition: width .15s; }
+.lightm > b { position: absolute; top: -3px; bottom: -3px; width: 1px; background: var(--warn); }
+@keyframes blink { 50% { opacity: .35; } }
+/* the whole screen cools and greys a touch when the yacht is under a cloud */
+#shadeVeil { position: fixed; inset: 0; pointer-events: none; background: radial-gradient(ellipse at center, #26303a00 35%, #1b222a66 100%); opacity: 0; transition: opacity .6s; }
+@media (max-width: 900px) { .sunp { width: 180px; } .sunp canvas { width: 156px; height: 156px; } }

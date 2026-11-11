@@ -309,6 +309,8 @@ Bunkry **[propozycja]**:
 
 Typy misji **[propozycja]**: dostawa (przewieź coś przez trudny teren w określonym czasie), naprawa (przywróć prąd do pompy, wentylacji, światła), poszukiwanie (znajdź człowieka, sprzęt, nasiona), eskorta (przewieź człowieka żaglowozem, a on komentuje świat, co pomaga w słowniku), budowa linii (połącz bunkier z siecią).
 
+**Dostawa w słońcu [pomysł Wojtka 2026-11-11, prototyp w demie „Słońce”]**: zręcznościowa odmiana dostawy. Ładunek (sadzonki, próbki w chłodziarce, hodowla) żyje z paneli słonecznych na Żaglowozie i musi być cały czas oświetlony. Po niebie płyną chmury, a ich cienie suną po ziemi z wiatrem; w cieniu ładunek ciągnie z małego zapasu (ok. 20 s), więc trzeba trzymać się jasnych plam i szukać drogi. Pasuje do Kopuły (ogrodnicy, rośliny) i do „ładowania przez fizyczne połączenie”: panele to jedyne źródło prądu, które działa w ruchu. Szczegóły i liczby: [DEMO-SLONCE.md](DEMO-SLONCE.md).
+
 Pokolenia w osadach (genealogia, pamięć o Wolcie, zegar od pierwszego kontaktu): [SYMULACJA.md](SYMULACJA.md#4-pokolenia-ludzi).
 
 ## Czas: doba, pory roku, hibernacja
