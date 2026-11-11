@@ -71,13 +71,13 @@ export class StationScene implements Scene {
     // the tyre scrapes over the ash while it is pulled
     if (st.towing && st.towTaut && st.moving) {
       this.towAcc += dt;
-      if (this.towAcc > (st.bearingOnTyre ? 0.32 : 0.45)) { this.towAcc = 0; c.sound.step(!st.bearingOnTyre); }
+      if (this.towAcc > (st.moduleOnTyre ? 0.32 : 0.45)) { this.towAcc = 0; c.sound.step(!st.moduleOnTyre); }
     }
 
     if (st.done && this.doneT < 0) this.doneT = 0;
     if (this.doneT >= 0) {
       this.doneT += dt;
-      if (this.doneT > 5) { story.battery = st.battery; this.next = 'crane'; }
+      if (this.doneT > 5) { story.battery = st.battery; this.next = 'odjazd'; }
     }
     this.fadeIn = Math.max(0, this.fadeIn - dt / 2);
     c.fx.black = Math.max(this.fadeIn, this.doneT > 3 ? (this.doneT - 3) / 2 : 0);
@@ -98,6 +98,8 @@ export class StationScene implements Scene {
       case 'load': s.clank(0.6, 0.18); break;
       case 'repair': s.servo(1.1, 0.8); break;
       case 'turbine': s.swell(); s.creak(0.6); break;
+      case 'plot': for (let i = 0; i < 6; i++) setTimeout(() => { s.servo(0.4, 1.6); s.blip(1.1 + (i % 2) * 0.2); }, i * 260); break;
+      case 'leave': s.swell(); setTimeout(() => s.swell(), 1800); break;
       case 'grab': s.clank(1.2, 0.08); s.servo(0.6, 1.1); break;
       case 'drop': s.clank(0.7, 0.06); break;
       case 'connect': s.clank(2, 0.06); s.swell(); c.fx.static = 0.4; break;

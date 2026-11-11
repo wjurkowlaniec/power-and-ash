@@ -51,10 +51,10 @@ Od 03:12 ogniwo oddaje więcej energii, niż przyjęło w cyklu ładowania. Nadw
 Zalecenie: NIE ODŁĄCZAĆ OD AUTOMATU SERWISOWEGO. Ogniwo stabilizuje się wyłącznie pod obciążeniem.`,
   },
   kartkaTechnika: {
-    id: 'kartkaTechnika', label: 'Kartka na drzwiach warsztatu', script: 'hand', kind: 'instrukcja', sketch: `<svg viewBox="0 0 300 130"><rect x="40" y="14" width="60" height="96" ${INK}/><rect x="14" y="56" width="12" height="16" ${INK}/><path d="M38 64 L30 64 M34 59 L29 64 L34 69" ${RED}/><path d="M14 74 C10 90 30 96 40 92" ${INK} stroke-dasharray="3 3"/><path d="M170 22 H290 M170 52 H290 M170 82 H290 M170 112 H290 M172 22 V118 M288 22 V118" ${INK}/><circle cx="215" cy="72" r="9" ${INK}/><circle cx="215" cy="72" r="3" ${INK}/><rect x="240" y="66" width="12" height="14" ${INK}/><path d="M215 60 L215 40 L198 36" ${RED}/><text x="262" y="74" font-size="16" fill="#8a2a1e">2</text></svg>`, title: 'Kartka na drzwiach warsztatu',
+    id: 'kartkaTechnika', label: 'Kartka na drzwiach warsztatu', script: 'hand', kind: 'instrukcja', sketch: `<svg viewBox="0 0 300 130"><rect x="40" y="14" width="60" height="96" ${INK}/><rect x="14" y="56" width="12" height="16" ${INK}/><path d="M38 64 L30 64 M34 59 L29 64 L34 69" ${RED}/><path d="M14 74 C10 90 30 96 40 92" ${INK} stroke-dasharray="3 3"/><path d="M170 22 H290 M170 52 H290 M170 82 H290 M170 112 H290 M172 22 V118 M288 22 V118" ${INK}/><rect x="200" y="62" width="30" height="18" ${INK}/><path d="M206 62 V56 M224 62 V56" ${INK}/><path d="M212 64 L208 72 L214 72 L211 79" ${INK}/><path d="M215 56 L215 40 L198 36" ${RED}/><path d="M118 20 L132 34 M132 20 L118 34" ${RED}/><path d="M124 22 L120 28 L126 28 L122 34" ${INK}/><text x="262" y="74" font-size="16" fill="#8a2a1e">2</text></svg>`, title: 'Kartka na drzwiach warsztatu',
     body: `Zamek padł znowu. Jak nie ma prądu, wepnij się w port po lewej, wystarczy chwila.
 
-I NIE ZOSTAWIAJ TURBINY Z TYM ŁOŻYSKIEM. Nowe łożysko i smar są w magazynie, druga półka. Łożysko waży swoje, do masztu weź starą oponę i ciągnij jak sanki.
+I NIE ZOSTAWIAJ TURBINY BEZ TRANSFORMATORA. Stary moduł w szafce pod masztem się spalił, wiatrak kręci się na próżno. Nowy moduł jest w magazynie, druga półka. Waży swoje, weź starą oponę i ciągnij jak sanki.
 
 — T.`,
   },
@@ -72,6 +72,12 @@ Odmawiam. Q-1 jest stabilne tylko u nas, z naszym automatem. Jeśli ktoś chce b
 
 Jeden punkt w górach, z dala od linii, ktoś przekreślił kilka razy, aż przebił papier.`,
   },
+  mapaR2: {
+    id: 'mapaR2', label: 'Wydruk z plotera w dyżurce', script: 'image', kind: 'mapa', sketch: `<svg viewBox="0 0 300 150"><rect x="14" y="98" width="34" height="26" ${INK}/><path d="M14 98 L31 84 L48 98" ${INK}/><path d="M58 122 V70 M52 76 L58 64 L64 76" ${INK}/><path d="M48 112 C80 112 90 90 120 84 S150 52 175 60 S205 100 230 96 L262 68" ${RED} stroke-dasharray="6 5"/><path d="M110 96 C130 60 160 44 190 62" ${INK}/><path d="M196 104 H226 M196 98 H226 M200 98 V108 M222 98 V108" ${INK}/><rect x="252" y="40" width="34" height="28" ${INK}/><path d="M268 44 L262 54 L270 54 L265 64" ${RED}/><text x="140" y="140" font-size="16" fill="#8a2a1e">4,2 km</text><path d="M20 20 L20 44 M14 26 L20 20 L26 26" ${INK}/><text x="16" y="58" font-size="12" fill="#2c2f31">N</text></svg>`, title: 'Wydruk z plotera: trasa',
+    body: `Ploter obudził się razem z maszynownią i wydrukował stronę, którą miał w kolejce od dawna. Nie ma na niej słów, tylko znaki: stacja, maszt z wiatrakiem, przerywana trasa przez wzgórze i mostek, a na końcu budynek z błyskawicą. Obok liczba: 4,2 km.
+
+Tam jest prąd. Brama w płocie prowadzi w tę stronę.`,
+  },
   podrecznik: {
     id: 'podrecznik', label: 'Gruba książka z dyżurki', script: 'print', kind: 'książka', corpus: 2600,
     title: 'Podręcznik elektromontera sieci rozdzielczych',
@@ -84,7 +90,7 @@ Kabel prowadź najkrótszą drogą i nie zostawiaj go napiętego na krawędziach
   slownik: {
     id: 'slownik', label: 'Słownik z półki w dyżurce', script: 'print', kind: 'książka', corpus: 2000,
     title: 'Mały słownik techniczny',
-    body: `ŁOŻYSKO · element podpierający wał i zmniejszający tarcie. Zatarte łożysko blokuje wirnik.
+    body: `TRANSFORMATOR · urządzenie zmieniające napięcie prądu. Spalony transformator odcina turbinę od odbiorców, choć wirnik się kręci.
 
 PRZYŁĄCZE · gniazdo, którym budynek przyjmuje prąd z zewnątrz.
 
@@ -116,7 +122,7 @@ Recommendation: DO NOT DISCONNECT FROM THE SERVICE AUTOMATON. The cell stabilise
     label: 'Note on the workshop door', title: 'Note on the workshop door',
     body: `The lock died again. When there's no power, plug yourself into the port on the left, it only takes a moment.
 
-And DON'T LEAVE THE TURBINE WITH THAT BEARING. The new bearing and grease are in the storeroom, second shelf. The bearing weighs a ton, take the old tyre to the mast and pull it like a sled.
+And DON'T LEAVE THE TURBINE WITHOUT A TRANSFORMER. The old module in the cabinet under the mast burnt out, the rotor spins for nothing. The new module is in the storeroom, second shelf. It weighs a ton, take the old tyre and pull it like a sled.
 
 — T.`,
   },
@@ -134,6 +140,12 @@ I refuse. Q-1 is stable only here, with our automaton. If anyone wants to build 
 
 One point in the mountains, far from the line, has been crossed out over and over until the pen went through the paper.`,
   },
+  mapaR2: {
+    label: 'Plotter printout in the duty room', title: 'Plotter printout: route',
+    body: `The plotter woke with the machine room and printed a page it had queued long ago. There are no words on it, only signs: the station, the mast with its turbine, a dotted route over the hill and a small bridge, and at the end a building with a lightning bolt. Beside it a number: 4.2 km.
+
+There is power there. The gate in the fence leads that way.`,
+  },
   podrecznik: {
     label: 'Thick book from the duty room', title: "Distribution network electrician's handbook",
     body: `Chapter 4. Connecting sources of different power.
@@ -144,7 +156,7 @@ Run the cable by the shortest route and do not leave it taut over edges.`,
   },
   slownik: {
     label: 'Dictionary from the duty room shelf', title: 'Small technical dictionary',
-    body: `BEARING · a part that supports a shaft and reduces friction. A seized bearing locks the rotor.
+    body: `TRANSFORMER · a device that changes the voltage of a current. A burnt transformer cuts the turbine off from its loads, even though the rotor turns.
 
 INLET · a socket through which a building takes power from outside.
 

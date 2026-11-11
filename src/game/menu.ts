@@ -9,7 +9,7 @@ export interface MenuItem { id: string; title: string; sub: string }
 export const CHAPTERS: MenuItem[] = [
   { id: 'darkness', title: tr('Nowa gra', 'New game'), sub: tr('od przebudzenia w ciemności', 'from waking up in the dark') },
   { id: 'hall', title: tr('Scena 1 · Hala pomiarowa', 'Scene 1 · Measurement hall'), sub: tr('Wolt na kablu diagnostycznym, bateria Q-1', 'Wolt on the diagnostic cable, the Q-1 battery') },
-  { id: 'station', title: tr('Scena 2 · Martwa stacja', 'Scene 2 · Dead station'), sub: tr('warsztat, łożysko na oponie, turbina, kabel', 'workshop, bearing on the tyre, turbine, cable') },
+  { id: 'station', title: tr('Scena 2 · Martwa stacja', 'Scene 2 · Dead station'), sub: tr('warsztat, transformator na oponie, kabel, mapa z plotera, odjazd', 'workshop, transformer on the tyre, cable, the plotter map, departure') },
 ];
 
 const q = lang === 'en' ? '?lang=en' : '';

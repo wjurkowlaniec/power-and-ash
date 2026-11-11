@@ -13,10 +13,15 @@ import { tr, num } from '../../i18n';
  * 1. The workshop door has an electric lock. The technician's note on it says: plug into
  *    the port on the left. Wolt's own 3 m cable opens it, and his battery pays for it.
  * 2. The fabricator in the workshop wants more power than Wolt can give (200 W).
- * 3. The same note: the turbine bearing, grease in the storage room, second shelf. The
- *    bearing is too heavy to carry: put it on the old tyre and drag it to the mast.
- * 4. With bearing and grease at the mast: climb and swap the bearing. The turbine turns.
- * The duty room has the manager's memo in a drawer and a map on the wall.
+ * 3. The same note: the turbine spins but gives nothing, its transformer module at the mast
+ *    foot is burnt. A new module lies on the second shelf in the storage room. Too heavy
+ *    to carry: put it on the old tyre and drag it to the cabinet at the mast foot.
+ * 4. Hold E at the cabinet: the arm swaps the module (Wolt has a wheel, he cannot climb).
+ * 5. 18 m of cable from the drum at the mast to the machine room inlet: the station wakes.
+ * 6. The duty room plotter prints its last queued page: a route map to R-2 (pictures and
+ *    numbers, readable without decoding). Wolt scans it and leaves through the gate.
+ * The duty room has the manager's memo in a drawer and a map on the wall. The machine
+ * room stays shut behind the fallen cabinet (a teaser for later).
  *
  * 1 tile = 1 m, y grows towards the camera (south).
  */
@@ -35,7 +40,8 @@ export const FAB_POWER = 600;    // W the fabricator needs
 export const WOLT_POWER = 200;   // W Wolt can give
 export const CABLE_MAX = 18;     // m of cable on the drum at the mast foot
 export const CABLE_WARN = 15.5;
-export const POWERED_HOLD = 6;   // s of the machine room waking before the scene moves on
+export const PLOT_DELAY = 3;      // s after the machine room wakes until the plotter prints
+export const LEAVE_TIME = 6;      // s of rolling out through the gate before the scene ends
 export const RECHARGE = 0.15;    // %/s Q-1 recovers while resting
 export const TURBINE_POWER = 1200; // W the repaired turbine gives in this wind
 export const MACHINE_POWER = 250;  // W the machine room draws once it wakes (control, lights, pumps)
@@ -43,7 +49,6 @@ export const MACHINE_POWER = 250;  // W the machine room draws once it wakes (co
 /** One line of a power balance. Wolt's in %/s of Q-1, the station's in W. */
 export interface Flow { label: string; rate: number; state?: 'off' | 'wait' | 'on' }
 
-export type Item = 'grease' | 'bearing';
 
 /** Rooms: walls one tile thick with door gaps. */
 interface Room { id: string; name: string; x: number; y: number; w: number; h: number; doors: { x: number; w: number }[] }
@@ -65,12 +70,14 @@ export const P = {
   drawer: { x: 20, y: 5.2 },
   wallMap: { x: 17.6, y: 6.5 },
   books: { x: 20.3, y: 9.5 },          // a shelf of books in the duty room: lots of text for the corpus
-  shelf: { x: 26, y: 5.2 },            // second shelf: grease and the bearing
+  shelf: { x: 26, y: 5.2 },            // second shelf: the spare transformer module
   machineDoor: { x: 33, y: 12.5 },     // blocked by a fallen cabinet (next part)
   mast: { x: 22, y: 21 },
-  mastUse: { x: 22, y: 22.6 },
+  mastUse: { x: 20.5, y: 22.8 },       // transformer cabinet at the mast foot, at wheel height
+  plotter: { x: 18.4, y: 10.5 },       // weather plotter in the duty room (prints once the station has power)
+  gate: { x: 25.2, y: 26.4 },          // gate in the south fence: the way out
   tyre: { x: 14.5, y: 19.5 },
-  junction: { x: 23.5, y: 22.5 },      // cable drum at the mast foot (after the turbine turns)
+  junction: { x: 23.6, y: 20.4 },      // cable drum at the mast foot (after the turbine turns)
   socket: { x: 35.4, y: 13.6 },        // the machine room's outside power inlet
   shed: { x: 31, y: 18, w: 6, h: 6 },
 };
@@ -103,6 +110,7 @@ export function stationObstacles(): Obstacle[] {
   // duty room: desk with the drawer
   add('crate', 19, 4, 2, 1);
   add('crate', 21, 8, 1, 3);            // bookshelf
+  add('crate', 17, 10, 1, 1);           // plotter
   // storage: shelves along the north wall, crates
   add('crate', 23, 4, 6, 1);
   add('crate', 23, 9, 2, 2);
@@ -110,6 +118,7 @@ export function stationObstacles(): Obstacle[] {
   add('crate', 32, 12, 2, 1);
   // yard: mast, weather balloon launcher, shed, scrap, fence
   add('pylon', 21, 20, 2, 2);
+  add('crate', 20, 21, 1, 1);           // transformer cabinet at the mast foot
   add('crate', 17, 24, 2, 2);           // balloon launcher
   add('station', P.shed.x, P.shed.y, P.shed.w, P.shed.h);
   add('rock', 8, 22, 2, 2);
@@ -124,9 +133,9 @@ export function stationObstacles(): Obstacle[] {
 }
 
 export interface StHint { key: string; text: string; at: V2; ok: boolean; progress?: number }
-export type StEvent = 'grab' | 'drop' | 'connect' | 'step' | 'plug' | 'door' | 'deny' | 'pickup' | 'hook' | 'unhook' | 'load' | 'repair' | 'turbine' | 'note' | 'tow';
+export type StEvent = 'plot' | 'leave' | 'grab' | 'drop' | 'connect' | 'step' | 'plug' | 'door' | 'deny' | 'pickup' | 'hook' | 'unhook' | 'load' | 'repair' | 'turbine' | 'note' | 'tow';
 
-type Target = 'books' | 'junction' | 'cableEnd' | 'socket' | 'port' | 'door' | 'doorNote' | 'fabricator' | 'drawer' | 'wallMap' | 'shelf' | 'tyre' | 'mast' | 'machineDoor';
+type Target = 'plotter' | 'gate' | 'books' | 'junction' | 'cableEnd' | 'socket' | 'port' | 'door' | 'doorNote' | 'fabricator' | 'drawer' | 'wallMap' | 'shelf' | 'tyre' | 'mast' | 'machineDoor';
 
 export class Station {
   readonly world = new World(ST_W, ST_H, stationObstacles());
@@ -141,9 +150,8 @@ export class Station {
   battery: number;
   doorOpen = 0;       // 0..1
   plugged = 0;        // s left of the "plugged into the port" moment
-  items = new Set<Item>();
-  shelfTaken = false;   // the bearing left the shelf
-  bearingOnTyre = false;
+  shelfTaken = false;   // the module left the shelf
+  moduleOnTyre = false;
   tyre: Load = { id: 'tyre', kind: 'tyre', pos: { ...P.tyre }, angle: 0.3 };
   towing = false;
   towTaut = false;
@@ -158,6 +166,12 @@ export class Station {
   reading: string | null = null;
   notesRead = new Set<string>();
   mapSeen = false;
+  /** The plotter printed the route map (a while after the machine room wakes). */
+  plotted = false;
+  /** Wolt scanned the route map to R-2: the gate is the way on. */
+  routeKnown = false;
+  /** Rolling out of the gate; the scene ends a few seconds later. */
+  leaving = 0;
   done = false;
   message: { text: string; t: number } | null = null;
   events: StEvent[] = [];
@@ -182,7 +196,8 @@ export class Station {
   }
 
   nearest(): Target | null {
-    const on: Target[] = ['port', 'doorNote', 'drawer', 'wallMap', 'books', 'machineDoor', 'mast'];
+    const on: Target[] = ['port', 'doorNote', 'drawer', 'wallMap', 'books', 'machineDoor', 'mast', 'gate'];
+    if (this.plotted) on.push('plotter');
     if (this.doorOpen >= 1) on.push('fabricator'); else on.push('door');
     if (!this.shelfTaken) on.push('shelf');
     if (!this.turbine) on.push('tyre');
@@ -206,8 +221,8 @@ export class Station {
   flows(): Flow[] {
     const f: Flow[] = [];
     if (this.drive > 0.002) f.push({ label: tr('jazda', 'driving'), rate: -this.drive });
-    if (this.towDrain > 0.002) f.push({ label: this.bearingOnTyre ? tr('ciągnie oponę z łożyskiem', 'towing the tyre with the bearing') : tr('ciągnie oponę', 'towing the tyre'), rate: -this.towDrain });
-    if (this.repair > 0) f.push({ label: tr('praca przy maszcie', 'work at the mast'), rate: 0 });
+    if (this.towDrain > 0.002) f.push({ label: this.moduleOnTyre ? tr('ciągnie oponę z modułem', 'towing the tyre with the module') : tr('ciągnie oponę', 'towing the tyre'), rate: -this.towDrain });
+    if (this.repair > 0) f.push({ label: tr('praca przy transformatorze', 'work at the transformer'), rate: 0 });
     if (this.charging) f.push({ label: tr('postój (Q-1 się odnawia)', 'resting (Q-1 recovers)'), rate: RECHARGE });
     if (!f.length) f.push({ label: this.battery >= 100 ? tr('pełna', 'full') : tr('czeka na postój', 'waits for a rest'), rate: 0 });
     return f;
@@ -234,6 +249,10 @@ export class Station {
     if (!n) return null;
     const at = this.point(n);
     switch (n) {
+      case 'plotter': return { key: 'E', text: this.routeKnown ? tr('mapa trasy do R-2 (jeszcze raz)', 'route map to R-2 (again)') : tr('ploter wydrukował stronę: zeskanuj', 'the plotter printed a page: scan'), at, ok: true };
+      case 'gate': return this.routeKnown
+        ? { key: 'E', text: tr('brama: wyrusz do R-2', 'gate: set out for R-2'), at, ok: true }
+        : { key: 'E', text: tr('brama w płocie: dokąd?', 'gate in the fence: where to?'), at, ok: false };
       case 'junction': return { key: 'E', text: tr(`bęben kabla pod masztem (${CABLE_MAX} m): weź koniec`, `cable drum under the mast (${CABLE_MAX} m): take the end`), at, ok: true };
       case 'cableEnd': return { key: 'E', text: tr('podnieś koniec kabla', 'pick up the cable end'), at, ok: true };
       case 'socket': return this.cableHeld
@@ -248,19 +267,16 @@ export class Station {
       case 'drawer': return { key: 'E', text: this.notesRead.has('notatkaKierowniczki') ? tr('szuflada (jeszcze raz)', 'drawer (again)') : tr('otwórz szufladę', 'open the drawer'), at, ok: true };
       case 'wallMap': return { key: 'E', text: tr('mapa na ścianie', 'map on the wall'), at, ok: true };
       case 'books': return { key: 'E', text: this.notesRead.has('slownik') ? tr('książki (zeskanowane)', 'books (scanned)') : this.notesRead.has('podrecznik') ? tr('zeskanuj drugą książkę', 'scan the second book') : tr('półka z książkami: zeskanuj', 'bookshelf: scan'), at, ok: true };
-      case 'shelf': return { key: 'E', text: this.items.has('grease') ? (this.towing ? tr('połóż łożysko na oponie', 'put the bearing on the tyre') : tr('łożysko: za ciężkie, by nieść', 'bearing: too heavy to carry')) : tr('druga półka: smar i łożysko', 'second shelf: grease and bearing'), at, ok: true };
+      case 'shelf': return { key: 'E', text: this.towing ? tr('połóż moduł transformatora na oponie', 'put the transformer module on the tyre') : tr('druga półka: moduł transformatora (za ciężki, by nieść)', 'second shelf: transformer module (too heavy to carry)'), at, ok: true };
       case 'tyre': return this.towing
         ? { key: 'E', text: tr('odczep oponę', 'unhitch the tyre'), at, ok: true }
-        : { key: 'E', text: this.bearingOnTyre ? tr('doczep oponę z łożyskiem', 'hitch the tyre with the bearing') : tr('doczep oponę (jak sanki)', 'hitch the tyre (like a sled)'), at, ok: true };
+        : { key: 'E', text: this.moduleOnTyre ? tr('doczep oponę z modułem', 'hitch the tyre with the module') : tr('doczep oponę (jak sanki)', 'hitch the tyre (like a sled)'), at, ok: true };
       case 'machineDoor': return { key: 'E', text: tr('przejście zablokowane przewróconą szafą', 'doorway blocked by a fallen cabinet'), at, ok: false };
       case 'mast': {
-        if (this.turbine) return { key: '·', text: tr('turbina się kręci', 'the turbine is turning'), at, ok: true };
-        const bearingHere = this.bearingOnTyre && dist(this.tyre.pos, P.mastUse) < 3.2;
-        if (!bearingHere || !this.items.has('grease')) {
-          const miss = [!this.bearingOnTyre ? tr('nowe łożysko', 'a new bearing') : !bearingHere ? tr('łożysko bliżej masztu', 'the bearing closer to the mast') : '', !this.items.has('grease') ? tr('smar', 'grease') : ''].filter(Boolean).join(tr(' i ', ' and '));
-          return { key: 'E', text: tr(`łożysko turbiny zatarte · potrzeba: ${miss}`, `turbine bearing seized · needs: ${miss}`), at, ok: false };
-        }
-        return { key: 'E', text: tr('przytrzymaj: wejdź po drabince i wymień łożysko', 'hold: climb the ladder and replace the bearing'), at, ok: true, progress: this.repair / REPAIR_TIME };
+        if (this.turbine) return { key: '·', text: tr('transformator działa, turbina daje prąd', 'the transformer works, the turbine gives power'), at, ok: true };
+        const here = this.moduleOnTyre && dist(this.tyre.pos, P.mastUse) < 3.2;
+        if (!here) return { key: 'E', text: this.moduleOnTyre ? tr('szafka transformatora · przyciągnij moduł bliżej', 'transformer cabinet · bring the module closer') : tr('szafka transformatora: moduł spalony · turbina kręci się na próżno', 'transformer cabinet: module burnt · the turbine spins for nothing'), at, ok: false };
+        return { key: 'E', text: tr('przytrzymaj: wykręć spalony moduł i wsuń nowy', 'hold: unbolt the burnt module and slide in the new one'), at, ok: true, progress: this.repair / REPAIR_TIME };
       }
     }
   }
@@ -280,6 +296,18 @@ export class Station {
     }
     if (this.turbine) this.turbineT += dt;
     if (this.machinePowered) this.poweredT += dt;
+    if (this.machinePowered && !this.plotted && this.poweredT > PLOT_DELAY) {
+      this.plotted = true; this.events.push('plot');
+      this.say(tr('W dyżurce coś stuka i szeleści: ploter się obudził.', 'Something clatters and rustles in the duty room: the plotter has woken up.'));
+    }
+    if (this.leaving > 0) {
+      // the last shot: Wolt rolls out through the gate towards the hill, no control
+      this.leaving += dt;
+      this.facing = Math.PI / 2; this.speed = Math.min(SPEED * 0.8, this.speed + dt * 2); this.moving = true;
+      this.pos = { x: this.pos.x + (P.gate.x - this.pos.x) * Math.min(1, dt * 2), y: this.pos.y + this.speed * dt };
+      if (this.leaving > LEAVE_TIME && !this.done) this.done = true;
+      return;
+    }
     if (this.reading) { this.moving = false; this.speed = 0; return; }
     if (inp.drop && this.towing) { this.towing = false; this.towTaut = false; this.events.push('unhook'); }
     else if (inp.drop && this.cableHeld) { this.cableHeld = false; this.events.push('drop'); }
@@ -294,14 +322,13 @@ export class Station {
     this.drive += (d * MOVE_COST - this.drive) * k;
     this.towDrain += ((this.towing ? d * TOW_COST : 0) - this.towDrain) * k;
     this.lastStep = 0;
-    if (this.machinePowered && this.poweredT > POWERED_HOLD && !this.done) this.done = true;
   }
 
   private move(dt: number, inp: { move: V2; run: boolean }) {
     const want = len(inp.move) > 0.01 && this.repair === 0;
     let sp = SPEED * (inp.run ? RUN_MULT : 1);
     if (this.cableHeld && this.cableLength() > CABLE_WARN) sp *= 0.6;
-    if (this.towing) sp *= 1 - LOADS.tyre.drag * (this.bearingOnTyre ? 2.2 : 1);
+    if (this.towing) sp *= 1 - LOADS.tyre.drag * (this.moduleOnTyre ? 2.2 : 1);
     if (this.battery < 5) sp *= 0.5;
     const f0 = this.facing;
     let step = drive(this, dt, want ? inp.move : { x: 0, y: 0 }, sp);
@@ -400,11 +427,10 @@ export class Station {
         break;
       case 'shelf':
         if (!pressed) break;
-        if (!this.items.has('grease')) { this.items.add('grease'); this.events.push('pickup'); }
         if (this.towing && dist(this.tyre.pos, this.pos) < 3) {
-          this.shelfTaken = true; this.bearingOnTyre = true; this.events.push('load');
-          this.say(tr('Smar w chwytaku, łożysko na oponie.', 'Grease in the gripper, bearing on the tyre.'));
-        } else this.say(tr('Smar wzięty. Łożysko jest za ciężkie, żeby je nieść. Przyciągnij tu oponę i połóż je na niej.', 'Grease taken. The bearing is too heavy to carry. Drag the tyre here and put it on that.'));
+          this.shelfTaken = true; this.moduleOnTyre = true; this.events.push('load');
+          this.say(tr('Moduł transformatora leży na oponie.', 'The transformer module lies on the tyre.'));
+        } else { this.events.push('deny'); this.say(tr('Moduł jest za ciężki dla ramienia. Przyciągnij tu oponę i połóż go na niej.', 'The module is too heavy for the arm. Drag the tyre here and put it on that.')); }
         break;
       case 'tyre':
         if (!pressed) break;
@@ -416,11 +442,10 @@ export class Station {
         break;
       case 'mast': {
         if (this.turbine) break;
-        const bearingHere = this.bearingOnTyre && dist(this.tyre.pos, P.mastUse) < 3.2;
-        if (!bearingHere || !this.items.has('grease')) {
+        if (!(this.moduleOnTyre && dist(this.tyre.pos, P.mastUse) < 3.2)) {
           if (pressed && this.denyT === 0) {
             this.denyT = 1; this.events.push('deny');
-            this.say(!this.items.has('grease') && !this.bearingOnTyre ? tr('Łożysko się zatarło. Potrzeba nowego łożyska i smaru.', 'The bearing has seized. A new bearing and grease are needed.') : !this.bearingOnTyre ? tr('Brakuje łożyska.', 'The bearing is missing.') : !this.items.has('grease') ? tr('Brakuje smaru.', 'The grease is missing.') : tr('Przyciągnij łożysko bliżej masztu.', 'Drag the bearing closer to the mast.'));
+            this.say(this.moduleOnTyre ? tr('Przyciągnij moduł bliżej szafki.', 'Bring the module closer to the cabinet.') : tr('Moduł transformatora jest spalony. Turbina się kręci, ale prąd nigdzie nie płynie.', 'The transformer module is burnt. The turbine spins, but no power flows anywhere.'));
           }
           break;
         }
@@ -428,28 +453,37 @@ export class Station {
           this.repair += dt;
           if (Math.random() < dt * 3) this.events.push('repair');
           if (this.repair >= REPAIR_TIME) {
-            this.repair = 0; this.turbine = true; this.items.delete('grease'); this.bearingOnTyre = false;
+            this.repair = 0; this.turbine = true; this.moduleOnTyre = false;
             this.battery = Math.max(0, this.battery - 3);
             this.events.push('turbine');
-            this.say(tr('Turbina rusza. Pod masztem jest bęben z kablem do maszynowni.', 'The turbine starts. Under the mast there is a drum of cable for the machine room.'));
+            this.say(tr('Nowy moduł siedzi. Turbina daje prąd. Pod masztem jest bęben z kablem do maszynowni.', 'The new module is in. The turbine gives power. Under the mast there is a drum of cable for the machine room.'));
           }
         }
         break;
       }
+      case 'plotter':
+        if (pressed) { this.routeKnown = true; this.read('mapaR2'); }
+        break;
+      case 'gate':
+        if (!pressed) break;
+        if (this.routeKnown) { this.leaving = 0.001; this.towing = false; this.cableHeld = false; this.events.push('leave'); }
+        else if (this.denyT === 0) { this.denyT = 1; this.events.push('deny'); this.say(tr('Za bramą jest tylko popiół i wzgórze. Nie wiadomo, dokąd jechać.', 'Beyond the gate there is only ash and a hill. No telling where to go.')); }
+        break;
     }
   }
 
   /** One quiet line about what Wolt is after right now (from what he has seen so far). */
   goal(): string {
-    if (this.machinePowered) return tr('Maszynownia ma prąd.', 'The machine room has power.');
+    if (this.leaving > 0) return tr('Do R-2, za wzgórzem.', 'To R-2, beyond the hill.');
+    if (this.routeKnown) return tr('Mapa pokazuje trasę do R-2: przez bramę w płocie i za wzgórze.', 'The map shows the way to R-2: through the gate in the fence and over the hill.');
+    if (this.plotted) return tr('Ploter w dyżurce coś wydrukował.', 'The plotter in the duty room printed something.');
+    if (this.machinePowered) return tr('Maszynownia ma prąd. Stacja się budzi.', 'The machine room has power. The station is waking up.');
     if (this.cableHeld) return tr(`Doprowadź kabel do przyłącza na ścianie maszynowni (${num(this.cableLength())} / ${CABLE_MAX} m).`, `Bring the cable to the inlet on the machine room wall (${num(this.cableLength())} / ${CABLE_MAX} m).`);
     if (this.cable) return tr('Kabel leży na ziemi. Podnieś koniec i doprowadź go do maszynowni.', 'The cable lies on the ground. Pick up the end and bring it to the machine room.');
-    if (this.turbine) return tr('Turbina się kręci. Pod masztem jest bęben z kablem: prąd trzeba doprowadzić do maszynowni.', 'The turbine is turning. Under the mast there is a cable drum: the power has to reach the machine room.');
+    if (this.turbine) return tr('Turbina daje prąd. Pod masztem jest bęben z kablem: prąd trzeba doprowadzić do maszynowni.', 'The turbine gives power. Under the mast there is a cable drum: the power has to reach the machine room.');
     if (this.doorOpen === 0) return tr('Drzwi warsztatu mają zamek elektryczny. Po lewej jest port.', 'The workshop door has an electric lock. There is a port on the left.');
-    if (!this.bearingOnTyre && !this.items.has('grease')) return tr('Turbina na maszcie stoi: zatarte łożysko. Nowe łożysko i smar są w magazynie, na drugiej półce.', 'The turbine on the mast is stuck: a seized bearing. A new bearing and grease are in the storeroom, on the second shelf.');
-    if (!this.bearingOnTyre) return this.towing ? tr('Zaciągnij oponę pod półkę w magazynie i połóż na niej łożysko.', 'Drag the tyre to the shelf in the storeroom and put the bearing on it.') : tr('Łożysko jest za ciężkie. Stara opona na podwórzu posłuży jak sanki.', 'The bearing is too heavy. The old tyre in the yard will do as a sled.');
-    if (!this.items.has('grease')) return tr('Brakuje jeszcze smaru z drugiej półki.', 'Still missing the grease from the second shelf.');
-    return tr('Zaciągnij łożysko pod maszt i wymień je (przytrzymaj E).', 'Drag the bearing to the mast and replace it (hold E).');
+    if (!this.moduleOnTyre) return this.towing ? tr('Zaciągnij oponę pod drugą półkę w magazynie i połóż na niej moduł transformatora.', 'Drag the tyre to the second shelf in the storeroom and put the transformer module on it.') : tr('Turbina kręci się na próżno: spalony transformator u stóp masztu. Nowy moduł jest w magazynie, na drugiej półce, ale jest ciężki: stara opona posłuży jak sanki.', 'The turbine spins for nothing: a burnt transformer at the mast foot. A new module is in the storeroom, on the second shelf, but it is heavy: the old tyre will do as a sled.');
+    return tr('Zaciągnij moduł pod szafkę u stóp masztu i wymień go (przytrzymaj E).', 'Drag the module to the cabinet at the mast foot and swap it (hold E).');
   }
 
   cableLength(): number { return this.cable ? this.cable.length() : 0; }

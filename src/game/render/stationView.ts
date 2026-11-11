@@ -29,9 +29,12 @@ export class StationView {
   private wolt: WoltMono;
   private anim: WoltAnimator;
   private tyre: LoadModel;
-  private bearingOnTyre: THREE.Mesh;
-  private bearingOnShelf: THREE.Mesh;
-  private greaseOnShelf: THREE.Mesh;
+  private moduleOnTyre: THREE.Object3D;
+  private moduleOnShelf: THREE.Object3D;
+  private trafoLamp!: THREE.MeshStandardMaterial;
+  private spark!: THREE.PointLight;
+  private teaser!: THREE.PointLight;
+  private paper!: THREE.Mesh;
   private rope: THREE.Mesh | null = null;
   private ownCable: THREE.Mesh | null = null;
   private door: THREE.Mesh;
@@ -85,13 +88,15 @@ export class StationView {
     this.buildFurniture();
     this.rotor = this.buildMast();
     this.buildYard();
-    const sh = this.buildShelf(); this.bearingOnShelf = sh.bearing; this.greaseOnShelf = sh.grease;
+    this.moduleOnShelf = this.buildShelf();
+    this.buildTransformer();
+    this.buildPlotter();
     this.buildNotes();
     this.buildPowerLine();
 
     this.tyre = loadModel('tyre'); s.add(this.tyre.group);
-    this.bearingOnTyre = mesh(new THREE.TorusGeometry(0.16, 0.07, 8, 18).rotateX(Math.PI / 2), mat(0x6f7478, { r: 0.4, m: 0.7 }), 0, 0.3, 0);
-    this.tyre.body.add(this.bearingOnTyre);
+    this.moduleOnTyre = moduleModel(); this.moduleOnTyre.position.y = 0.22;
+    this.tyre.body.add(this.moduleOnTyre);
 
     this.wolt = woltMonoModel();
     const cm = (this.wolt.cell.material as THREE.MeshStandardMaterial).clone();
@@ -308,15 +313,44 @@ void main() {
     const cab = box(2.2, 0.7, 0.9, mat(0x5a5e60, { r: 0.6, m: 0.4 }), 33, 0.35, 12.3); cab.rotation.y = 0.12; s.add(cab);
   }
 
-  private buildShelf() {
+  private buildShelf(): THREE.Object3D {
     const s = this.scene, sh = mat(0x4a4d50, { r: 0.7, m: 0.4 });
     for (const y of [0.05, 0.75, 1.45, 2.1]) s.add(box(6, 0.05, 0.8, sh, 26, y + 0.03, 4.45));
     for (const x of [23.05, 26, 28.95]) s.add(box(0.06, 2.2, 0.8, sh, x, 1.1, 4.45));
-    // second shelf: a tin of grease and the heavy bearing
-    const grease = mesh(new THREE.CylinderGeometry(0.1, 0.1, 0.14, 12), mat(0x7a6a30, { r: 0.6, m: 0.3 }), 25.6, 0.85, 4.6);
-    const bearing = mesh(new THREE.TorusGeometry(0.16, 0.07, 8, 18).rotateX(Math.PI / 2), mat(0x6f7478, { r: 0.4, m: 0.7 }), 26.4, 0.86, 4.6);
-    s.add(grease); s.add(bearing);
-    return { grease, bearing };
+    // second shelf: the spare transformer module
+    const mod = moduleModel(); mod.position.set(26, 0.8, 4.55); s.add(mod);
+    return mod;
+  }
+
+  /** The transformer cabinet at the mast foot: Wolt's wheel reaches it, no climbing. */
+  private buildTransformer() {
+    const s = this.scene, x = 20.5, z = 21.5;
+    s.add(box(0.9, 1.2, 0.9, mat(0x4f5a55, { r: 0.6, m: 0.5 }), x, 0.6, z));
+    s.add(box(0.7, 0.9, 0.04, mat(0x3c4642, { r: 0.6, m: 0.5 }), x, 0.62, z + 0.47));
+    // the warning sign: a lightning bolt, readable without any decoding
+    const cv = document.createElement('canvas'); cv.width = 64; cv.height = 64;
+    const c = cv.getContext('2d')!;
+    c.fillStyle = '#d9b23a'; c.beginPath(); c.moveTo(32, 4); c.lineTo(60, 58); c.lineTo(4, 58); c.closePath(); c.fill();
+    c.fillStyle = '#1d1f20'; c.beginPath(); c.moveTo(35, 18); c.lineTo(24, 40); c.lineTo(32, 40); c.lineTo(28, 54); c.lineTo(42, 32); c.lineTo(34, 32); c.closePath(); c.fill();
+    const tex = new THREE.CanvasTexture(cv); tex.colorSpace = THREE.SRGBColorSpace;
+    s.add(mesh(new THREE.PlaneGeometry(0.26, 0.26), new THREE.MeshStandardMaterial({ map: tex, transparent: true, roughness: 0.8 }), x, 0.85, z + 0.5, false));
+    this.trafoLamp = new THREE.MeshStandardMaterial({ color: 0x220a06, emissive: PAL.off, emissiveIntensity: 0.4 });
+    s.add(mesh(new THREE.BoxGeometry(0.07, 0.07, 0.04), this.trafoLamp, x + 0.28, 1.08, z + 0.5, false));
+    // a cable from the cabinet up the mast leg
+    s.add(box(0.05, 2.4, 0.05, mat(0x1a1a1a), x + 0.4, 1.2, z - 0.35));
+    this.spark = new THREE.PointLight(0xbfe6ff, 0, 3, 2); this.spark.position.set(x, 1.0, z + 0.6); s.add(this.spark);
+  }
+
+  /** The weather plotter in the duty room: prints the route map once the station has power. */
+  private buildPlotter() {
+    const s = this.scene;
+    s.add(box(1.0, 0.8, 0.8, mat(0x6a6c68, { r: 0.7, m: 0.3 }), 17.5, 0.4, 10.5));
+    s.add(box(0.9, 0.08, 0.1, mat(0x2a2c2e), 17.5, 0.82, 10.85));
+    this.paper = mesh(new THREE.PlaneGeometry(0.8, 1).translate(0, -0.5, 0), new THREE.MeshStandardMaterial({ color: 0xe8e4d8, roughness: 0.9, emissive: 0xe8e4d8, emissiveIntensity: 0.1, side: THREE.DoubleSide }), 17.5, 0.8, 10.92, false);
+    this.paper.scale.y = 0.01;
+    s.add(this.paper);
+    // the machine room teaser: something glows green behind the fallen cabinet
+    this.teaser = new THREE.PointLight(0x5fe39a, 2, 6, 1.5); this.teaser.position.set(33.5, 1.2, 7); s.add(this.teaser);
   }
 
   /** The measurement mast with the small wind turbine on top. */
@@ -364,10 +398,18 @@ void main() {
     const roof = box(sh.w + 0.6, 0.12, sh.h + 0.6, mat(0x3f3a34), sh.x + sh.w / 2, 2.6, sh.y + sh.h / 2); roof.rotation.z = 0.08; s.add(roof);
     // a fallen fence along the south
     const fence = mat(0x6b6458, { r: 0.95 });
+    const gx = P.gate.x;
     for (let x = 2; x < ST_W - 2; x += 2.2) {
+      if (x > gx - 2.2 && x < gx + 1.2) continue; // the gate gap
       const post = box(0.1, 1.1, 0.1, fence, x, 0.55, ST_H - 0.6); post.rotation.z = Math.sin(x) * 0.25; s.add(post);
       if (Math.sin(x * 3) > -0.3) s.add(box(2.1, 0.06, 0.04, fence, x + 1.1, 0.8 + Math.sin(x) * 0.15, ST_H - 0.6));
     }
+    // the gate: two posts and a leaf hanging open
+    s.add(box(0.14, 1.4, 0.14, fence, gx - 1.3, 0.7, ST_H - 0.6));
+    s.add(box(0.14, 1.4, 0.14, fence, gx + 1.3, 0.7, ST_H - 0.6));
+    const leaf = new THREE.Group(); leaf.position.set(gx - 1.3, 0, ST_H - 0.6); leaf.rotation.y = -1.1; s.add(leaf);
+    for (const y of [0.35, 0.8, 1.2]) leaf.add(box(2.4, 0.06, 0.04, fence, 1.2, y, 0));
+    leaf.add(box(2.6, 0.05, 0.04, fence, 1.2, 0.78, 0)).rotation.z = 0.33;
     if (m.size) {
       for (let k = 0; k < 40; k++) {
         const x = 1 + ((k * 7.31) % (ST_W - 2)), z = 14.5 + ((k * 3.77) % 12.5);
@@ -424,11 +466,17 @@ void main() {
     this.door.position.x = 12 + st.doorOpen * 1.9;
     this.portLamp.emissive.setHex(st.doorOpen > 0 ? PAL.ok : PAL.off);
     this.portLamp.emissiveIntensity = st.plugged > 0 ? 2 : st.doorOpen > 0 ? 0.8 : 0.15 + (Math.sin(t * 3) > 0.9 ? 0.4 : 0);
-    this.greaseOnShelf.visible = !st.items.has('grease') && !st.turbine;
-    this.bearingOnShelf.visible = !st.shelfTaken;
-    this.bearingOnTyre.visible = st.bearingOnTyre;
-    this.rotorSpeed += ((st.turbine ? 6 : 0) - this.rotorSpeed) * Math.min(1, dt * 0.4);
-    this.rotor.rotation.z += this.rotorSpeed * dt + (st.turbine ? 0 : Math.sin(t * 0.7) * 0.0015);
+    this.moduleOnShelf.visible = !st.shelfTaken;
+    this.moduleOnTyre.visible = st.moduleOnTyre;
+    // the rotor always turns in the wind: the fault is electrical, not mechanical
+    this.rotorSpeed += ((st.turbine ? 6 : 4) - this.rotorSpeed) * Math.min(1, dt * 0.4);
+    this.rotor.rotation.z += this.rotorSpeed * dt;
+    this.trafoLamp.emissive.setHex(st.turbine ? PAL.ok : PAL.off);
+    this.trafoLamp.emissiveIntensity = st.turbine ? 2 : 0.3 + (Math.sin(t * 5) > 0.7 ? 0.8 : 0);
+    this.spark.intensity = st.turbine ? 0 : Math.random() < 0.04 ? 6 : this.spark.intensity * 0.7;
+    this.teaser.intensity = 1.6 + Math.sin(t * 1.3) * 0.8;
+    const paperWant = st.plotted ? 1 : 0.01;
+    this.paper.scale.y += (paperWant - this.paper.scale.y) * Math.min(1, dt * 0.5);
 
     // Wolt: the sim turns him at a wheel's pace, so the body follows it exactly
     w.group.position.set(st.pos.x, 0, st.pos.y);
@@ -451,7 +499,7 @@ void main() {
     const arm: ArmPose = st.repair > 0 ? 'work' : st.reading ? 'reach' : this.gesture?.pose ?? 'rest';
     let tension = 0, pullFrom: THREE.Vector3 | null = null;
     if (st.towing && st.towTaut && this.spd > 0.1) {
-      tension = LOADS.tyre.drag * (st.bearingOnTyre ? 3 : 1.6);
+      tension = LOADS.tyre.drag * (st.moduleOnTyre ? 3 : 1.6);
       pullFrom = new THREE.Vector3(st.tyre.pos.x - st.pos.x, 0, st.tyre.pos.y - st.pos.y).normalize();
     }
     const cableTo = st.plugged > 0 ? new THREE.Vector3(P.port.x, 0, 13.1) : null;
@@ -519,4 +567,13 @@ void main() {
     this.updateHole(dt);
     this.post.render(this.scene, this.camera);
   }
+}
+
+/** The spare transformer module: a heavy grey block with cooling fins and two terminals. */
+function moduleModel(): THREE.Group {
+  const g = new THREE.Group(), steel = mat(0x5d6366, { r: 0.5, m: 0.6 });
+  g.add(box(0.5, 0.32, 0.36, steel, 0, 0.16, 0));
+  for (let i = -2; i <= 2; i++) g.add(box(0.02, 0.26, 0.4, mat(0x4a4f52, { r: 0.5, m: 0.6 }), i * 0.09, 0.16, 0));
+  for (const x of [-0.12, 0.12]) g.add(mesh(new THREE.CylinderGeometry(0.03, 0.03, 0.08, 8), mat(0x8a5a3a, { r: 0.4, m: 0.8 }), x, 0.36, 0));
+  return g;
 }
