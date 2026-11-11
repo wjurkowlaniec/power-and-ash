@@ -472,7 +472,7 @@ Jak to policzyć technicznie (do decyzji później): świat ma prosty „zegar s
 
 **Czym jest tajemnica [propozycja]:** coś wciąż pije prąd ze świata. Q-2 w laboratorium nie zgasła po Popiele i ciągnie energię ze wszystkiego, co świeci: z lamp, z baterii Wolta, a powoli też z ludzi. Dlatego popiół wciąż pada, kable słabną, a ludzi ubywa. Gracz nie dostaje tego w tekście, tylko widzi: iskry z każdego światła płyną w jedną stronę, popiół leci stamtąd, a gdy poświata na horyzoncie pulsuje, wszystkie światła na chwilę przygasają.
 
-**Grywalny szkic „Powroty”:** [artefakt](https://claude.ai/artifact/LP9nxfwMkJWjK9S17Ugmvf), kopia: [demo-powroty.html](demo-powroty.html) (na Pages pod `/docs/demo-powroty.html`). Jedna osada przez lata, bez słów: kabel do podpięcia, sen na lata przy zimowisku (kreski na kamieniu), ten sam kadr przy domu, ludzie i symbol na ścianie, dary, jeleń, gasnące okna na wzgórzach z akordem, iskry i poświata. Widok z boku służy tylko pokazaniu języka obrazów, gra ma kamerę z góry.
+**Tech demo „Powroty”** (rzut izometryczny, silnik gry): https://wjurkowlaniec.github.io/power-and-ash/demo-returns/, opis w [DEMO-POWROTY.md](DEMO-POWROTY.md). Jedna osada przez lata, bez słów: kabel do podpięcia, sen na lata przy zimowisku (kreski na kamieniu), ten sam kadr przy domu, ludzie i symbol na ścianie, dary, jeleń, gasnące okna na wzgórzach z akordem, iskry i poświata za urwiskiem. Pierwszy szkic był w widoku z boku i Wojtek go odrzucił (2026-11-11): cała gra ma rzut izometryczny.
 
 Żaden z nich nie dokłada nowego systemu. Każdy łączy rzeczy już zapisane, w duchu zasady „dużo, ale subtelnie”. Polecane na początek: 1, 2 i 3.
 

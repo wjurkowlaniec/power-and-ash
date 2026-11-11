@@ -75,8 +75,9 @@ Oznaczenia w SWIAT.md: **[ustalone]** to decyzja Wojtka, **[propozycja]** to szk
 | 2026-11-10: zasada „dużo, ale bardzo subtelnie”. Nie da się zrobić wszystkiego, ale wiele pomysłów może wejść jako drobne, ciche szczegóły świata, bez komunikatów. | [SWIAT.md: Ton i styl](SWIAT.md#ton-i-styl) |
 | 2026-11-10 | Symulacja balansu czasu gracza (6 zajęć, sufity nagrody, style gry z gałęziami per akt) i generator pokoleń ludzi; zegar pokoleń osady rusza od pierwszego kontaktu, przeszłość generuje się wstecz. Liczby to propozycja. | [SYMULACJA.md](SYMULACJA.md), [symulacja.html](symulacja.html) |
 | Wojtek: „dorób w tech demo budowanie statku z żaglem”. Agent odczytał to jako pierwszy Żaglowóz (etap 1 z SWIAT.md: wózek z masztem, żaglem z powłoki balonu meteo i płozami z ramy bojerka) i dodał go do demo „Warsztat” jako etapy 12 (budowa) i 13 (żegluga z wiatrem pozornym, szotem, martwym kątem i halsowaniem). Liczby i model żeglugi są propozycją agenta, do strojenia w testach. | [DEMO-WARSZTAT.md: Żaglowóz](DEMO-WARSZTAT.md#żaglowóz) |
-| 2026-11-11 | Komunikacja obrazem zamiast opisanej, sztywnej mechaniki: gracz sam odkrywa, co dana rzecz znaczy; nie za ciężko i nie za skomplikowanie. | [SWIAT.md: Spoiwa](SWIAT.md#spoiwa-pomysły-które-sklejają-to-co-już-jest-propozycja-agenta-2026-11-11-na-pytanie-wojtka-jakieś-jeszcze-pomysły-tak-by-było-spójnie), [demo-powroty.html](demo-powroty.html) |
+| 2026-11-11 | Komunikacja obrazem zamiast opisanej, sztywnej mechaniki: gracz sam odkrywa, co dana rzecz znaczy; nie za ciężko i nie za skomplikowanie. | [SWIAT.md: Spoiwa](SWIAT.md#spoiwa-pomysły-które-sklejają-to-co-już-jest-propozycja-agenta-2026-11-11-na-pytanie-wojtka-jakieś-jeszcze-pomysły-tak-by-było-spójnie), [DEMO-POWROTY.md](DEMO-POWROTY.md) |
 | 2026-11-11 | Przyjęte spoiwa: „jedna tajemnica” (tak; treść to propozycja: Q-2 wciąż pije prąd ze świata) i „światło w oknie” (może być). | jw. |
+| 2026-11-11 | Cała gra ma rzut izometryczny, więc dema i szkice świata też (szkic „Powroty” w widoku z boku odrzucony i zrobiony od nowa w silniku gry jako `/demo-returns/`). | [DEMO-POWROTY.md](DEMO-POWROTY.md) |
 
 ## Czeka na decyzję
 
