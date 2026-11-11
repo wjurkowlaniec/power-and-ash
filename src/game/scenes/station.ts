@@ -106,6 +106,8 @@ export class StationScene implements Scene {
     const s = c.sound;
     switch (e) {
       case 'step': s.wheelCreak(0.5); break;
+      // the wheel spinning in loose ash: a dry scrape and the motor straining
+      case 'bog': s.step(true); s.servo(0.35, 0.6); break;
       case 'plug': s.clank(1.8, 0.05); s.blip(0.9); break;
       case 'door': s.creak(1); s.servo(1, 0.7); break;
       case 'deny': s.blip(0.5); setTimeout(() => s.blip(0.45), 160); break;

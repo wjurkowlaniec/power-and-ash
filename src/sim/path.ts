@@ -27,8 +27,10 @@ export function clearLine(w: World, a: V2, b: V2, r: number): boolean {
 export function findPath(w: World, from: V2, to: V2, r: number): V2[] | null {
   if (clearLine(w, from, to, r)) return [to];
   const W = w.width, H = w.height;
-  const si = Math.floor(from.x), sj = Math.floor(from.y);
-  let gi = Math.floor(to.x), gj = Math.floor(to.y);
+  // a world with open sides lets a walker stand (or click) outside the grid: search from and to the nearest tile inside
+  const inX = (i: number) => Math.max(0, Math.min(w.width - 1, i)), inY = (j: number) => Math.max(0, Math.min(w.height - 1, j));
+  const si = inX(Math.floor(from.x)), sj = inY(Math.floor(from.y));
+  let gi = inX(Math.floor(to.x)), gj = inY(Math.floor(to.y));
   let goal = to;
   if (!free(w, gi, gj, r)) {
     // nearest free tile around the goal, preferring the side facing Wolt
@@ -50,7 +52,6 @@ export function findPath(w: World, from: V2, to: V2, r: number): V2[] | null {
   const f = new Float32Array(W * H);
   const hfn = (i: number, j: number) => { const dx = Math.abs(i - gi), dy = Math.abs(j - gj); return dx + dy + (SQ2 - 2) * Math.min(dx, dy); };
   const s = idx(si, sj);
-  if (si < 0 || sj < 0 || si >= W || sj >= H) return null;
   g[s] = 0; f[s] = hfn(si, sj); open.push(s);
   const goalI = idx(gi, gj);
   let found = false;
