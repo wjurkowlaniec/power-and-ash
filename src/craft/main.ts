@@ -12,6 +12,7 @@ import { ITEMS, ItemId, RECIPES, Recipe, TECHS, TechId, OBS, ObsId, SCRAP, BUILD
 import { CraftView } from './render/craftView';
 import { loadCraftModels } from './render/craftModels';
 import { renderIcons } from './render/icons';
+import { mountTouch, showTouch } from '../touch';
 
 /**
  * The crafting tech demo ("Warsztat"): input, the HUD panels and the loop.
@@ -176,7 +177,21 @@ function nearTarget(): Target | null {
 }
 
 const startEl = $('start');
-$('go').addEventListener('click', () => { startEl.hidden = true; running = true; sound.start(); });
+// touch: a thumb stick for WASD plus the action keys (tap the ground still walks there)
+const pad = mountTouch({
+  left: { kind: 'stick' },
+  buttons: [
+    { label: tr('użyj (E)', 'use (E)'), code: 'KeyE', hold: true },
+    { label: tr('biegnij', 'run'), code: 'ShiftLeft', hold: true },
+    { label: tr('hamulec', 'brake'), code: 'Space', hold: true },
+    { label: 'Q-1', code: 'KeyF' },
+    { label: tr('światło', 'light'), code: 'KeyL' },
+    { label: 'zoom +', code: 'Equal' },
+    { label: 'zoom −', code: 'Minus' },
+  ],
+});
+showTouch(pad, false);
+$('go').addEventListener('click', () => { startEl.hidden = true; running = true; sound.start(); showTouch(pad, true); });
 
 // ---------------------------------------------------------------- HUD helpers
 const n1 = (x: number, d = 1) => num(x, d);

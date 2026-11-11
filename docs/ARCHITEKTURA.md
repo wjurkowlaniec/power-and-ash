@@ -84,7 +84,18 @@ Używają go i gra, i tech demo. Zmiana tutaj musi zostawić obie strony działa
 ### Pozostałe wspólne
 
 - `src/i18n.ts`: każdy tekst dla gracza to `tr('polski', 'English')` w miejscu użycia. Język: `?lang=en|pl`, potem zapisany wybór (`localStorage`), potem język przeglądarki. Przełączenie zapisuje wybór i przeładowuje stronę. Polski jest oryginałem.
+- `src/touch.ts` + `src/touch.css`: kontrolki dotykowe, opis niżej.
 - `src/audio/ambient.ts` to dźwięk tech demo. Gra ma własny `src/game/audio/sound.ts`.
+
+### Sterowanie dotykowe (`src/touch.ts`)
+
+Kontrolki na ekranie dla telefonów i tabletów (Wojtek 2026-11-11). Nie rozmawiają z grą: wysyłają na `window` syntetyczne `keydown`/`keyup` z tym samym `code`, co klawiatura, więc strona ma jedną ścieżkę wejścia, a nowy klawisz działa na dotyku bez zmian w module. Przycisk może zamiast klawisza wywołać funkcję (`onTap`, np. zoom albo przełączenie panelu).
+
+- `mountTouch(layout)`: lewa i prawa kolumna, w każdej kontrolka (`kind: 'h'` lewo-prawo, `'v'` góra-dół, `'stick'` gałka WASD w 8 kierunkach) i małe przyciski (`hold: true` trzyma klawisz, bez tego stuknięcie). Wiele palców naraz, każdy palec śledzony osobno.
+- Pokazuje się tylko na urządzeniach dotykowych (`pointer: coarse`), `?touch` wymusza, `?touch=0` wyłącza. Dodaje klasę `touch` do `<body>`, żeby strona mogła zrobić miejsce w HUD (pomoc `.help` jest wtedy chowana). Na poziomym telefonie przyciski stają obok kontrolek, nie nad nimi.
+- `showTouch(root, on)`: chowa kontrolki za kartą startową i intro.
+- Użycie: „Żegluga” (ster + szot), „Rozruch” i „Warsztat” (gałka + akcje). Gra jeszcze nie ma kontrolek.
+- Stuknięcie w teren dalej działa jak LPM (idź tam). Długie przytrzymanie (PPM, menu) na dotyku jeszcze nie ma odpowiednika; w „Rozruchu” i „Warsztacie” HUD nie jest ułożony pod mały ekran i panele nachodzą na siebie.
 
 ## Tech demo („Rozruch”)
 

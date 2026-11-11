@@ -74,6 +74,8 @@ Co dalej: agent (Claude) i Wojtek czytają zgłoszenia, błędy naprawiają w PR
 | H | pomoc |
 | Esc (gra) | menu: wróć, zacznij scenę od nowa, inna scena, tech demo (gdy otwarta jest notatka, Esc najpierw ją zamyka) |
 
+**Telefon i tablet:** w tech demach („Rozruch”, „Warsztat”, „Żegluga”) na ekranach dotykowych pojawiają się kontrolki: gałka do ruchu albo w „Żegludze” ster ◀▶ i szot, plus przyciski akcji. Stuknięcie w teren to „idź tam”. Na komputerze można je włączyć dodając `?touch` do adresu. Szczegóły: [docs/DEMO-ZEGLUGA.md](docs/DEMO-ZEGLUGA.md#sterowanie), [docs/ARCHITEKTURA.md](docs/ARCHITEKTURA.md#sterowanie-dotykowe-srctouchts).
+
 ## Grafika i licencje
 
 Modele są od [Quaterniusa](https://quaternius.com) i [Kaya Lousberga](https://www.kaylousberg.com), wszystkie na licencji CC0. Szczegóły w [CREDITS.md](CREDITS.md).

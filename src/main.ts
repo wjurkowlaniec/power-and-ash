@@ -9,6 +9,7 @@ import { dist } from './sim/vec';
 import { loadModels, Models } from './render/assets';
 import { tr, num, lang, langSwitch } from './i18n';
 import { localizeDemoPage } from './demoText';
+import { mountTouch, showTouch } from './touch';
 
 localizeDemoPage();
 
@@ -110,7 +111,20 @@ const startEl = $('start');
 startEl.querySelector('.card')!.appendChild(langSwitch());
 $('end').querySelector('.card')!.appendChild(langSwitch());
 let running = false;
-$('go').addEventListener('click', () => { startEl.hidden = true; running = true; sound.start(); });
+// touch: a thumb stick for WASD plus the action keys (tap the ground still walks there)
+const pad = mountTouch({
+  left: { kind: 'stick' },
+  buttons: [
+    { label: tr('użyj (E)', 'use (E)'), code: 'KeyE', hold: true },
+    { label: tr('zwiń (Q)', 'reel (Q)'), code: 'KeyQ', hold: true },
+    { label: tr('biegnij', 'run'), code: 'ShiftLeft', hold: true },
+    { label: tr('światło', 'light'), code: 'KeyL' },
+    { label: 'zoom +', code: 'Equal' },
+    { label: 'zoom −', code: 'Minus' },
+  ],
+});
+showTouch(pad, false);
+$('go').addEventListener('click', () => { startEl.hidden = true; running = true; sound.start(); showTouch(pad, true); });
 $('again').addEventListener('click', () => {
   // rebuild the level from scratch
   const app = $('app'); app.innerHTML = '';

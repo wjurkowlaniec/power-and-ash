@@ -11,6 +11,7 @@ import { SailView } from './render/sailView';
 import { CART_MODELS } from './render/yachtRig';
 import { RollSound } from './rollSound';
 import { Intro } from './intro';
+import { mountTouch, showTouch } from '../touch';
 
 /**
  * Tech demo "Żegluga": sailing the land yacht across the ash country. Core gameplay
@@ -56,7 +57,7 @@ goBtn.textContent = tr('Wypłyń (z dźwiękiem)', 'Set sail (with sound)');
 
 let running = false;
 const intro = new Intro();
-const sail = () => { running = true; keys.clear(); };
+const sail = () => { running = true; keys.clear(); showTouch(pad, true); };
 goBtn.addEventListener('click', () => {
   sound.start(); roll.start(); $('start').remove();
   if (new URLSearchParams(location.search).has('go')) sail();
@@ -70,7 +71,7 @@ addEventListener('keydown', e => {
   keys.add(e.code);
   if (!running) return;
   switch (e.code) {
-    case 'KeyI': running = false; intro.show(sail); break;
+    case 'KeyI': running = false; showTouch(pad, false); intro.show(sail); break;
     case 'KeyF': game.toggleAuto(); toast(game.yacht.auto ? tr('Q-1 trymuje szot', 'Q-1 trims the sheet') : tr('Szot ręcznie', 'Sheet by hand')); break;
     case 'KeyR': if (game.swap()) toast(game.yacht.gear === 'wheels' ? tr('Wolt zakłada płozy…', 'Wolt fits the runners…') : tr('Wolt zakłada koła…', 'Wolt fits the wheels…')); else toast(tr('Najpierw stań (Spacja)', 'Stop first (Space)')); break;
     case 'KeyG': if (game.dock()) toast(game.yacht.docking > 0 ? tr('Wolt wczepia się w dziób…', 'Wolt docks into the bow…') : tr('Wolt odczepia się…', 'Wolt lets go…')); else toast(tr('Najpierw stań (Spacja)', 'Stop first (Space)')); break;
@@ -85,6 +86,28 @@ addEventListener('keydown', e => {
 addEventListener('keyup', e => keys.delete(e.code));
 addEventListener('blur', () => keys.clear());
 addEventListener('wheel', e => view.zoomBy(e.deltaY > 0 ? 1.1 : 1 / 1.1), { passive: true });
+
+// touch: the same keys on screen (phones and tablets only, ?touch forces them on)
+const pad = mountTouch({
+  left: { kind: 'h', codes: ['KeyA', 'KeyD'], labels: ['◀', '▶'], caption: tr('ster', 'steer') },
+  leftButtons: [
+    { label: tr('hamulec', 'brake'), code: 'Space', hold: true },
+    { label: tr('balast', 'ballast'), code: 'ShiftLeft', hold: true },
+    { label: tr('silnik', 'motor'), code: 'KeyE', hold: true },
+    { label: tr('wstecz', 'reverse'), code: 'KeyQ', hold: true },
+  ],
+  right: { kind: 'v', codes: ['KeyW', 'KeyS'], labels: [tr('wybierz', 'haul'), tr('luzuj', 'ease')], caption: tr('szot', 'sheet') },
+  buttons: [
+    { label: tr('odczep / wczep', 'undock / dock'), code: 'KeyG' },
+    { label: tr('koła / płozy', 'wheels / runners'), code: 'KeyR' },
+    { label: 'Q-1', code: 'KeyF' },
+    { label: tr('trasy', 'courses'), onTap: () => { $('course').hidden = !$('course').hidden; } },
+    { label: tr('zoom +', 'zoom +'), onTap: () => view.zoomBy(1 / 1.25) },
+    { label: tr('zoom −', 'zoom −'), onTap: () => view.zoomBy(1.25) },
+  ],
+});
+showTouch(pad, false);
+if (pad) $('course').hidden = true; // on a phone the course panel opens from its button
 
 const WINDS = [
   { k: 0.7, name: tr('Wiatr: słaby', 'Wind: light') },

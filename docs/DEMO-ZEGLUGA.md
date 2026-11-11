@@ -55,7 +55,9 @@ Do zrobienia później: animacja budowania Żaglowozu część po części (masz
 | kółko myszy | zoom (z bliska widać olinowanie) |
 | H / M | ukryj pomoc / wycisz |
 
-Linki: `?course=lake|village|dunes|forest` zaczyna na trasie, `?go` pomija kartę startową i intro, `?intro` otwiera od razu intro, `?debug` wystawia `window.sail` i `window.view`.
+**Na telefonie i tablecie** (Wojtek 2026-11-11) są kontrolki na ekranie, pokazywane tylko na urządzeniach dotykowych: z lewej ster ◀ ▶ (trzymaj stronę, przesunięcie palca przełącza), z prawej pionowy szot (góra wybiera, dół luzuje). Obok przyciski: przytrzymywane hamulec, balast, silnik, wstecz (przerywana ramka) oraz stuknięcia odczep / wczep, koła / płozy, Q-1, trasy (otwiera panel tras, na telefonie domyślnie ukryty) i zoom + / −. Pomoc z klawiszami jest wtedy schowana, a panele HUD zmniejszone. Kontrolki naciskają te same klawisze co klawiatura (wspólny moduł `src/touch.ts`, opis w [ARCHITEKTURA.md](ARCHITEKTURA.md#sterowanie-dotykowe-srctouchts)). `?touch` wymusza je na komputerze, `?touch=0` wyłącza.
+
+Linki: `?touch` pokazuje kontrolki dotykowe, `?course=lake|village|dunes|forest` zaczyna na trasie, `?go` pomija kartę startową i intro, `?intro` otwiera od razu intro, `?debug` wystawia `window.sail` i `window.view`.
 
 ## Fizyka (src/sail/sim/landYacht.ts)
 
