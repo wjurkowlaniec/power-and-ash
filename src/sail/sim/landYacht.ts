@@ -20,12 +20,17 @@ import { Obstacle, SurfaceId, SURFACES, MAP, hitObstacle } from './terrain';
  * - Heel: the sail's side force high up and the turn's centrifugal pull at the centre of
  *   mass try to tip the yacht over the leeward wheel; its weight times the half-track holds
  *   it. Past 1 a wheel lifts (fast, and on the edge); past the tip angle it capsizes and Wolt
- *   needs a few seconds to right it. Hiking (Wolt leans out to windward) and runners (a wider
- *   track) hold more.
+ *   needs a few seconds to right it. The sliding ballast (the battery box on a rail across
+ *   the deck, hauled to windward) and runners (a wider track) hold more; left on the wrong
+ *   side after a tack, the ballast helps the wind instead.
+ * - Wolt is the front wheel: docked in the bow fork he steers, and his hub motor can push
+ *   when the wind dies (it drains the battery; braking with his wheel wins a little back).
+ *   His narrow tyre sinks in loose ash and mud, so the bow pushes wide there. On runners his
+ *   wheel sits in a short runner and cannot drive.
  */
 export const YACHT = {
   g: 9.81,
-  wheelbase: 2.1,
+  wheelbase: 2.2,
   /** m/s² per (m/s)² of apparent wind at a sail normal coefficient of 1. */
   sail: 0.024,
   /** Hull and Wolt in the air, m/s² per (m/s)², along the apparent wind. */
@@ -48,8 +53,17 @@ export const YACHT = {
   hcg: 0.75,
   /** Half track: how far out the leeward wheel (runner) is. */
   track: { wheels: 0.75, runners: 1.2 } as Record<Gear, number>,
-  /** Wolt leaning out to windward adds this much righting arm. */
+  /** The ballast hauled all the way to windward adds this much righting arm. */
   hike: 0.35,
+  /** 1/s: the ballast crosses from the middle to the rail end in under half a second. */
+  ballastRate: 2.4,
+  /** Wolt's hub motor: m/s² of push at a standstill, fading to nothing at `motorTop` m/s. */
+  motor: 1.3,
+  motorTop: 6.5,
+  motorBack: 2,
+  /** Battery (0..1) per second of full push, and won back per second of braking per m/s. */
+  drain: 1 / 75,
+  regen: 0.003,
   /** s to swap the wheels for runners (stopped). */
   swapTime: 2.5,
   /** s on its side before Wolt has it back up. */
@@ -67,8 +81,14 @@ export interface YachtInput {
   /** −1 haul in … +1 ease out. */
   sheet: number;
   brake: boolean;
+  /** Haul the ballast to windward (the old "hike" key). */
   hike: boolean;
+  /** Wolt's hub motor: +1 pushes forward, −1 backs up, 0 off. */
+  motor?: number;
 }
+
+/** How much of its bite Wolt's narrow front tyre keeps on soft ground (steering and drive). */
+export const FRONT_BITE: Partial<Record<SurfaceId, number>> = { loose: 0.7, mud: 0.6 };
 
 export interface YachtState {
   x: number; y: number;
@@ -89,6 +109,13 @@ export interface YachtState {
   heelVel: number;
   /** s left lying on its side, 0 = upright. */
   capsized: number;
+  /** Where the ballast is on its rail, −1 … +1 (+ = to the right of the heading). */
+  ballast: number;
+  /** Battery charge, 0..1. */
+  energy: number;
+  /** Motor push now, −1..1 of full (0 = off or empty); regen: braking is charging. */
+  thrust: number;
+  regen: boolean;
   // read-outs, set by yachtStep
   speed: number;
   /** Forward and sideways speed (sideways = sliding). */
@@ -125,7 +152,7 @@ export interface YachtState {
 
 export function newYacht(x: number, y: number, heading: number, gear: Gear = 'wheels'): YachtState {
   return {
-    x, y, vx: 0, vy: 0, heading, yawRate: 0, steer: 0, sheet: 0.6, auto: true, gear, swap: 0, heel: 0, heelVel: 0, capsized: 0,
+    x, y, vx: 0, vy: 0, heading, yawRate: 0, steer: 0, sheet: 0.6, auto: true, gear, swap: 0, heel: 0, heelVel: 0, capsized: 0, ballast: 0, energy: 1, thrust: 0, regen: false,
     speed: 0, u: 0, w: 0, app: 0, appDir: 0, beta: 0, betaTrue: 0, boom: 0, side: 1, aoa: 0, cn: 0, drive: 0, best: 0.6, tip: 0, tipAngle: tipAngle(gear), sliding: false, surface: 'ash', bump: 0, land: 0,
   };
 }
@@ -213,7 +240,20 @@ function substep(s: YachtState, dt: number, wind: { dir: number; speed: number }
 
   s.u = s.vx * fx + s.vy * fy;
   s.w = s.vx * px + s.vy * py;
-  const aLongFree = axF * fx + ayF * fy;
+  // Wolt's hub motor: pushes hardest from a standstill, only as hard as his tyre bites
+  const bite = s.gear === 'wheels' ? FRONT_BITE[s.surface] ?? 1 : 1;
+  const want = Math.max(-1, Math.min(1, input.motor ?? 0));
+  s.thrust = 0;
+  if (want && upright && s.gear === 'wheels' && s.energy > 0) {
+    const top = want > 0 ? YACHT.motorTop : YACHT.motorBack;
+    const k = Math.max(0, 1 - Math.max(0, s.u * Math.sign(want)) / top);
+    s.thrust = want * k * bite;
+    s.energy = Math.max(0, s.energy - YACHT.drain * Math.abs(want) * (0.35 + 0.65 * k) * dt);
+  }
+  const aMotor = s.thrust * Math.min(YACHT.motor, 0.35 * grip * g);
+  s.regen = input.brake && upright && s.gear === 'wheels' && Math.abs(s.u) > 0.5 && s.energy < 1;
+  if (s.regen) s.energy = Math.min(1, s.energy + YACHT.regen * Math.min(12, Math.abs(s.u)) * dt);
+  const aLongFree = axF * fx + ayF * fy + aMotor;
   const aLatFree = axF * px + ayF * py;
 
   // forward: rolling resistance and the brake hold until the push beats them
@@ -246,7 +286,7 @@ function substep(s: YachtState, dt: number, wind: { dir: number; speed: number }
   s.steer += Math.sign(wantSteer - s.steer) * Math.min(Math.abs(wantSteer - s.steer), YACHT.steerRate * dt);
   let r = s.u * Math.tan(s.steer) / YACHT.wheelbase;
   // the front tyre can only bend the path as hard as its grip allows: past that it pushes on
-  const rMax = (grip * g * 1.1) / Math.max(1, Math.abs(s.u));
+  const rMax = (grip * bite * g * 1.1) / Math.max(1, Math.abs(s.u));
   r = Math.max(-rMax, Math.min(rMax, r));
   // nearly stopped, Wolt shoves the tail round
   if (Math.abs(s.u) < 1 && s.capsized <= 0) r += input.steer * 0.3 * (1 - Math.abs(s.u));
@@ -310,8 +350,11 @@ function heel(s: YachtState, dt: number, sailS: number, tyre: number, input: Yac
   // moment towards +right (per unit mass): sail high up, the tyres' pull low down
   const Mh = sailS * (YACHT.hce - YACHT.hcg) - tyre * YACHT.hcg;
   const dir = Math.sign(Mh) || 1;
-  // hiking: Wolt leans out on the side the wind comes from
-  const b = b0 + (input.hike ? YACHT.hike : 0);
+  // the ballast: hauled to the side the wind comes from while the key is held, else back to
+  // the middle. It takes a moment to cross, and on the wrong side it shortens the arm.
+  const to = input.hike && Math.abs(sailS) > 0.05 ? -Math.sign(sailS) : input.hike ? Math.sign(s.ballast) : 0;
+  s.ballast += Math.sign(to - s.ballast) * Math.min(Math.abs(to - s.ballast), YACHT.ballastRate * dt);
+  const b = Math.max(0.3, b0 - dir * s.ballast * YACHT.hike);
   s.tip = Mh / (g * b);
   const tipA = Math.atan2(b, YACHT.hcg);
   s.tipAngle = tipA;

@@ -71,7 +71,8 @@ function runnerOnPost(top: number, L = 1.3): THREE.Group {
  * a timber cross plank at the back with a runner at each end, a steering runner forward.
  * `deckY` is how high the cart's bed sits once lifted onto them.
  */
-export function runnerRig(): { group: THREE.Group; ends: THREE.Vector3[]; lift: number } {
+/** `front: false` leaves the steering runner out (the driving demo: Wolt is the bow wheel). */
+export function runnerRig(front = true): { group: THREE.Group; ends: THREE.Vector3[]; lift: number } {
   const g = new THREE.Group();
   const plankY = 0.32, back = -0.5, span = 1.2;
   g.add(rbox(span * 2 + 0.25, 0.08, 0.17, 0.025, M.wood(), 0, plankY, back));
@@ -80,7 +81,7 @@ export function runnerRig(): { group: THREE.Group; ends: THREE.Vector3[]; lift: 
   for (const s of [-1, 1]) { const r = runnerOnPost(plankY - 0.03); r.position.set(s * span, 0, back); g.add(r); }
   // the steering runner: a short beam forward under the drawbar
   g.add(rbox(0.09, 0.07, 0.7, 0.02, M.wood(), 0, plankY - 0.02, 0.95));
-  const f = runnerOnPost(plankY - 0.06, 1.0); f.position.set(0, 0, 1.2); g.add(f);
+  if (front) { const f = runnerOnPost(plankY - 0.06, 1.0); f.position.set(0, 0, 1.2); g.add(f); }
   return { group: g, ends: [new THREE.Vector3(-span, plankY + 0.04, back), new THREE.Vector3(span, plankY + 0.04, back), new THREE.Vector3(0, plankY, 1.25)], lift: 0.14 };
 }
 

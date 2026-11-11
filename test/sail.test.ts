@@ -4,7 +4,7 @@ import { WindField, WIND } from '../src/sail/sim/windField';
 import { newYacht, yachtStep, startSwap, sailCn, YACHT, YachtState, World, YachtInput } from '../src/sail/sim/landYacht';
 import { COURSES, gatePoles, newRun, runStep } from '../src/sail/sim/courses';
 import { SailGame } from '../src/sail/sim/sailGame';
-import { SurfaceId } from '../src/sail/sim/terrain';
+import { SurfaceId, SURFACES } from '../src/sail/sim/terrain';
 
 const flat = (surf: SurfaceId): World => ({ surfaceAt: () => surf, slopeAt: () => ({ x: 0, y: 0 }), obstacles: [] });
 const idle: YachtInput = { steer: 0, sheet: 0, brake: false, hike: false };
@@ -122,6 +122,56 @@ describe('land yacht', () => {
     sail(a, 3, 10, flat('road'));
     sail(b, 3, 10, flat('road'), { ...idle, hike: true });
     expect(Math.abs(b.tip)).toBeLessThan(Math.abs(a.tip));
+  });
+
+  it('the ballast takes a moment to cross and hurts on the wrong side', () => {
+    const s = newYacht(200, 200, headingOff(70));
+    s.auto = false; s.sheet = 0.3;
+    sail(s, 0.1, 10, flat('road'), { ...idle, hike: true });
+    expect(Math.abs(s.ballast)).toBeGreaterThan(0.1);
+    expect(Math.abs(s.ballast)).toBeLessThan(0.5);
+    sail(s, 1, 10, flat('road'), { ...idle, hike: true });
+    expect(Math.abs(s.ballast)).toBe(1);
+    const held = Math.abs(s.tip);
+    s.ballast = -s.ballast; // left to leeward after a tack
+    sail(s, 0.02, 10, flat('road'));
+    expect(Math.abs(s.tip)).toBeGreaterThan(held * 1.5);
+    sail(s, 2, 10, flat('road'));
+    expect(s.ballast).toBe(0);
+  });
+
+  it("Wolt's hub motor pushes in a calm and drains the battery, braking wins some back", () => {
+    const s = newYacht(200, 200, 0);
+    sail(s, 8, 0, flat('road'), { ...idle, motor: 1 });
+    expect(s.speed).toBeGreaterThan(3);
+    expect(s.speed).toBeLessThan(YACHT.motorTop + 0.1);
+    expect(s.energy).toBeLessThan(0.95);
+    const low = s.energy;
+    sail(s, 1, 0, flat('road'), { ...idle, brake: true });
+    expect(s.energy).toBeGreaterThan(low);
+    // empty: no push
+    const e = newYacht(200, 200, 0); e.energy = 0;
+    sail(e, 4, 0, flat('road'), { ...idle, motor: 1 });
+    expect(e.speed).toBeLessThan(0.1);
+    // on runners his wheel sits in a runner and cannot drive
+    const r = newYacht(200, 200, 0, 'runners');
+    sail(r, 4, 0, flat('ash'), { ...idle, motor: 1 });
+    expect(r.speed).toBeLessThan(0.1);
+    // backing up
+    const back = newYacht(200, 200, 0);
+    sail(back, 3, 0, flat('road'), { ...idle, motor: -1 });
+    expect(back.u).toBeLessThan(-0.5);
+  });
+
+  it("Wolt's narrow tyre pushes wide on loose ash", () => {
+    const turn = (surf: 'ash' | 'loose') => {
+      const s = newYacht(200, 200, 0);
+      s.vx = 8;
+      const h0 = s.heading;
+      yachtStep(s, 1, { dir: 0, speed: 0 }, { ...idle, steer: 1 }, flat(surf));
+      return Math.abs(s.heading - h0) / SURFACES[surf].grip.wheels;
+    };
+    expect(turn('loose')).toBeLessThan(turn('ash') * 0.9);
   });
 
   it('is back on its wheels after a capsize', () => {
