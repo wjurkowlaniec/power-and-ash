@@ -18,6 +18,8 @@ export interface Course {
   width: number;
   /** Suggested gear. */
   gear: 'wheels' | 'runners';
+  /** s from the first gate to the last to pass (the exam); none = just beat your own time. */
+  limit?: number;
 }
 
 export const COURSES: Course[] = [
@@ -45,7 +47,18 @@ export const COURSES: Course[] = [
     start: { x: 120, y: 120 }, heading: -0.6, width: 13, gear: 'wheels',
     gates: [{ x: 138, y: 104 }, { x: 165, y: 52 }, { x: 222, y: 58 }, { x: 236, y: 108 }, { x: 196, y: 128 }, { x: 160, y: 86 }, { x: 138, y: 104 }],
   },
+  {
+    // from A to B straight into the wind: the gates stand in a line dead upwind, so the only
+    // way through is to tack between them, across the muddy stream, in the time allowed
+    id: 'exam', name: tr('Egzamin: pod wiatr', 'The exam: upwind'),
+    hint: tr('Z A do B prosto pod wiatr, na czas. Wprost się nie da: halsuj między bramkami, zwroty rób szybko, błoto strumienia przejedź z rozpędu.', 'From A to B dead upwind, against the clock. You cannot sail straight there: tack between the gates, turn fast, carry speed across the muddy stream.'),
+    start: { x: 316, y: 213 }, heading: 2.59, width: 30, gear: 'wheels', limit: 120,
+    gates: [{ x: 300, y: 208 }, { x: 255, y: 193 }, { x: 210, y: 178 }, { x: 150, y: 158 }, { x: 105, y: 143 }],
+  },
 ];
+
+/** The exam course that ends the sailing lessons. */
+export const EXAM = COURSES[COURSES.length - 1];
 
 /** The two poles of gate i: across the line of the course through it. */
 export function gatePoles(c: Course, i: number): [V2, V2] {

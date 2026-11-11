@@ -1,8 +1,9 @@
 import { describe, it, expect } from 'vitest';
 import { surfaceAt, heightAt, buildObstacles, hitObstacle, LAKE, DUNES, START, MAP, ROAD } from '../src/sail/sim/terrain';
 import { WindField, WIND } from '../src/sail/sim/windField';
-import { newYacht, yachtStep, startSwap, sailCn, YACHT, YachtState, World, YachtInput } from '../src/sail/sim/landYacht';
-import { COURSES, gatePoles, newRun, runStep } from '../src/sail/sim/courses';
+import { newYacht, yachtStep, startSwap, toggleDock, sailCn, YACHT, YachtState, World, YachtInput } from '../src/sail/sim/landYacht';
+import { COURSES, EXAM, gatePoles, newRun, runStep } from '../src/sail/sim/courses';
+import { Training, LESSONS } from '../src/sail/sim/training';
 import { SailGame } from '../src/sail/sim/sailGame';
 import { SurfaceId, SURFACES } from '../src/sail/sim/terrain';
 
@@ -174,6 +175,27 @@ describe('land yacht', () => {
     expect(turn('loose')).toBeLessThan(turn('ash') * 0.9);
   });
 
+  it('Wolt lets go and locks back on; without him the yacht stays put', () => {
+    const s = newYacht(200, 200, headingOff(90));
+    expect(s.dock).toBe(1);
+    expect(toggleDock(s)).toBe(true);
+    let ev = yachtStep(s, YACHT.dockTime + 0.1, { dir: 0, speed: 9 }, idle, flat('road'));
+    expect(ev.docked).toBe(-1);
+    expect(s.dock).toBe(0);
+    sail(s, 5, 9, flat('road'), { ...idle, motor: 1, steer: 1 }, false);
+    expect(s.speed).toBeLessThan(0.05);
+    expect(startSwap(s)).toBe(false);
+    toggleDock(s);
+    yachtStep(s, YACHT.dockTime / 2, { dir: 0, speed: 9 }, idle, flat('road'));
+    expect(s.dock).toBeGreaterThan(0.4); expect(s.dock).toBeLessThan(0.6);
+    ev = yachtStep(s, YACHT.dockTime / 2 + 0.1, { dir: 0, speed: 9 }, idle, flat('road'));
+    expect(ev.docked).toBe(1);
+    sail(s, 6, 9, flat('road'));
+    expect(s.speed).toBeGreaterThan(3);
+    // not while moving
+    expect(toggleDock(s)).toBe(false);
+  });
+
   it('is back on its wheels after a capsize', () => {
     const s = newYacht(200, 200, headingOff(70));
     s.auto = false; s.sheet = 0.15;
@@ -243,5 +265,92 @@ describe('courses', () => {
     expect(g.run?.course.id).toBe(COURSES[2].id);
     for (let i = 0; i < 60; i++) g.update(1 / 60, idle);
     expect(Number.isFinite(g.yacht.x)).toBe(true);
+  });
+});
+
+/** A simple helmsman for the exam: sails `off` rad from the wind, tacks at the edge of the corridor, dodges and backs off obstacles. */
+function examBot(g: SailGame, onStep: (ev: ReturnType<SailGame['update']>, input: YachtInput) => boolean, secs = 300, off = 0.95, half = 12) {
+  const wrap = (a: number) => Math.atan2(Math.sin(a), Math.cos(a));
+  let stuck = 0, back = 0, hold = 0, tack = -1;
+  for (let t = 0; t < secs; t += 1 / 60) {
+    const y = g.yacht, up = g.wind.dir + Math.PI;
+    const a = EXAM.gates[0], b = EXAM.gates[EXAM.gates.length - 1];
+    const L = Math.hypot(b.x - a.x, b.y - a.y), ux = (b.x - a.x) / L, uy = (b.y - a.y) / L;
+    const cross = (y.x - a.x) * -uy + (y.y - a.y) * ux;
+    if (cross > half && tack > 0) tack = -1; else if (cross < -half && tack < 0) tack = 1;
+    let dodge = 0;
+    const fx = Math.cos(y.heading), fy = Math.sin(y.heading);
+    for (const o of g.obstacles) {
+      const dx = o.x - y.x, dy = o.y - y.y, ahead = dx * fx + dy * fy, lat = fx * dy - fy * dx;
+      if (ahead < 0 || ahead > 16 || Math.abs(lat) > o.r + 3) continue;
+      if (Math.sign(lat) === tack && hold <= 0) { tack = -tack; hold = 3; } else dodge = 0.45;
+    }
+    hold -= 1 / 60;
+    stuck = y.speed < 0.3 && t > 3 ? stuck + 1 / 60 : 0;
+    if (stuck > 1.2 && back <= 0) { back = 2.5; tack = -tack; hold = 4; }
+    back -= 1 / 60;
+    const steer = Math.max(-1, Math.min(1, wrap(up + tack * (off + dodge) - y.heading) * 3));
+    const input: YachtInput = back > 0 ? { steer: 0, sheet: 1, brake: false, hike: false, motor: -1 } : { steer, sheet: 0, brake: false, hike: Math.abs(y.tip) > 0.8, motor: y.speed < 2 ? 1 : 0 };
+    const ev = g.update(1 / 60, input);
+    if (back <= 0 && !y.auto) y.auto = true;
+    if (onStep(ev, input)) return t;
+  }
+  return Infinity;
+}
+
+describe('sailing lessons and the exam', () => {
+  it('the exam course lies dead upwind and can be tacked up in time', () => {
+    const g = new SailGame();
+    const a = EXAM.gates[0], b = EXAM.gates[EXAM.gates.length - 1];
+    const line = Math.atan2(b.y - a.y, b.x - a.x);
+    const off = Math.abs(Math.atan2(Math.sin(line - (WIND.dir + Math.PI)), Math.cos(line - (WIND.dir + Math.PI))));
+    expect(off).toBeLessThan(0.1); // straight into the wind: no way through without tacking
+    g.setCourse(EXAM);
+    let tacks = 0, side = 0, time: number | null = null;
+    examBot(g, ev => {
+      if (side && g.yacht.side !== side && g.yacht.betaTrue < 1.2) tacks++;
+      side = g.yacht.side;
+      time = ev.finished;
+      return ev.finished !== null;
+    });
+    expect(time).not.toBeNull();
+    expect(time!).toBeLessThan(EXAM.limit!);
+    expect(tacks).toBeGreaterThanOrEqual(3);
+  });
+
+  it('walks through the lessons into the exam and passes it', () => {
+    const g = new SailGame();
+    const tr = new Training(g);
+    expect(tr.lesson?.id).toBe('reach');
+    // lesson 1: hold a beam reach
+    const h = g.yacht.heading;
+    let got = 'none';
+    for (let t = 0; t < 60 && got === 'none'; t += 1 / 60) {
+      const input: YachtInput = { steer: Math.max(-1, Math.min(1, Math.atan2(Math.sin(h - g.yacht.heading), Math.cos(h - g.yacht.heading)) * 3)), sheet: 0, brake: false, hike: false, motor: g.yacht.speed < 3 ? 1 : 0 };
+      got = tr.step(1 / 60, input, g.update(1 / 60, input));
+    }
+    expect(got).toBe('next');
+    expect(tr.index).toBe(1);
+    expect(g.yacht.auto).toBe(false); // the sheet lesson hands the sheet over
+    // skip to the exam
+    tr.go(LESSONS.length);
+    expect(tr.exam).toBe(true);
+    expect(g.run?.course).toBe(EXAM);
+    let res = 'none';
+    examBot(g, (ev, input) => { res = tr.step(1 / 60, input, ev); return res !== 'none'; });
+    expect(res).toBe('passed');
+    expect(tr.passed).toBe(true);
+  });
+
+  it('fails the exam when the clock runs out and starts it again', () => {
+    const g = new SailGame();
+    const tr = new Training(g);
+    tr.go(LESSONS.length);
+    g.run!.time = EXAM.limit! + 1;
+    const ev = g.update(1 / 60, idle);
+    expect(tr.step(1 / 60, idle, ev)).toBe('failed');
+    expect(tr.tries).toBe(2);
+    expect(g.run?.time).toBeNull();
+    expect(g.yacht.x).toBe(EXAM.start.x);
   });
 });

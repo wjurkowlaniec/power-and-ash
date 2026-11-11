@@ -18,6 +18,7 @@ Gra i demo są w jednym repo i dzielą kod silnika (`src/sim`, `src/render`, `sr
 - [Plan implementacji i kamienie milowe](docs/PLAN.md)
 - [Świat, fabuła i systemy](docs/SWIAT.md)
 - [Przepływ fabuły i drzewko decyzji](docs/FABULA.md) (nieliniowo, z wyborami, do 100%) i [mapa świata](docs/mapa-swiata.html)
+- [Grywalny szkic „Powroty”](docs/demo-powroty.html): spójny świat pokazany obrazem
 - [Symulacja czasu gracza i pokoleń ludzi](docs/SYMULACJA.md) ([interaktywnie](docs/symulacja.html))
 - [Początek gry scena po scenie](docs/POCZATEK.md)
 - [Rejestr decyzji](docs/DECYZJE.md) (co Wojtek ustalił, kiedy i co odrzucono; każda nowa decyzja trafia tam i do dokumentu, którego dotyczy)
@@ -39,7 +40,7 @@ Wszystko działa w przeglądarce, bez instalowania. Najlepiej Chrome albo Firefo
 | Gra od stacji | https://wjurkowlaniec.github.io/power-and-ash/?scene=station | Skok do Sceny 2 (martwa stacja, turbina, kabel do maszynowni), bez menu. |
 | **Tech demo „Rozruch”** | https://wjurkowlaniec.github.io/power-and-ash/demo/ | Poligon mechanik: kable, złom, fabrykator, ładowanie Żaglowozu, odjazd. |
 | **Tech demo „Warsztat”** | https://wjurkowlaniec.github.io/power-and-ash/demo-craft/ | Wytwarzanie, ekwipunek, wózek, rozbiórka, sieć, drzewko technologii. 12 etapów, `?stage=0` … `?stage=11` otwiera wybrany. |
-| **Tech demo „Żegluga”** | https://wjurkowlaniec.github.io/power-and-ash/demo-sail/ | Jazda Żaglowozem: wiatr ze szkwałami i cieniem za domami, różne podłoża, przechył, trasy na czas, intro. Wolt jest przednim kołem (E silnik, Shift balast), z bliska widać całe olinowanie. `?course=lake` (village, dunes, forest) zaczyna na trasie. |
+| **Tech demo „Żegluga”** | https://wjurkowlaniec.github.io/power-and-ash/demo-sail/ | Jazda Żaglowozem: wiatr ze szkwałami i cieniem za domami, różne podłoża, przechył, trasy na czas, intro. Wolt jest przednim kołem (E silnik, Shift balast), z bliska widać całe olinowanie. Pierwsze uruchomienie zaczyna się szkoleniem w symulatorze Q-1 z egzaminem pod wiatr (`?train`, `?go` pomija). `?course=lake` (village, dunes, forest) zaczyna na trasie. |
 | **Tech demo „Słońce”** | https://wjurkowlaniec.github.io/power-and-ash/demo-sun/ | Przewóz ładunku na panelach słonecznych: cienie chmur płyną z wiatrem, w cieniu ładunek ma zapas ok. 20 s, trzeba trzymać się jasnych plam od A do B. Trzy misje, `?mission=samples` (seedlings, culture) wybiera misję. |
 | Wersja angielska | dopisz `?lang=en` do linku (np. https://wjurkowlaniec.github.io/power-and-ash/demo/?lang=en) | Ta sama gra po angielsku, przydatne do sprawdzania tłumaczeń. |
 | Dokument projektowy | https://wjurkowlaniec.github.io/power-and-ash/docs/design.html | Koncepcja i wizualizacje, do czytania. |

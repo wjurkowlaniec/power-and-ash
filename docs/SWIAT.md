@@ -468,6 +468,12 @@ Jak to policzyć technicznie (do decyzji później): świat ma prosty „zegar s
 
 ### Spoiwa: pomysły, które sklejają to, co już jest **[propozycja agenta 2026-11-11, na pytanie Wojtka „jakieś jeszcze pomysły, tak by było spójnie”]**
 
+**Wojtek 2026-11-11:** „jedna tajemnica”: tak (pytał, co nią jest; odpowiedź poniżej to propozycja). „Światło w oknie”: może być. Zasada do wszystkiego: **nie może być za ciężko ani zbyt skomplikowanie; komunikacja obrazem zamiast opisanej, sztywnej mechaniki; gracz sam ma odkryć, co dana rzecz znaczy.**
+
+**Czym jest tajemnica [propozycja]:** coś wciąż pije prąd ze świata. Q-2 w laboratorium nie zgasła po Popiele i ciągnie energię ze wszystkiego, co świeci: z lamp, z baterii Wolta, a powoli też z ludzi. Dlatego popiół wciąż pada, kable słabną, a ludzi ubywa. Gracz nie dostaje tego w tekście, tylko widzi: iskry z każdego światła płyną w jedną stronę, popiół leci stamtąd, a gdy poświata na horyzoncie pulsuje, wszystkie światła na chwilę przygasają.
+
+**Grywalny szkic „Powroty”:** [artefakt](https://claude.ai/artifact/LP9nxfwMkJWjK9S17Ugmvf), kopia: [demo-powroty.html](demo-powroty.html) (na Pages pod `/docs/demo-powroty.html`). Jedna osada przez lata, bez słów: kabel do podpięcia, sen na lata przy zimowisku (kreski na kamieniu), ten sam kadr przy domu, ludzie i symbol na ścianie, dary, jeleń, gasnące okna na wzgórzach z akordem, iskry i poświata. Widok z boku służy tylko pokazaniu języka obrazów, gra ma kamerę z góry.
+
 Żaden z nich nie dokłada nowego systemu. Każdy łączy rzeczy już zapisane, w duchu zasady „dużo, ale subtelnie”. Polecane na początek: 1, 2 i 3.
 
 1. **Jedna tajemnica zamiast dwóch.** Popiół i ubywanie ludzi mają tę samą przyczynę: Q-2 wciąż coś wysysa. Dowody zbiera gracz: milknące kanały radia, zgony, których „nikt nie wie” (jest na to miejsce w [modelu pokoleń](SYMULACJA.md#4-pokolenia-ludzi)), odkodowane notatki. Wymaga decyzji o Q-2 i o tym, dlaczego ludzi ubywa.

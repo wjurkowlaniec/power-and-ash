@@ -66,6 +66,8 @@ export const YACHT = {
   regen: 0.003,
   /** s to swap the wheels for runners (stopped). */
   swapTime: 2.5,
+  /** s for Wolt to ride in under the steering head and lock on (or to let go and ride clear). */
+  dockTime: 4.5,
   /** s on its side before Wolt has it back up. */
   capsizeTime: 3.2,
   radius: 1.3,
@@ -109,6 +111,10 @@ export interface YachtState {
   heelVel: number;
   /** s left lying on its side, 0 = upright. */
   capsized: number;
+  /** Wolt's docking: 0 = clear of the yacht (it stands on its bow props), 1 = locked in as the bow wheel. */
+  dock: number;
+  /** +1 riding in, −1 letting go, 0 neither. */
+  docking: number;
   /** Where the ballast is on its rail, −1 … +1 (+ = to the right of the heading). */
   ballast: number;
   /** Battery charge, 0..1. */
@@ -152,7 +158,7 @@ export interface YachtState {
 
 export function newYacht(x: number, y: number, heading: number, gear: Gear = 'wheels'): YachtState {
   return {
-    x, y, vx: 0, vy: 0, heading, yawRate: 0, steer: 0, sheet: 0.6, auto: true, gear, swap: 0, heel: 0, heelVel: 0, capsized: 0, ballast: 0, energy: 1, thrust: 0, regen: false,
+    x, y, vx: 0, vy: 0, heading, yawRate: 0, steer: 0, sheet: 0.6, auto: true, gear, swap: 0, heel: 0, heelVel: 0, capsized: 0, dock: 1, docking: 0, ballast: 0, energy: 1, thrust: 0, regen: false,
     speed: 0, u: 0, w: 0, app: 0, appDir: 0, beta: 0, betaTrue: 0, boom: 0, side: 1, aoa: 0, cn: 0, drive: 0, best: 0.6, tip: 0, tipAngle: tipAngle(gear), sliding: false, surface: 'ash', bump: 0, land: 0,
   };
 }
@@ -173,11 +179,11 @@ export interface World {
   obstacles: Obstacle[];
 }
 
-export interface StepEvents { capsized: boolean; landed: number; bumped: number; swapped: boolean }
+export interface StepEvents { capsized: boolean; landed: number; bumped: number; swapped: boolean; /** Wolt locked in (+1) or rode clear (−1) this step. */ docked: number }
 
 /** Advance the yacht by dt (split into small steps). The wind is the true wind at the yacht. */
 export function yachtStep(s: YachtState, dt: number, wind: { dir: number; speed: number }, input: YachtInput, world: World): StepEvents {
-  const ev: StepEvents = { capsized: false, landed: 0, bumped: 0, swapped: false };
+  const ev: StepEvents = { capsized: false, landed: 0, bumped: 0, swapped: false, docked: 0 };
   const n = Math.max(1, Math.ceil(dt / (1 / 120)));
   for (let i = 0; i < n; i++) substep(s, dt / n, wind, input, world, ev);
   s.bump = Math.max(0, s.bump - dt * 6);
@@ -187,8 +193,15 @@ export function yachtStep(s: YachtState, dt: number, wind: { dir: number; speed:
 
 /** Start swapping wheels and runners (only when nearly stopped and upright). */
 export function startSwap(s: YachtState): boolean {
-  if (s.swap > 0 || s.capsized > 0 || Math.hypot(s.vx, s.vy) > 0.6) return false;
+  if (s.swap > 0 || s.capsized > 0 || s.dock < 1 || Math.hypot(s.vx, s.vy) > 0.6) return false;
   s.swap = YACHT.swapTime;
+  return true;
+}
+
+/** Wolt lets go of the yacht or rides back in (only stopped and upright). Mid-way it turns him round. */
+export function toggleDock(s: YachtState): boolean {
+  if (s.swap > 0 || s.capsized > 0 || Math.hypot(s.vx, s.vy) > 0.6) return false;
+  s.docking = s.docking ? -s.docking : s.dock >= 1 ? -1 : 1;
   return true;
 }
 
@@ -223,7 +236,13 @@ function substep(s: YachtState, dt: number, wind: { dir: number; speed: number }
   if (input.sheet) { s.auto = false; s.sheet += input.sheet * YACHT.sheetRate * dt; }
   s.sheet = Math.max(YACHT.sheetMin, Math.min(YACHT.boomMax, s.sheet));
 
-  const upright = s.capsized <= 0 && s.swap <= 0;
+  // docking: without its bow wheel the yacht stands on its props, sail let fly
+  if (s.docking) {
+    s.dock = Math.max(0, Math.min(1, s.dock + s.docking * dt / YACHT.dockTime));
+    if (s.dock >= 1 || s.dock <= 0) { ev.docked = s.docking; s.docking = 0; }
+  }
+  const held = s.swap > 0 || s.dock < 1;
+  const upright = s.capsized <= 0 && !held;
   s.boom = Math.min(s.beta, s.sheet, YACHT.boomMax);
   s.aoa = Math.max(0, s.beta - s.boom);
   // heeled, the sail sees less wind; on its side, none
@@ -261,7 +280,7 @@ function substep(s: YachtState, dt: number, wind: { dir: number; speed: number }
   if (s.capsized > 0) {
     aLong = -Math.sign(s.u) * Math.min(Math.abs(s.u) / dt, 6);
   } else {
-    const hold = crr * g + (input.brake || s.swap > 0 ? YACHT.brake * Math.min(1, grip + 0.3) : 0);
+    const hold = crr * g + (input.brake || held ? YACHT.brake * Math.min(1, grip + 0.3) : 0);
     if (Math.abs(s.u) < 0.05 && Math.abs(aLongFree) <= hold) aLong = -s.u / dt;
     else {
       aLong = aLongFree - Math.sign(s.u || aLongFree) * hold;
@@ -282,14 +301,14 @@ function substep(s: YachtState, dt: number, wind: { dir: number; speed: number }
 
   // steering
   const lock = YACHT.steerMax / (1 + Math.max(0, s.u) / 9);
-  const wantSteer = (s.capsized > 0 ? 0 : Math.max(-1, Math.min(1, input.steer))) * lock;
+  const wantSteer = (s.capsized > 0 || s.dock < 1 ? 0 : Math.max(-1, Math.min(1, input.steer))) * lock;
   s.steer += Math.sign(wantSteer - s.steer) * Math.min(Math.abs(wantSteer - s.steer), YACHT.steerRate * dt);
   let r = s.u * Math.tan(s.steer) / YACHT.wheelbase;
   // the front tyre can only bend the path as hard as its grip allows: past that it pushes on
   const rMax = (grip * bite * g * 1.1) / Math.max(1, Math.abs(s.u));
   r = Math.max(-rMax, Math.min(rMax, r));
   // nearly stopped, Wolt shoves the tail round
-  if (Math.abs(s.u) < 1 && s.capsized <= 0) r += input.steer * 0.3 * (1 - Math.abs(s.u));
+  if (Math.abs(s.u) < 1 && s.capsized <= 0 && s.dock >= 1) r += input.steer * 0.3 * (1 - Math.abs(s.u));
   s.yawRate += (r - s.yawRate) * Math.min(1, dt * 9);
   s.heading = wrapAngle(s.heading + s.yawRate * dt);
 

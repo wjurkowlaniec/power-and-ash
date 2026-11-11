@@ -134,7 +134,7 @@ Sceny z [POCZATEK.md](POCZATEK.md): `src/game/main.ts` (mapa scen, pętla, wygas
 | `notes.test.ts` | notatki, korpus, progi odkodowania |
 | `craft.test.ts` | demo „Warsztat”: ekwipunek, rozbiórka, wytwarzanie, badania, sieć z magazynem, skróty wszystkich 14 etapów, spójność danych, żegluga Żaglowozu |
 | `sun.test.ts` | demo „Słońce”: zachmurzenie, dryf i zawijanie nieba, tempo bufora, 20 s w pełnym cieniu, krótki cień do przeżycia, załadunek i rozładunek, ładowanie Wolta ze słońca, misje z dala od przeszkód |
-| `sail.test.ts` | demo „Żegluga”: podłoża i przeszkody na mapie, cień wiatru za domem, szkwały, szybciej niż wiatr, martwy kąt, koła i płozy w sypkim popiele, przechył i wywrotka, balast, silnik i bateria Wolta, przód na sypkim popiele, poślizg, hamulec i zmiana podwozia, odbicie od domu, trasy |
+| `sail.test.ts` | demo „Żegluga”: podłoża i przeszkody na mapie, cień wiatru za domem, szkwały, szybciej niż wiatr, martwy kąt, koła i płozy w sypkim popiele, przechył i wywrotka, balast, silnik i bateria Wolta, wczepianie i odczepianie, lekcje symulatora i egzamin pod wiatr (sternik-automat), przód na sypkim popiele, poślizg, hamulec i zmiana podwozia, odbicie od domu, trasy |
 | `i18n.test.ts` | język poza przeglądarką, korpus notatek niezależny od języka |
 
 Nowa mechanika w logice dostaje test. Testy logiki nie dotykają Three.js.
