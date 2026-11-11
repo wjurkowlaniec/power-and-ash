@@ -16,6 +16,7 @@ Gra i demo są w jednym repo i dzielą kod silnika (`src/sim`, `src/render`, `sr
 - [Plan implementacji i kamienie milowe](docs/PLAN.md)
 - [Świat, fabuła i systemy](docs/SWIAT.md)
 - [Przepływ fabuły i drzewko decyzji](docs/FABULA.md) (nieliniowo, z wyborami, do 100%) i [mapa świata](docs/mapa-swiata.html)
+- [Grywalny szkic „Powroty”](docs/demo-powroty.html): spójny świat pokazany obrazem
 - [Symulacja czasu gracza i pokoleń ludzi](docs/SYMULACJA.md) ([interaktywnie](docs/symulacja.html))
 - [Początek gry scena po scenie](docs/POCZATEK.md)
 - [Rejestr decyzji](docs/DECYZJE.md) (co Wojtek ustalił, kiedy i co odrzucono; każda nowa decyzja trafia tam i do dokumentu, którego dotyczy)
