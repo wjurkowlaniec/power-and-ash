@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { Station, P, DOOR_COST, REPAIR_TIME, CABLE_MAX } from '../src/game/sim/station';
+import { Station, P, DOOR_COST, REPAIR_TIME, CABLE_MAX, PLOT_DELAY, LEAVE_TIME } from '../src/game/sim/station';
 import { findPath } from '../src/sim/path';
 import { V2, sub, len } from '../src/sim/vec';
 
@@ -36,7 +36,7 @@ describe('Scene 2: Martwa stacja, part one', () => {
     expect(goTo(s, { x: 11.5, y: 7.5 })).toBe(true);   // inside the workshop
   });
 
-  it('bearing on the tyre, dragged to the mast, the turbine turns', () => {
+  it('transformer module on the tyre, cabinet swap, cable, plotter map, out through the gate', () => {
     const s = new Station(58);
     // the tyre lies in the yard: hook it
     expect(goTo(s, { x: P.tyre.x - 1.2, y: P.tyre.y })).toBe(true);
@@ -48,8 +48,7 @@ describe('Scene 2: Martwa stacja, part one', () => {
     expect(goTo(s, { x: 26, y: 6.4 })).toBe(true);
     expect(s.nearest()).toBe('shelf');
     press(s);
-    expect(s.items.has('grease')).toBe(true);
-    expect(s.bearingOnTyre).toBe(true);
+    expect(s.moduleOnTyre).toBe(true);
     // out and to the mast
     expect(goTo(s, { x: 26, y: 14.5 })).toBe(true);
     expect(goTo(s, { x: P.mastUse.x, y: P.mastUse.y + 0.3 })).toBe(true);
@@ -59,6 +58,8 @@ describe('Scene 2: Martwa stacja, part one', () => {
     expect(s.done).toBe(false);
     // leave the tyre, take the cable from the drum at the mast foot
     s.update(DT, inp({ drop: true }));
+    expect(goTo(s, { x: 20.6, y: 24.4 })).toBe(true); // round the dropped tyre
+    expect(goTo(s, { x: 24.6, y: 24.4 })).toBe(true);
     expect(goTo(s, { x: P.junction.x + 0.3, y: P.junction.y + 0.4 })).toBe(true);
     expect(s.nearest()).toBe('junction');
     press(s);
@@ -69,7 +70,22 @@ describe('Scene 2: Martwa stacja, part one', () => {
     expect(s.nearest()).toBe('socket');
     press(s);
     expect(s.machinePowered).toBe(true);
-    for (let t = 0; t < 7; t += DT) s.update(DT, inp());
+    // the gate says nowhere to go yet
+    for (let t = 0; t < PLOT_DELAY + 0.3; t += DT) s.update(DT, inp());
+    expect(s.plotted).toBe(true);
+    expect(s.done).toBe(false);
+    // the plotter in the duty room prints the route to R-2
+    expect(goTo(s, { x: P.plotter.x, y: P.plotter.y + 1.1 })).toBe(true);
+    expect(s.nearest()).toBe('plotter');
+    press(s);
+    expect(s.routeKnown).toBe(true);
+    s.closeNote();
+    // out through the fence gate
+    expect(goTo(s, { x: P.gate.x, y: P.gate.y - 0.6 })).toBe(true);
+    expect(s.nearest()).toBe('gate');
+    press(s);
+    expect(s.leaving).toBeGreaterThan(0);
+    for (let t = 0; t < LEAVE_TIME + 0.5; t += DT) s.update(DT, inp());
     expect(s.done).toBe(true);
     expect(s.battery).toBeGreaterThan(20);
   });

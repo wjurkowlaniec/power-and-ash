@@ -57,7 +57,7 @@ const scenes: Record<string, () => Scene> = {
   darkness: () => new Darkness(),
   hall: () => new HallScene(),
   station: () => new StationScene(),
-  crane: () => new Todo('crane', tr('Scena 2 · Suwnica w maszynowni', 'Scene 2 · Gantry crane in the machine room')),
+  odjazd: () => new Todo('odjazd', tr('Scena 4 · Odjazd: droga do podstacji R-2', 'Scene 4 · Departure: the road to substation R-2')),
 };
 let scene: Scene | null = null;
 /** Leaving a scene: it keeps running under a short fade to black, so cuts never jump. */
