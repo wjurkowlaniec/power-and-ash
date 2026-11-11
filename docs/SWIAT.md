@@ -464,6 +464,18 @@ Szkic: `img/koncepty/symbol-wolta.html` (`?sciana` albo `?zblizenie`). Prompt do
 
 Jak to policzyć technicznie (do decyzji później): świat ma prosty „zegar starzenia” na obiekt, który tyka szybciej przy wilgoci i braku opieki, a hibernacja przelicza go skokowo.
 
+### Spoiwa: pomysły, które sklejają to, co już jest **[propozycja agenta 2026-11-11, na pytanie Wojtka „jakieś jeszcze pomysły, tak by było spójnie”]**
+
+Żaden z nich nie dokłada nowego systemu. Każdy łączy rzeczy już zapisane, w duchu zasady „dużo, ale subtelnie”. Polecane na początek: 1, 2 i 3.
+
+1. **Jedna tajemnica zamiast dwóch.** Popiół i ubywanie ludzi mają tę samą przyczynę: Q-2 wciąż coś wysysa. Dowody zbiera gracz: milknące kanały radia, zgony, których „nikt nie wie” (jest na to miejsce w [modelu pokoleń](SYMULACJA.md#4-pokolenia-ludzi)), odkodowane notatki. Wymaga decyzji o Q-2 i o tym, dlaczego ludzi ubywa.
+2. **Światło w oknie jako język gry.** Zapalone okno znaczy, że osada żyje, ciemne, że nie. Nocą widać to z daleka, więc mapa działa bez interfejsu. Ostatnie zapalone okno może być obrazem zakończenia.
+3. **Ten sam kadr przy każdym powrocie.** Kamera ustawia się w osadzie zawsze tak samo, więc gracz sam widzi różnicę między wizytami: nowe dziecko, pusta ławka, symbol na drzwiach.
+4. **Symbol pamięta stare ciało.** Ludzie rysują kółko nawet wtedy, gdy Wolt jest już Latarnikiem i koła nie ma. Legenda zostaje w tyle za prawdą.
+5. **Raport po śnie jako rzeczy, nie tabelka.** Przy zimowisku ludzie zostawiają dary i rysunki. Po długim śnie jest ich coraz mniej, a w końcu nic.
+6. **Radio jako akord.** Każda osada ma swój ton w tle. Gdy osada milknie, akord się przerzedza, więc gracz słyszy stratę, zanim ją zobaczy. Łączy się z ambientem.
+7. **Jeleń jako zegar.** Poroże i siwienie pokazują upływ lat lepiej niż licznik.
+
 ## Mapa świata i obszary
 
 **[ustalone]** Jeden ciągły świat. Obszary otwierają się dzięki ulepszeniom Wolta i żaglowozu, a nie kluczom fabularnym. Zostają: Zatopiona Wieś, Las Słupów, Szklany Zalew, Cerkwiska.
