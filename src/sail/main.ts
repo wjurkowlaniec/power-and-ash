@@ -23,12 +23,12 @@ const deg = (a: number) => Math.round(a * 180 / Math.PI);
 
 $('startSub').textContent = tr('Tech demo · Żegluga Żaglowozem', 'Tech demo · Land yacht sailing');
 $('startText').innerHTML = tr(
-  `<p>Wolt na pokładzie Żaglowozu, przed nim popielna kraina: stara szosa, solnisko, wydmy, wieś w ruinie i martwy las. Wiatr nie jest wszędzie taki sam. Szkwały widać na popiele jako ciemne, biegnące zmarszczki, za domami wiatr siada i szarpie.</p>
+  `<p>Wolt wczepiony w dziób Żaglowozu jest jego przednim kołem: skręca, a gdy wiatr siądzie, pcha silnikiem z baterii. Przed nim popielna kraina: stara szosa, solnisko, wydmy, wieś w ruinie i martwy las. Wiatr nie jest wszędzie taki sam. Szkwały widać na popiele jako ciemne, biegnące zmarszczki, za domami wiatr siada i szarpie.</p>
    <p>Trymuj szot do kąta wiatru, łap szkwały, uważaj, żeby nie położyć się na bok. Na sypkim popiele koła grzęzną, płozy suną. Pływaj swobodnie albo jedź trasy na czas.</p>
-   <p class="keys"><span class="k">A/D</span>ster <span class="k">W/S</span>szot <span class="k">F</span>Q-1 trymuje <span class="k">Shift</span>wychył <span class="k">Spacja</span>hamulec <span class="k">R</span>koła/płozy <span class="k">C</span>trasa</p>`,
-  `<p>Wolt aboard the land yacht, the ash country ahead: an old road, a salt pan, dunes, a ruined village and a dead wood. The wind is not the same everywhere. Gusts show on the ash as dark running ripples; behind the houses the wind drops and tugs.</p>
+   <p class="keys"><span class="k">A/D</span>ster <span class="k">W/S</span>szot <span class="k">F</span>Q-1 trymuje <span class="k">Shift</span>balast <span class="k">E</span>silnik <span class="k">Spacja</span>hamulec <span class="k">R</span>koła/płozy <span class="k">C</span>trasa</p>`,
+  `<p>Wolt, docked in the bow of the land yacht, is its front wheel: he steers, and when the wind dies he pushes with his motor off the battery. The ash country ahead: an old road, a salt pan, dunes, a ruined village and a dead wood. The wind is not the same everywhere. Gusts show on the ash as dark running ripples; behind the houses the wind drops and tugs.</p>
    <p>Trim the sheet to the wind, catch the gusts, try not to tip over. On loose ash the wheels sink and the runners glide. Sail freely or race the courses.</p>
-   <p class="keys"><span class="k">A/D</span>steer <span class="k">W/S</span>sheet <span class="k">F</span>Q-1 trims <span class="k">Shift</span>hike out <span class="k">Space</span>brake <span class="k">R</span>wheels/runners <span class="k">C</span>course</p>`);
+   <p class="keys"><span class="k">A/D</span>steer <span class="k">W/S</span>sheet <span class="k">F</span>Q-1 trims <span class="k">Shift</span>ballast <span class="k">E</span>motor <span class="k">Space</span>brake <span class="k">R</span>wheels/runners <span class="k">C</span>course</p>`);
 $('startSmall').textContent = tr('prototyp · fizyka i wiatr w czystym TS, render Three.js · modele CC0: Kay Lousberg, Quaternius', 'prototype · physics and wind in plain TS, Three.js rendering · CC0 models: Kay Lousberg, Quaternius');
 $('start').querySelector('.card')!.appendChild(langSwitch());
 
@@ -100,6 +100,7 @@ function input() {
     sheet: (k('KeyS') || k('ArrowDown') ? 1 : 0) - (k('KeyW') || k('ArrowUp') ? 1 : 0),
     brake: k('Space'),
     hike: k('ShiftLeft') || k('ShiftRight'),
+    motor: (k('KeyE') ? 1 : 0) - (k('KeyQ') ? 1 : 0),
   };
 }
 
@@ -120,8 +121,8 @@ function announceCourse() {
 }
 
 $('help').innerHTML = tr(
-  '<b>I</b> intro · <b>A/D</b> ster · <b>W/S</b> wybierz/luzuj szot · <b>F</b> Q-1 trymuje · <b>Shift</b> wychył na nawietrzną · <b>Spacja</b> hamulec · <b>R</b> koła↔płozy · <b>C</b> trasa · <b>T</b> od nowa · <b>V</b> siła wiatru · <b>kółko</b> zoom · <b>H</b> ukryj',
-  '<b>I</b> intro · <b>A/D</b> steer · <b>W/S</b> haul in/ease the sheet · <b>F</b> Q-1 trims · <b>Shift</b> hike to windward · <b>Space</b> brake · <b>R</b> wheels↔runners · <b>C</b> course · <b>T</b> restart · <b>V</b> wind strength · <b>wheel</b> zoom · <b>H</b> hide');
+  '<b>I</b> intro · <b>A/D</b> ster · <b>W/S</b> wybierz/luzuj szot · <b>F</b> Q-1 trymuje · <b>Shift</b> balast na nawietrzną · <b>E</b> silnik Wolta (<b>Q</b> wstecz) · <b>Spacja</b> hamulec (ładuje baterię) · <b>R</b> koła↔płozy · <b>C</b> trasa · <b>T</b> od nowa · <b>V</b> siła wiatru · <b>kółko</b> zoom (z bliska widać olinowanie) · <b>H</b> ukryj',
+  '<b>I</b> intro · <b>A/D</b> steer · <b>W/S</b> haul in/ease the sheet · <b>F</b> Q-1 trims · <b>Shift</b> ballast to windward · <b>E</b> Wolt’s motor (<b>Q</b> reverse) · <b>Space</b> brake (charges the battery) · <b>R</b> wheels↔runners · <b>C</b> course · <b>T</b> restart · <b>V</b> wind strength · <b>wheel</b> zoom (up close you see the rigging) · <b>H</b> hide');
 
 // the course picker
 let courseKey = '';
@@ -156,7 +157,7 @@ $('course').addEventListener('pointerdown', e => e.stopPropagation());
 let hudKey = '';
 function hud() {
   const y = game.yacht, w = game.here;
-  const key = JSON.stringify([Math.round(y.speed * 10), Math.round(y.app), Math.round(w.speed * 2), deg(y.heading), deg(y.boom), deg(y.best), deg(y.appDir), deg(game.wind.dir), y.auto, y.gear, Math.round(y.tip * 20), y.surface, Math.round(w.shadow * 5), Math.round(w.gust * 5), y.capsized > 0, Math.ceil(y.swap), y.sliding]);
+  const key = JSON.stringify([Math.round(y.speed * 10), Math.round(y.app), Math.round(w.speed * 2), deg(y.heading), deg(y.boom), deg(y.best), deg(y.appDir), deg(game.wind.dir), y.auto, y.gear, Math.round(y.tip * 20), y.surface, Math.round(w.shadow * 5), Math.round(w.gust * 5), y.capsized > 0, Math.ceil(y.swap), y.sliding, Math.round(y.energy * 100), Math.round(y.thrust * 4), y.regen, Math.round(y.ballast * 4)]);
   if (key === hudKey) return;
   hudKey = key;
   // the compass: north up like the map; the hull points along the heading
@@ -180,7 +181,7 @@ function hud() {
   </svg>`;
   const trim = y.capsized > 0 ? `<span class="limit">${tr('wywrotka! Wolt stawia go na koła…', 'capsized! Wolt is righting it…')}</span>`
     : y.swap > 0 ? `<span class="tense">${y.gear === 'wheels' ? tr('zakładanie płóz…', 'fitting the runners…') : tr('zakładanie kół…', 'fitting the wheels…')} ${Math.ceil(y.swap)} s</span>`
-      : Math.abs(y.tip) > 1 || Math.abs(y.heel) > 0.02 ? `<span class="limit">${tr('unosi się! luzuj (S), odpadnij (A/D), wychył (Shift)', 'lifting! ease (S), bear away (A/D), hike (Shift)')}</span>`
+      : Math.abs(y.tip) > 1 || Math.abs(y.heel) > 0.02 ? `<span class="limit">${tr('unosi się! luzuj (S), odpadnij (A/D), balast (Shift)', 'lifting! ease (S), bear away (A/D), ballast (Shift)')}</span>`
         : y.betaTrue < nogo ? `<span class="limit">${tr('martwy kąt: wiatr w dziób, odpadnij', 'in irons: wind dead ahead, bear away')}</span>`
           : y.auto ? `<span class="okc">${tr('Q-1 trymuje szot', 'Q-1 trims the sheet')}</span>`
             : y.cn < 0.25 ? `<span class="tense">${tr('żagiel łopocze: wybierz (W)', 'the sail is flapping: haul in (W)')}</span>`
@@ -189,13 +190,19 @@ function hud() {
                   : `<span class="okc">${tr('żagiel pracuje', 'the sail is drawing')}</span>`;
   const tipPct = Math.min(1.2, Math.abs(y.tip)) / 1.2 * 100;
   const tipCls = Math.abs(y.tip) > 1 ? 'bad' : Math.abs(y.tip) > 0.8 ? 'hot' : '';
+  const motorNote = y.thrust ? `<span class="okc">${y.thrust > 0 ? tr('silnik pcha', 'motor pushing') : tr('wstecz', 'reverse')}</span> · `
+    : y.regen ? `<span class="okc">${tr('odzysk', 'charging')}</span> · ` : '';
   const here = w.shadow > 0.35 ? tr('cień wiatrowy', 'wind shadow') : w.gust > 0.25 ? tr('szkwał', 'gust') : w.gust < -0.2 ? tr('flauta', 'lull') : '';
   $('speed').innerHTML = `<div class="spd"><b>${Math.round(y.speed * 3.6)}</b><span>km/h</span></div>
     <div class="row dim"><span>${n1(y.speed)} m/s</span><span>${y.sliding ? `<span class="tense">${tr('poślizg', 'sliding')}</span>` : ''}</span></div>
     <div class="row"><span class="dim">${tr('podłoże', 'ground')}</span><span>${SURFACES[y.surface].name}</span></div>
     <div class="row"><span class="dim">${tr('podwozie', 'gear')}</span><span>${y.gear === 'wheels' ? tr('koła', 'wheels') : tr('płozy', 'runners')}</span></div>
     <div class="lbl tipl"><span>${tr('PRZECHYŁ', 'HEEL')}</span><span>${Math.abs(deg(y.heel))}°</span></div>
-    <div class="tipm ${tipCls}"><i style="width:${tipPct.toFixed(0)}%"></i><b></b></div>`;
+    <div class="tipm ${tipCls}"><i style="width:${tipPct.toFixed(0)}%"></i><b></b></div>
+    <div class="lbl tipl"><span>${tr('BALAST', 'BALLAST')}</span><span>${Math.abs(y.ballast) < 0.05 ? tr('środek', 'middle') : (y.ballast * y.side > 0 ? tr('zawietrzna!', 'leeward!') : tr('nawietrzna', 'windward'))}</span></div>
+    <div class="balm ${y.ballast * y.side > 0.05 ? 'bad' : ''}"><i style="left:${(50 + y.ballast * 44).toFixed(0)}%"></i></div>
+    <div class="lbl tipl"><span>${tr('BATERIA', 'BATTERY')}</span><span>${motorNote}${Math.round(y.energy * 100)}%</span></div>
+    <div class="tipm enm ${y.energy < 0.15 ? 'bad' : ''}"><i style="width:${(y.energy * 100).toFixed(0)}%"></i></div>`;
   $('wind').innerHTML = `<div class="cmp">${svg}<div class="rd">
       <div class="row"><span class="dim">${tr('wiatr tu', 'wind here')}</span><b>${n1(w.speed)} m/s</b></div>
       <div class="row"><span class="dim">${tr('pozorny', 'apparent')}</span><b>${n1(y.app)} m/s</b></div>
@@ -211,6 +218,7 @@ function hud() {
 let last = performance.now();
 let t = 0;
 let creak = 0;
+let motorWas = false;
 function frame(now: number) {
   const dt = Math.min(0.05, (now - last) / 1000);
   last = now;
@@ -233,13 +241,19 @@ function frame(now: number) {
     }
     // the wind roars with the apparent wind; the frame groans near the tipping point
     const y = game.yacht;
-    sound.update(dt, { humNear: 0, wind: Math.min(1.4, y.app / 13), tension: Math.max(0, Math.min(1, (Math.abs(y.tip) - 0.7) * 3)) });
+    sound.update(dt, { humNear: Math.abs(y.thrust), wind: Math.min(1.4, y.app / 13), tension: Math.max(0, Math.min(1, (Math.abs(y.tip) - 0.7) * 3)) });
     roll.update(dt, y.speed, y.surface, y.capsized <= 0, y.capsized > 0 || y.swap > 0 ? 0 : Math.max(0, 1 - y.cn / 0.4), y.app);
     creak -= dt;
     if (creak < 0 && Math.abs(y.tip) > 0.75 && y.speed > 3) { sound.squeak(false, Math.abs(y.tip)); creak = 0.6 + Math.random(); }
+    // the motor asked for and nothing happens: say why, once per press
+    if (inp.motor && !motorWas) {
+      if (y.gear === 'runners') toast(tr('Na płozach koło Wolta stoi w płozie: silnik nie pcha', "On runners Wolt's wheel sits in a runner: the motor cannot push"));
+      else if (y.energy <= 0) toast(tr('Bateria pusta: hamuj z górki albo łap wiatr', 'Battery empty: brake downhill or find the wind'), 'bad');
+    }
+    motorWas = !!inp.motor;
     hud(); coursePanel();
   }
-  view.update(dt, t, keys.has('ShiftLeft') || keys.has('ShiftRight'));
+  view.update(dt, t);
   requestAnimationFrame(frame);
 }
 requestAnimationFrame(frame);

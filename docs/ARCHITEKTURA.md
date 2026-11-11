@@ -108,7 +108,7 @@ Korzysta ze wspólnego silnika (`World`, `Cable`, `solveNetworks`, `findPath`, `
 
 Trzeci poligon (decyzja Wojtka 2026-11-10): jazda Żaglowozem jako rdzeń rozgrywki. Logika w `src/sail/sim/` (teren z polami podłoży, pole wiatru ze szkwałami i cieniem przeszkód, fizyka żaglowozu z przechyłem i poślizgiem, trasy na czas), widok w `src/sail/render/`, intro rysowane na płótnie 2D w `src/sail/intro.ts`. Opis, sterowanie i fizyka: [DEMO-ZEGLUGA.md](DEMO-ZEGLUGA.md).
 
-Korzysta ze wspólnego silnika (`Sail`, model i animator Wolta, `GroundFx`, `Sound`) i z części „Warsztatu” (maszt, płozy, żagiel z balonu, wózek). Zmiana poza `src/sail/`: opcjonalny filtr `only` w `loadCraftModels` (zgodny wstecz).
+Korzysta ze wspólnego silnika (`Sail`, model i animator Wolta, `GroundFx`, `Sound`) i z części „Warsztatu” (maszt, płozy, żagiel z balonu, wózek). Zmiany poza `src/sail/` (zgodne wstecz): opcjonalny filtr `only` w `loadCraftModels` i parametr `runnerRig(front = true)` w `src/craft/render/yachtModels.ts`. Od 2026-11-11 Wolt jest przednim kołem Żaglowozu (silnik z baterią, przesuwny balast), a olinowanie rysuje `src/sail/render/rope.ts`.
 
 ## Gra
 
@@ -126,7 +126,7 @@ Sceny z [POCZATEK.md](POCZATEK.md): `src/game/main.ts` (mapa scen, pętla, wygas
 | `hall.test.ts`, `station.test.ts` | logika scen gry (hala, martwa stacja) |
 | `notes.test.ts` | notatki, korpus, progi odkodowania |
 | `craft.test.ts` | demo „Warsztat”: ekwipunek, rozbiórka, wytwarzanie, badania, sieć z magazynem, skróty wszystkich 14 etapów, spójność danych, żegluga Żaglowozu |
-| `sail.test.ts` | demo „Żegluga”: podłoża i przeszkody na mapie, cień wiatru za domem, szkwały, szybciej niż wiatr, martwy kąt, koła i płozy w sypkim popiele, przechył i wywrotka, wychył, poślizg, hamulec i zmiana podwozia, odbicie od domu, trasy |
+| `sail.test.ts` | demo „Żegluga”: podłoża i przeszkody na mapie, cień wiatru za domem, szkwały, szybciej niż wiatr, martwy kąt, koła i płozy w sypkim popiele, przechył i wywrotka, balast, silnik i bateria Wolta, przód na sypkim popiele, poślizg, hamulec i zmiana podwozia, odbicie od domu, trasy |
 | `i18n.test.ts` | język poza przeglądarką, korpus notatek niezależny od języka |
 
 Nowa mechanika w logice dostaje test. Testy logiki nie dotykają Three.js.

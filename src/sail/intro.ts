@@ -254,10 +254,10 @@ function scenes(): Scene[] {
     },
     {
       title: tr('Przechył', 'Heeling'),
-      text: tr('Siła w bok działa wysoko, na środku żagla, i próbuje przewrócić żaglowóz przez zawietrzne koło; trzyma go ciężar na szerokości osi. Gdy szkwał przyciśnie, nawietrzne koło się unosi: jest szybko i na krawędzi. Wtedy poluzuj szot, odpadnij od wiatru albo wychyl Wolta na nawietrzną. Płozy mają szerszy rozstaw i trzymają więcej.',
-        'The side force acts high up, in the middle of the sail, and tries to tip the yacht over its leeward wheel; its weight across the axle holds it. When a gust presses, the windward wheel lifts: fast, and on the edge. Then ease the sheet, bear away from the wind, or lean Wolt out to windward. Runners have a wider track and hold more.'),
+      text: tr('Siła w bok działa wysoko, na środku żagla, i próbuje przewrócić żaglowóz przez zawietrzne koło; trzyma go ciężar na szerokości osi. Gdy szkwał przyciśnie, nawietrzne koło się unosi: jest szybko i na krawędzi. Wtedy poluzuj szot, odpadnij od wiatru albo przeciągnij balast (skrzynię z baterią na szynie) na nawietrzną. Po zwrocie balast zostaje po złej stronie i pomaga wiatrowi, więc trzeba go przerzucić. Płozy mają szerszy rozstaw i trzymają więcej.',
+        'The side force acts high up, in the middle of the sail, and tries to tip the yacht over its leeward wheel; its weight across the axle holds it. When a gust presses, the windward wheel lifts: fast, and on the edge. Then ease the sheet, bear away from the wind, or haul the ballast (the battery box on its rail) to windward. After a tack the ballast is left on the wrong side and helps the wind, so throw it across. Runners have a wider track and hold more.'),
       draw(p, t) {
-        // seen from behind: a gust builds, the wheel lifts, Wolt hikes out, it lands
+        // seen from behind: a gust builds, the wheel lifts, the ballast is hauled to windward, it lands
         const cyc = t % 9;
         const gust = cyc < 3 ? cyc / 3 : cyc < 6 ? 1 : Math.max(0, 1 - (cyc - 6) / 2);
         const hike = cyc > 4.2 && cyc < 8 ? Math.min(1, (cyc - 4.2) / 0.6) : 0;
@@ -280,18 +280,20 @@ function scenes(): Scene[] {
         const top = R(gx, gy - 85 - 3.6 * sc), base = R(gx, gy - 85);
         p.line([base, top], INK, 4, 1, 905);
         p.line([R(gx, gy - 85 - 1.2 * sc), R(gx + 50, gy - 85 - 1.25 * sc), R(gx + 6, gy - 85 - 3.4 * sc)], SAIL, 4, 1, 906);
-        // Wolt: a little capsule on its wheel, leaning out to windward (left)
-        const wx = gx - 20 - hike * 80;
-        p.ring(...R(wx, gy - 100), 12, INK, 2.5, 907);
-        p.line([R(wx, gy - 112), R(wx - hike * 14, gy - 150)], INK, 9, 1, 908);
+        // the ballast: the battery box on a rail across the deck, hauled out to windward (left)
+        p.line([R(gx - track - 6, gy - 88), R(gx + track + 6, gy - 88)], INK, 2, 1, 907);
+        const wx = gx - hike * (track - 16);
+        p.line([R(wx - 16, gy - 90), R(wx + 16, gy - 90), R(wx + 16, gy - 118), R(wx - 16, gy - 118), R(wx - 16, gy - 90)], INK, 3, 1, 908);
+        p.line([R(wx - 16, gy - 104), R(gx - track - 4, gy - 100)], SAIL, 1.5, 1, 909);
+        p.line([R(wx + 16, gy - 104), R(gx + track + 4, gy - 100)], SAIL, 1.5, 1, 911);
         // forces
-        const ce = R(gx + 20, gy - 85 - 2.0 * sc), cg = R(gx - hike * 40, gy - 70);
+        const ce = R(gx + 20, gy - 85 - 2.0 * sc), cg = R(gx - hike * 46, gy - 70);
         p.arrow(ce, [ce[0] + 130 * side, ce[1]], SIDE, 4, tr('siła w bok', 'side force'), 910);
         p.arrow(cg, [cg[0], cg[1] + 110], INK, 3.5, tr('ciężar', 'weight'), 920);
         const pivot: P = [gx + track, gy];
         p.ring(pivot[0], pivot[1], 6, SIDE, 2.5, 930);
         p.text(tr('oś obrotu', 'pivot'), pivot[0] + 40, pivot[1] + 26, SIDE, 13);
-        p.text(lift > 0.01 ? tr('koło w górze!', 'wheel up!') : hike > 0 ? tr('wychył: trzyma', 'hiking: it holds') : tr('stoi pewnie', 'steady'), 800, 150, lift > 0.01 ? SIDE : DRIVE, 18);
+        p.text(lift > 0.01 ? tr('koło w górze!', 'wheel up!') : hike > 0 ? tr('balast na nawietrznej: trzyma', 'ballast to windward: it holds') : tr('stoi pewnie', 'steady'), 800, 150, lift > 0.01 ? SIDE : DRIVE, 18);
         p.arrow([60, 120], [170, 120], WIND, 3, tr('szkwał', 'gust'), 940);
       },
     },

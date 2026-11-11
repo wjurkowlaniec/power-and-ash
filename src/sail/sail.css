@@ -10,6 +10,12 @@
 .tipm > b { position: absolute; top: -3px; bottom: -3px; width: 1px; left: 83.3%; background: var(--limit); }
 .tipm.hot > i { background: var(--warn); }
 .tipm.bad > i { background: var(--limit); }
+.tipm.enm > i { background: var(--ok, #7fd99a); }
+.tipm.enm.bad > i { background: var(--limit); }
+.balm { height: 6px; background: #ffffff1a; position: relative; margin-top: 4px; }
+.balm::before { content: ''; position: absolute; left: 50%; top: -2px; bottom: -2px; width: 1px; background: #ffffff44; }
+.balm > i { position: absolute; top: -2px; bottom: -2px; width: 12%; margin-left: -6%; background: var(--ink); transition: left .08s; }
+.balm.bad > i { background: var(--limit); }
 
 .windp { right: max(16px, env(safe-area-inset-right, 0px)); top: calc(16px + env(safe-area-inset-top, 0px)); width: 300px; }
 .windp .cmp { display: flex; gap: 10px; align-items: center; }

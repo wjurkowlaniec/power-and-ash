@@ -368,14 +368,14 @@ export class SailView {
     this.camera.updateProjectionMatrix();
   }
 
-  zoomBy(f: number) { this.zoom = THREE.MathUtils.clamp(this.zoom * f, 0.5, 2.2); this.resize(); }
+  zoomBy(f: number) { this.zoom = THREE.MathUtils.clamp(this.zoom * f, 0.22, 2.2); this.resize(); }
 
   /** A jolt for the camera (a bump, a wheel slamming down). */
   kick(a: number) { this.shake = Math.max(this.shake, Math.min(1, a)); }
 
   // ---------------------------------------------------------------- per frame
 
-  update(dt: number, t: number, hike: boolean) {
+  update(dt: number, t: number) {
     const g = this.g, y = g.yacht;
     this.bakeShadow();
     this.syncGates();
@@ -394,7 +394,7 @@ export class SailView {
 
     // the yacht and its tracks
     const ground = (x: number, z: number) => heightAt(x, z);
-    this.yacht.update(dt, t, y, ground, hike);
+    this.yacht.update(dt, t, y, ground);
     this.tracks(dt);
 
     this.updateStreaks(dt);
@@ -445,7 +445,7 @@ export class SailView {
     // the windward wheel is in the air when she flies
     if (!(lifted && y.heel < 0)) this.fxR.wheel({ ...at(1), ...f }, dt); else this.fxR.wheel({ x: 1e6, z: 1e6, ...f }, dt);
     if (!(lifted && y.heel > 0)) this.fxL.wheel({ ...at(-1), ...f }, dt); else this.fxL.wheel({ x: 1e6, z: 1e6, ...f }, dt);
-    this.fxF.wheel({ x: y.x + fx * 1.35, z: y.y + fy * 1.35, ...f, slip: 0 }, dt);
+    this.fxF.wheel({ x: y.x + fx * 1.7, z: y.y + fy * 1.7, ...f, slip: 0 }, dt);
     const wd = this.g.here;
     const ppm = pxPerMetre(this.renderer, this.camera);
     for (const fx2 of [this.fxL, this.fxR, this.fxF]) {
