@@ -1,0 +1,10 @@
+/* Demo "Powroty": on top of src/style.css. Dusk, so the page behind the canvas is dark. */
+html, body { background: #4a5456; }
+#vignette { background: radial-gradient(ellipse at 50% 45%, #0000 50%, #0b0e0f99 100%); }
+#night { position: fixed; inset: 0; width: 100%; height: 100%; pointer-events: none; opacity: 0; }
+#pad { position: fixed; inset: auto 0 0 0; padding: 0 max(16px, env(safe-area-inset-right, 0px)) calc(16px + env(safe-area-inset-bottom, 0px)) max(16px, env(safe-area-inset-left, 0px)); display: none; justify-content: space-between; align-items: flex-end; pointer-events: none; }
+#pad button { pointer-events: auto; font: inherit; font-size: 18px; width: 54px; height: 54px; color: var(--ink); background: #14161899; border: 1px solid var(--line); border-radius: 6px; touch-action: none; user-select: none; -webkit-user-select: none; }
+#pad .dir { display: grid; justify-items: center; gap: 4px; }
+#pad .dir > div { display: flex; gap: 4px; }
+#pa { border-radius: 50% !important; width: 70px !important; height: 70px !important; }
+@media (pointer: coarse) { #pad { display: flex; } }

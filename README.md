@@ -11,6 +11,8 @@ Top-down gra survivalowa w przeglądarce. Automat serwisowy Wolt ciągnie kable 
 
 **Tech demo „Słońce”:** https://wjurkowlaniec.github.io/power-and-ash/demo-sun/ (przewóz ładunku, który musi być oświetlony: cienie chmur, zapas 20 s, misje A → B; opis w [docs/DEMO-SLONCE.md](docs/DEMO-SLONCE.md))
 
+**Tech demo „Powroty”:** https://wjurkowlaniec.github.io/power-and-ash/demo-returns/ (jedna osada przez lata, bez słów: światło w oknie, sen na lata, symbol na ścianie, jedna tajemnica; opis w [docs/DEMO-POWROTY.md](docs/DEMO-POWROTY.md))
+
 **Tech demo „Warsztat”:** https://wjurkowlaniec.github.io/power-and-ash/demo-craft/ (wytwarzanie, ekwipunek i wózek, rozbiórka, sieć, drzewko technologii, moduły Wolta, antena; budowa i żegluga Żaglowozu; 14 etapów po kolei, opis w [docs/DEMO-WARSZTAT.md](docs/DEMO-WARSZTAT.md))
 
 Gra i demo są w jednym repo i dzielą kod silnika (`src/sim`, `src/render`, `src/audio`). Gra ma swoje wejście `index.html` → `src/game/main.ts`, demo `demo/index.html` → `src/main.ts`. W grze `?scene=hall` przeskakuje do wybranej sceny (do testów), a przytrzymana spacja pomija Scenę 0.
@@ -18,7 +20,6 @@ Gra i demo są w jednym repo i dzielą kod silnika (`src/sim`, `src/render`, `sr
 - [Plan implementacji i kamienie milowe](docs/PLAN.md)
 - [Świat, fabuła i systemy](docs/SWIAT.md)
 - [Przepływ fabuły i drzewko decyzji](docs/FABULA.md) (nieliniowo, z wyborami, do 100%) i [mapa świata](docs/mapa-swiata.html)
-- [Grywalny szkic „Powroty”](docs/demo-powroty.html): spójny świat pokazany obrazem
 - [Symulacja czasu gracza i pokoleń ludzi](docs/SYMULACJA.md) ([interaktywnie](docs/symulacja.html))
 - [Początek gry scena po scenie](docs/POCZATEK.md)
 - [Rejestr decyzji](docs/DECYZJE.md) (co Wojtek ustalił, kiedy i co odrzucono; każda nowa decyzja trafia tam i do dokumentu, którego dotyczy)
@@ -42,6 +43,7 @@ Wszystko działa w przeglądarce, bez instalowania. Najlepiej Chrome albo Firefo
 | **Tech demo „Warsztat”** | https://wjurkowlaniec.github.io/power-and-ash/demo-craft/ | Wytwarzanie, ekwipunek, wózek, rozbiórka, sieć, drzewko technologii. 12 etapów, `?stage=0` … `?stage=11` otwiera wybrany. |
 | **Tech demo „Żegluga”** | https://wjurkowlaniec.github.io/power-and-ash/demo-sail/ | Jazda Żaglowozem: wiatr ze szkwałami i cieniem za domami, różne podłoża, przechył, trasy na czas, intro. Wolt jest przednim kołem (E silnik, Shift balast), z bliska widać całe olinowanie. Pierwsze uruchomienie zaczyna się szkoleniem w symulatorze Q-1 z egzaminem pod wiatr (`?train`, `?go` pomija). `?course=lake` (village, dunes, forest) zaczyna na trasie. |
 | **Tech demo „Słońce”** | https://wjurkowlaniec.github.io/power-and-ash/demo-sun/ | Przewóz ładunku na panelach słonecznych: cienie chmur płyną z wiatrem, w cieniu ładunek ma zapas ok. 20 s, trzeba trzymać się jasnych plam od A do B. Trzy misje, `?mission=samples` (seedlings, culture) wybiera misję. |
+| **Tech demo „Powroty”** | https://wjurkowlaniec.github.io/power-and-ash/demo-returns/ | Jedna osada przez lata, bez napisów w świecie. Podepnij kabel przy ostatnim słupie (E), śpij przy zimowisku (przytrzymaj E), wróć do domu i patrz, co się zmieniło. Do oceny: czy znaki da się odczytać bez podpowiedzi. |
 | Wersja angielska | dopisz `?lang=en` do linku (np. https://wjurkowlaniec.github.io/power-and-ash/demo/?lang=en) | Ta sama gra po angielsku, przydatne do sprawdzania tłumaczeń. |
 | Dokument projektowy | https://wjurkowlaniec.github.io/power-and-ash/docs/design.html | Koncepcja i wizualizacje, do czytania. |
 

@@ -23,6 +23,7 @@ demo/index.html         wejście tech demo     → src/main.ts
 demo-craft/index.html   wejście demo „Warsztat” → src/craft/main.ts
 demo-sail/index.html    wejście demo „Żegluga” → src/sail/main.ts
 demo-sun/index.html     wejście demo „Słońce” → src/sun/main.ts
+demo-returns/index.html wejście demo „Powroty” → src/returns/main.ts
 vite.config.ts          build wielostronicowy (gra + demo) i tryb single-file
 src/
   sim/                  WSPÓLNA logika w czystym TS (bez Three.js)
@@ -117,6 +118,10 @@ Korzysta ze wspólnego silnika (`Sail`, model i animator Wolta, `GroundFx`, `Sou
 
 Czwarty poligon (pomysł Wojtka 2026-11-11): zręcznościowa misja przewozu ładunku, który musi być oświetlony. Nadbudowa na „Żegludze”: `SunGame extends SailGame` w `src/sun/sim/` (chmury `CloudField`, bufor ładunku, misje A → B), widok `SunView` w `src/sun/render/` dokłada się do `SailView` (warstwa cieni chmur przy terenie, panele, kręgi A/B). Jedyna zmiana w `src/sail/`: getter `SailView.yachtRoot`. Opis: [DEMO-SLONCE.md](DEMO-SLONCE.md).
 
+## Tech demo „Powroty” (`/demo-returns/`)
+
+Jedna osada przez lata, bez słów. Logika w `src/returns/sim/returns.ts` (bez Three.js, testy w `test/returns.test.ts`), scena w `src/returns/render/returnsView.ts`, wejście i dźwięk w `src/returns/main.ts`. Używa wspólnego monocykla (`src/render/wolt.ts`) i modeli z `src/render/assets.ts`. Opis: [DEMO-POWROTY.md](DEMO-POWROTY.md).
+
 ## Gra
 
 Sceny z [POCZATEK.md](POCZATEK.md): `src/game/main.ts` (mapa scen, pętla, wygaszanie między scenami, menu główne na ekranie startowym i pauza pod Esc), `menu.ts` (lista scen i tech demo w menu, teksty przez `tr`; nowa scena = nowy wpis w `CHAPTERS`, scena może zgłosić `modal()`, żeby Esc najpierw zamykało jej notatkę), `scene.ts` (interfejs `Scene`), `scenes/*` (klej), `sim/*` (logika scen), `render/*View.ts` (widoki), `notes.ts` (notatki i odkodowanie), `fx.ts`, `audio/sound.ts`. Pełny opis i stan scen: [GRA.md](GRA.md). `?scene=<id>` przeskakuje do sceny z pominięciem menu (`darkness`, `hall`, `station`, `crane`), a w konsoli jest `window.hall` / `window.station`.
@@ -142,7 +147,7 @@ Nowa mechanika w logice dostaje test. Testy logiki nie dotykają Three.js.
 ## Build
 
 - `npm run dev`: Vite na localhost, gra pod `/`, demo pod `/demo/`.
-- `npm run build`: `tsc --noEmit` (typy), potem `vite build` do `dist/` z pięcioma stronami (`rollupOptions.input`: `index.html`, `demo/index.html`, `demo-craft/index.html`, `demo-sail/index.html`, `demo-sun/index.html`). `base: './'`, więc działa pod `/power-and-ash/`.
+- `npm run build`: `tsc --noEmit` (typy), potem `vite build` do `dist/` z sześcioma stronami (`rollupOptions.input`: `index.html`, `demo/index.html`, `demo-craft/index.html`, `demo-sail/index.html`, `demo-sun/index.html`, `demo-returns/index.html`). `base: './'`, więc działa pod `/power-and-ash/`.
 - `npm run build:single`: jeden samodzielny plik HTML w `dist-single/` (modele wklejone jako data URI). Domyślnie gra, `PAGE=demo` robi demo, `PAGE=craft` demo „Warsztat”, `PAGE=sail` demo „Żegluga”, `PAGE=sun` demo „Słońce”. Przydaje się do publikacji jako artefakt.
 - Modele: paczki CC0 (zipy z itch.io, chmura nie ma do nich dostępu, więc Wojtek wrzucił je do `~/prv/ash-and-power/assets` na swoim komputerze) rozpakowuje się do `assets-src/` i uruchamia `node tools/pack-models.mjs` (zostawia kolor bazowy, tekstury 256 px WebP, upraszcza siatki, kompresja meshopt). Wynik jest w repo w `src/assets/models/`, więc zwykły build nie potrzebuje paczek.
 - Modele „Warsztatu”: paczki KayKit Space Base / Furniture / City Builder Bits są publicznie na GitHubie (`github.com/KayKit-Game-Assets`), więc chmura je klonuje. `ASSETS_SRC=<katalog z klonami> node tools/pack-craft-models.mjs` pakuje wybrane modele do `src/assets/craft/`.
