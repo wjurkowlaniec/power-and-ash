@@ -7,6 +7,7 @@ import { Todo } from './scenes/todo';
 import { HallScene } from './scenes/hall';
 import { StationScene } from './scenes/station';
 import { loadModels, Models } from '../render/assets';
+import { loadStationModels } from './render/station/models';
 import { tr, lang, langSwitch } from '../i18n';
 import { menuHtml, onMenu } from './menu';
 
@@ -23,6 +24,7 @@ const sw = langSwitch(); sw.classList.add('wake-lang'); wake.appendChild(sw);
 let models: Models = new Map();
 try {
   models = await loadModels((d, t) => { wakeText.textContent = `${d} / ${t}`; });
+  await loadStationModels(models);
 } catch (e) {
   console.warn('models failed, using simple shapes', e);
 }

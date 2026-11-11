@@ -107,13 +107,17 @@ export function stationObstacles(): Obstacle[] {
   add('crate', 11, 12, 2, 1);           // id 'workshopDoor' (removed when opened)
   add('crate', 10, 4, 2, 2);            // fabricator
   add('crate', 13, 4, 2, 1);            // workbench
+  add('crate', 15, 7, 1, 2);            // tool cabinet
   // duty room: desk with the drawer
   add('crate', 19, 4, 2, 1);
   add('crate', 21, 8, 1, 3);            // bookshelf
   add('crate', 17, 10, 1, 1);           // plotter
+  add('crate', 21, 4, 1, 1);            // filing cabinet
+  add('crate', 17, 7, 1, 2);            // couch under the wall map
   // storage: shelves along the north wall, crates
   add('crate', 23, 4, 6, 1);
   add('crate', 23, 9, 2, 2);
+  add('crate', 28, 9, 2, 2);            // pallet with cargo
   // machine room door blocked by a fallen cabinet
   add('crate', 32, 12, 2, 1);
   // yard: mast, weather balloon launcher, shed, scrap, fence

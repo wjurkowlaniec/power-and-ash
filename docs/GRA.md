@@ -43,6 +43,7 @@ Gra i tech demo to jedno repo i jeden build Vite z dwiema stronami (`vite.config
 | `state.ts` | to, co przechodzi między scenami w jednym przejściu gry (np. naładowanie baterii) |
 | `sim/*.ts` | **czysta logika** sceny, bez Three.js, z testami w `test/` (`Hall`, `Station`) |
 | `render/*View.ts` | scena 3D: czyta stan logiki co klatkę i nic w nim nie zmienia |
+| `render/station/*` | części widoku Sceny 2 (budynek, podwórze, tło, wnętrza, maszyny, atmosfera, życie), opis niżej |
 | `render/post.ts` | post-process: tone mapping, „szarość poza zielenią” w trybie rezerwy, wyblakła paleta |
 | `render/cableTube.ts` | rura kabla leżącego na ziemi; krzywa jest gęsto próbkowana, żeby nie wchodziła pod podłogę |
 | `scenes/*.ts` | klej: logika + widok + dźwięk + HUD; zdarzenia logiki (`events`) zamieniają się w dźwięki |
@@ -81,11 +82,42 @@ Zasady kodu:
 9. Brama w płocie na południu (`P.gate`): bez mapy odmawia („dokąd?”), z mapą E zaczyna wyjazd. Wolt sam toczy się przez bramę `LEAVE_TIME` (6 s), potem wyciemnienie i karta `odjazd`.
 10. Zajawki metroidvanii: zielona poświata za oknem maszynowni (wnętrze niedostępne), szopa na kłódkę, wyrzutnia balonów, fabrykator bez mocy.
 
+### Wygląd i animacje Sceny 2
+
+Prośba Wojtka z 2026-11-11: upiększyć poziom i dopracować szczegóły oraz animacje. Zasady rozgrywki się nie zmieniły. `stationView.ts` tylko składa części z `src/game/render/station/`:
+
+| Plik | Co buduje |
+|---|---|
+| `models.ts` | dogrywa modele sceny: `src/assets/station/` (pakuje je `tools/pack-station-models.mjs`) i wybrane z `src/assets/craft/`; wszystkie przygaszone w stronę popiołu |
+| `kit.ts` | wspólne klocki: tekstury z canvasu, poświata (`glow`), shader dziury wokół Wolta (`Hole`), `groundY`, wstęgi na ziemi |
+| `building.ts` | budynek stacji: ściany z przeszkód logiki, cokół, okna, wiaty z lampami, tabliczki z piktogramami, dach z panelami, świetlikami, wentylatorem i masztem pomiarowym |
+| `interiors.ts` | warsztat (fabrykator, stół, szafa narzędziowa), dyżurka (biurko, komputer, lampka, kanapa, mapa ścienna, tablica z rysunkiem dziecka, regał), magazyn (regały z towarem, paleta) |
+| `yard.ts` | podwórze: ścieżki i kałuże, kratowy maszt turbiny z głowicą ustawioną do wiatru, rękaw, reflektor, wyrzutnia balonów, szopa, kuty płot z bramą, trawy, krzaki, wrony |
+| `backdrop.ts` | to, co poza mapą: świerkowy las we mgle, droga z koleinami za bramą, betonowy znak „OLSZANKA”, ławka, słupy z przewodami |
+| `machines.ts` | animowane urządzenia: szafka transformatora, lot modułu z półki na oponę, ploter, bęben kabla, drzwi warsztatu |
+| `atmosphere.ts` | wiatr (`WIND`), płaty mgły, opad popiołu, przygaszanie odległych rzeczy do koloru mgły |
+| `life.ts` | rękaw, anemometr, wrony (podrywają się, gdy Wolt podjedzie na 4 m) |
+| `wake.ts` | kolejność i czasy budzenia się stacji po zasileniu (`WAKE`) |
+| `batch.ts` | `mergeStatic`: wszystko, co się nie rusza, jest scalane po materiale (ok. 120 wywołań rysowania na klatkę); `userData.live` wyłącza obiekt ze scalania, `userData.sway` dodaje falowanie na wietrze w shaderze |
+
+Animacje wynikają tylko ze stanu logiki, widok niczego w nim nie zmienia:
+
+- **Transformator** (`st.repair`): drzwiczki się otwierają, spalony moduł wysuwa się i ląduje na ziemi, nowy wjeżdża z opony, drzwiczki się zamykają, lampka zmienia się z czerwonej na zieloną, iskry i dym znikają.
+- **Moduł z półki** (`st.shelfTaken`): moduł przelatuje łukiem z regału na oponę.
+- **Ploter** (`st.plotted`): karetka z pisakiem rysuje mapę przez ok. 5 s (`PLOT_TIME`), dźwięk trwa tyle samo.
+- **Budzenie stacji** (`st.poweredT`): maszynownia, magazyn, dyżurka, warsztat, hala, lampy nad drzwiami i reflektor na podwórzu zapalają się po kolei z migotaniem; każda część ma swoje kliknięcie i buczenie (`scenes/station.ts`).
+- **Wyjazd** (`st.leaving`): skrzydło bramy otwiera się na sprężynie, kamera lekko się oddala.
+- **Tło**: wirnik i głowica turbiny, anemometry, rękaw, wentylator na dachu, trawa, mgła, popiół, powłoka balonu w wyrzutni.
+
+Nowe przeszkody w logice (`sim/station.ts`), żeby meble nie były przenikalne: szafa narzędziowa w warsztacie, szafka i kanapa w dyżurce, paleta w magazynie.
+
+Propozycje agenta do potwierdzenia: czasy budzenia (`WAKE`), kierunek wiatru, wygląd znaku „OLSZANKA” przy drodze (nazwa stacji jest z SWIAT.md).
+
 **Różnice względem POCZATEK.md** (do uzgodnienia lub do dorobienia):
 
 - Moduł transformatora leży gotowy na półce. Nie ma jeszcze rozbiórki złomu. Łożyska i drabinki nie ma celowo: Wolt ma koło i się nie wspina (Wojtek 2026-11-09).
 - Zamiast szpuli 12 m przez okno dyżurki jest bęben 18 m pod masztem, a przyłącze maszynowni jest od strony podwórza. To odpowiedź na uwagę Wojtka, że poziom urywał się po turbinie.
-- Suwnicy, wnętrza maszynowni, zapalania świateł w całej stacji i działającego fabrykatora jeszcze nie ma. Echo w Scenie 4 zastąpiła (na razie) mapa z plotera.
+- Suwnicy, wnętrza maszynowni i działającego fabrykatora jeszcze nie ma. Światła w całej stacji zapalają się już pokój po pokoju, ale tylko jako obraz i dźwięk (bez osobnej mechaniki). Echo w Scenie 4 zastąpiła (na razie) mapa z plotera.
 
 ## Decyzje Wojtka dotyczące gry
 
@@ -98,7 +130,7 @@ Pełne sformułowania i kontekst są w wątkach projektu, a tutaj są ich skrót
 - **2026-11-06** Bateria Q-1 zostaje kwantowa. Historia i wskazówki płyną z notatek znajdowanych w świecie, jak w Control.
 - **2026-11-07** Wolt w grze to wspólny monocykl z dema: ramię, kabel z bębna wpływa na przechył, obrót tylko w kierunku jazdy, skrzypienie koła zamiast kroków.
 - **2026-11-07** Nie może być martwych punktów: hol zawsze da się odczepić (Q), opona nie może zablokować ruchu, a na postoju Q-1 powoli odzyskuje energię (0,15%/s, widoczne w panelu). Cel ma być czytelny: cicha linijka celu i podpowiedzi mówiące, czego brakuje.
-- **2026-11-07** Budynki mają dachy. Kiedy dach albo ściana zasłania Wolta, znika tylko miękkie koło wokół niego, jak w Control Resonant (shader `holeMat` w `stationView.ts`).
+- **2026-11-07** Budynki mają dachy. Kiedy dach albo ściana zasłania Wolta, znika tylko miękkie koło wokół niego, jak w Control Resonant (shader dziury, teraz `Hole` w `render/station/kit.ts`).
 - **2026-11-07** Poziom nie powinien kończyć się na turbinie: prąd trzeba jeszcze doprowadzić kablem do maszynowni. Uwagi Wojtka to obserwacje, a nie ścisła specyfikacja.
 - **2026-11-08** Q-1 nie rozumie ludzkiego pisma. Notatki są na start nieczytelne, a korpus odkodowuje je progami: liczby i ostrzeżenia (450 znaków), druk techniczny (1400), zwykły druk (3500), pismo odręczne (7000). Wczesne wskazówki niosą rysunki. Szczegóły są w SWIAT.md, sekcja „Notatki i archiwum”.
 - **2026-11-08** Kabel nie może znikać pod podłogą (`cableTube`).

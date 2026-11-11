@@ -4,6 +4,7 @@ import { MouseWalk } from './mouse';
 import { StationView } from '../render/stationView';
 import { NOTES, journal, noteHtml, journalHtml } from '../notes';
 import { story } from '../state';
+import { WAKE, WAKE_ROOMS } from '../render/station/wake';
 import { tr, num } from '../../i18n';
 
 /**
@@ -22,6 +23,8 @@ export class StationScene implements Scene {
   private journalOpen = false;
   private towAcc = 0;
   private mouse = new MouseWalk(PLAYER_R);
+  /** How many parts of the waking station have already made their sound. */
+  private wakeStep = 0;
 
   enter(c: Ctx) {
     this.view = new StationView(this.st, c.app, c.models);
@@ -82,6 +85,12 @@ export class StationScene implements Scene {
       if (this.towAcc > (st.moduleOnTyre ? 0.32 : 0.45)) { this.towAcc = 0; c.sound.step(!st.moduleOnTyre); }
     }
 
+    // the station wakes room by room: each bank of lamps catches with a tick and a low hum
+    while (st.machinePowered && this.wakeStep < WAKE_ROOMS.length && st.poweredT >= WAKE[WAKE_ROOMS[this.wakeStep]]) {
+      c.sound.clank(2.4 + this.wakeStep * 0.12, 0.035); c.sound.servo(0.35, 0.3 + this.wakeStep * 0.03);
+      this.wakeStep++;
+    }
+
     if (st.done && this.doneT < 0) this.doneT = 0;
     if (this.doneT >= 0) {
       this.doneT += dt;
@@ -106,8 +115,9 @@ export class StationScene implements Scene {
       case 'load': s.clank(0.6, 0.18); break;
       case 'repair': s.servo(1.1, 0.8); break;
       case 'turbine': s.swell(); s.creak(0.6); break;
-      case 'plot': for (let i = 0; i < 6; i++) setTimeout(() => { s.servo(0.4, 1.6); s.blip(1.1 + (i % 2) * 0.2); }, i * 260); break;
-      case 'leave': s.swell(); setTimeout(() => s.swell(), 1800); break;
+      // the pen plotter draws for about five seconds (PLOT_TIME in render/station/machines.ts)
+      case 'plot': for (let i = 0; i < 16; i++) setTimeout(() => { s.servo(0.3, 1.5 + (i % 3) * 0.25); if (i % 2) s.blip(1.1 + (i % 4) * 0.1); }, i * 310); break;
+      case 'leave': s.creak(0.8); s.swell(); setTimeout(() => s.swell(), 1800); break;
       case 'grab': s.clank(1.2, 0.08); s.servo(0.6, 1.1); break;
       case 'drop': s.clank(0.7, 0.06); break;
       case 'connect': s.clank(2, 0.06); s.swell(); c.fx.static = 0.4; break;

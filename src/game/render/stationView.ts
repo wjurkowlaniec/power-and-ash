@@ -1,7 +1,7 @@
 import * as THREE from 'three';
 import { cableTube } from './cableTube';
-import { mat, mesh, box, obstacleMesh } from '../../render/models';
-import { Models, fit } from '../../render/assets';
+import { mat, mesh, box } from '../../render/models';
+import { Models } from '../../render/assets';
 import { PAL } from '../../render/palette';
 import { woltMonoModel, WoltMono, WoltAnimator, ArmPose } from '../../render/wolt';
 import { loadModel, LoadModel, animateDragged, ropeGeometry } from '../../render/loads';
@@ -10,16 +10,29 @@ import { LOADS, ROPE } from '../../sim/tow';
 import { V2 } from '../../sim/vec';
 import { Station, ST_W, ST_H, ROOMS, P, CABLE_MAX } from '../sim/station';
 import { Post } from './post';
+import { Hole, glow, groundY } from './station/kit';
+import { Atmosphere, WIND, beyond } from './station/atmosphere';
+import { Building } from './station/building';
+import { Interiors } from './station/interiors';
+import { Yard, inPuddle } from './station/yard';
+import { buildBackdrop } from './station/backdrop';
+import { mergeStatic, swayTime } from './station/batch';
+import { Transformer, ModuleLoad, Plotter, cableDrum, workshopDoor, moduleModel } from './station/machines';
 
 const CAM_OFFSET = new THREE.Vector3(0, 17, 16);
-const WALL_H = 3.0;     // full walls under a roof; a round hole opens around Wolt instead of a cut-away
-const ROOF_Y = 3.0;
-const HOLE_R = 2.7;     // m, radius of the see-through hole around Wolt
+const VIEW = 7.5;         // m, half the height of the view
+const HOLE_R = 2.7;       // m, radius of the see-through hole around Wolt
 const Q_GREEN = 0x5fe39a;
+const OPENING_ZOOM = 0.22; // the scene opens a little wider and settles on Wolt
+const LEAVE_ZOOM = 0.3;    // the last shot pulls back as he rolls out of the gate
+const ss = THREE.MathUtils.smoothstep;
 
 /**
- * Scene 2 in 3D: the yard and the roofless rooms of Stacja Olszanka in pale overcast
- * light, ash on the ground, fog over the valley. Reads Station every frame.
+ * Scene 2 in 3D: Stacja Pomiarowa „Olszanka” in pale overcast light, ash on the ground,
+ * mist over the valley, spruce woods melting into the fog. Reads Station every frame and
+ * changes nothing in it. The set is built by the modules in ./station (building, interiors,
+ * yard, machines, backdrop, atmosphere); this class owns the renderer, the camera, Wolt,
+ * the tyre and the cables.
  */
 export class StationView {
   readonly renderer: THREE.WebGLRenderer;
@@ -30,36 +43,35 @@ export class StationView {
   private anim: WoltAnimator;
   private tyre: LoadModel;
   private moduleOnTyre: THREE.Object3D;
-  private moduleOnShelf: THREE.Object3D;
-  private trafoLamp!: THREE.MeshStandardMaterial;
-  private spark!: THREE.PointLight;
+  private building: Building;
+  private interiors: Interiors;
+  private yard: Yard;
+  private trafo: Transformer;
+  private load: ModuleLoad;
+  private plotter: Plotter;
+  private air = new Atmosphere();
+  private door: THREE.Group;
+  private drum: THREE.Group;
+  private portLamp!: THREE.MeshStandardMaterial;
+  private socketLamp!: THREE.MeshStandardMaterial;
   private teaser!: THREE.PointLight;
-  private paper!: THREE.Mesh;
+  private teaserGlow!: THREE.Sprite;
   private rope: THREE.Mesh | null = null;
   private ownCable: THREE.Mesh | null = null;
-  private door: THREE.Mesh;
-  private portLamp: THREE.MeshStandardMaterial;
-  private rotor: THREE.Group;
-  private rotorSpeed = 0;
+  private cableMesh: THREE.Mesh | null = null;
+  private cableKey = '';
   private camTarget = new THREE.Vector3();
+  private zoom = 1;
   private prevPos: THREE.Vector3 | null = null;
   private prevYaw = 0; private spd = 0; private acc = 0; private yawRate = 0;
   private gesture: { pose: ArmPose; t: number } | null = null;
   private prevTowing = false;
-  private viewSize = 7.5;
-  private dust: THREE.Points;
   private ground: GroundFx;
   /** Shared by the building's materials: fragments in front of Wolt inside this circle are dropped. */
-  private hole = { uHole: { value: new THREE.Vector2() }, uHoleR: { value: 0 }, uHoleZ: { value: 1 } };
+  private hole: Hole = { uHole: { value: new THREE.Vector2() }, uHoleR: { value: 0 }, uHoleZ: { value: 1 } };
   private holeOpen = 0;
-  private cableMesh: THREE.Mesh | null = null;
-  private cableKey = '';
-  private machineLight!: THREE.PointLight;
-  private machineGlass!: THREE.MeshStandardMaterial;
-  private socketLamp!: THREE.MeshStandardMaterial;
-  private drum!: THREE.Mesh;
 
-  constructor(private st: Station, container: HTMLElement, private models: Models) {
+  constructor(private st: Station, container: HTMLElement, models: Models) {
     const r = new THREE.WebGLRenderer({ antialias: false });
     r.setPixelRatio(Math.min(devicePixelRatio, 2));
     r.shadowMap.enabled = true; r.shadowMap.type = THREE.PCFSoftShadowMap;
@@ -69,30 +81,41 @@ export class StationView {
     this.post = new Post(r);
     this.post.uniforms.uGrey.value = 0;
     this.post.uniforms.uSat.value = 0.6;
-    this.post.uniforms.uVignette.value = 0.45;
+    this.post.uniforms.uVignette.value = 0.5;
+    this.post.uniforms.uLift.value = 0.045;
 
     const s = this.scene;
     s.background = new THREE.Color(PAL.sky);
-    s.fog = new THREE.Fog(PAL.fog, 34, 70);
-    s.add(new THREE.HemisphereLight(0xe6e2d8, 0x5f5a52, 1.2));
-    const sun = new THREE.DirectionalLight(0xf0ebe0, 1.3);
-    sun.position.set(ST_W / 2 - 14, 30, -6); sun.target.position.set(ST_W / 2, 0, ST_H / 2);
+    // the far (north) side of the view sinks into the haze a little more than the near one
+    s.fog = new THREE.Fog(PAL.fog, 25, 58);
+    s.add(new THREE.HemisphereLight(0xe6e2d8, 0x625d55, 1.25));
+    // a low, pale sun behind the overcast in the south-west: long soft shadows across the yard
+    const sun = new THREE.DirectionalLight(0xf2ead8, 1.35);
+    sun.position.set(ST_W / 2 - 26, 22, ST_H / 2 + 9); sun.target.position.set(ST_W / 2, 0, ST_H / 2);
     sun.castShadow = true; sun.shadow.mapSize.set(2048, 2048);
-    Object.assign(sun.shadow.camera, { left: -30, right: 30, top: 24, bottom: -24, near: 1, far: 90 });
-    sun.shadow.bias = -0.0006; sun.shadow.radius = 4;
+    Object.assign(sun.shadow.camera, { left: -34, right: 34, top: 30, bottom: -30, near: 1, far: 100 });
+    sun.shadow.bias = -0.0006; sun.shadow.normalBias = 0.02; sun.shadow.radius = 5;
     s.add(sun); s.add(sun.target);
+    // sky light from the open valley side, so the front of the station is not a black wall
+    const fill = new THREE.DirectionalLight(0xdfe3e6, 0.55);
+    fill.position.set(ST_W / 2 + 6, 9, ST_H / 2 + 24); fill.target.position.set(ST_W / 2, 0, ST_H / 2);
+    s.add(fill); s.add(fill.target);
 
     this.buildGround();
-    this.buildRooms();
-    const d = this.buildWorkshopDoor(); this.door = d.door; this.portLamp = d.lamp;
-    this.buildFurniture();
-    this.rotor = this.buildMast();
-    this.buildYard();
-    this.moduleOnShelf = this.buildShelf();
-    this.buildTransformer();
-    this.buildPlotter();
-    this.buildNotes();
-    this.buildPowerLine();
+    this.building = new Building(s, st, models, this.hole);
+    this.interiors = new Interiors(s, st, models);
+    this.yard = new Yard(s, st, models);
+    buildBackdrop(s, models);
+    this.door = workshopDoor(s);
+    this.drum = cableDrum(s);
+    this.trafo = new Transformer(s, st);
+    this.load = new ModuleLoad(s, st);
+    this.plotter = new Plotter(s, st);
+    this.buildPorts();
+    s.add(this.air.group);
+
+    // everything built so far stands still: bake it into a few big meshes
+    mergeStatic(s);
 
     this.tyre = loadModel('tyre'); s.add(this.tyre.group);
     this.moduleOnTyre = moduleModel(); this.moduleOnTyre.position.y = 0.22;
@@ -104,11 +127,10 @@ export class StationView {
     this.anim = new WoltAnimator(this.wolt);
     s.add(this.wolt.group);
 
-    this.dust = this.buildDust(); s.add(this.dust);
-    // ash in the yard, dusty concrete slabs under the roof
+    // ash in the yard, dusty concrete under the roof and on the apron, puddles that wet the wheel
     const x0 = ROOMS[0].x, x1 = ROOMS[ROOMS.length - 1].x + ROOMS[ROOMS.length - 1].w;
-    const yard: Surface = { ...SURFACES.ash, y: -0.01 }, slab: Surface = { ...SURFACES.dustyConcrete, y: 0.03 };
-    this.ground = new GroundFx((x, z) => x >= x0 && x <= x1 && z >= 3 && z <= 13 ? slab : yard);
+    const yard: Surface = { ...SURFACES.ash, y: -0.01 }, slab: Surface = { ...SURFACES.dustyConcrete, y: 0.03 }, water: Surface = { ...SURFACES.water, y: 0.012 };
+    this.ground = new GroundFx((x, z) => x >= x0 - 0.5 && x <= x1 + 0.4 && z >= 3 && z <= 14.68 ? slab : inPuddle(x, z) ? water : yard);
     s.add(this.ground.group);
     this.resize();
     addEventListener('resize', this.onResize);
@@ -118,7 +140,10 @@ export class StationView {
   resize() {
     const w = innerWidth, h = innerHeight;
     this.renderer.setSize(w, h); this.post.setSize(w, h);
-    const a = w / h, vs = a < 1 ? this.viewSize / a * 0.8 : this.viewSize;
+    this.frustum();
+  }
+  private frustum() {
+    const a = innerWidth / innerHeight, vs = (a < 1 ? VIEW / a * 0.8 : VIEW) * this.zoom;
     Object.assign(this.camera, { left: -vs * a, right: vs * a, top: vs, bottom: -vs });
     this.camera.updateProjectionMatrix();
   }
@@ -144,100 +169,46 @@ export class StationView {
   // ---------- building
 
   private buildGround() {
-    const g = new THREE.PlaneGeometry(ST_W + 80, ST_H + 70, 110, 90); g.rotateX(-Math.PI / 2);
+    const g = new THREE.PlaneGeometry(ST_W + 80, ST_H + 70, 150, 120); g.rotateX(-Math.PI / 2);
     const p = g.attributes.position, cols: number[] = [];
-    const c1 = new THREE.Color(PAL.ground), c2 = new THREE.Color(PAL.groundDark), grass = new THREE.Color(0x8d8f7c), tmp = new THREE.Color();
+    const c1 = new THREE.Color(PAL.ground), c2 = new THREE.Color(PAL.groundDark), grass = new THREE.Color(0x8d8f7c), haze = new THREE.Color(PAL.fog), tmp = new THREE.Color();
     for (let i = 0; i < p.count; i++) {
       const x = p.getX(i) + ST_W / 2, z = p.getZ(i) + ST_H / 2;
       p.setX(i, x); p.setZ(i, z);
-      const out = Math.max(0, -x, x - ST_W, -z, z - ST_H);
-      // the valley falls away to the south towards the reservoir; low hills elsewhere
-      const hill = Math.sin(x * 0.09 + z * 0.05) * 0.9 + Math.sin(x * 0.04 - z * 0.08) * 1.4;
-      const k = THREE.MathUtils.smoothstep(out, 0, 8);
-      p.setY(i, -0.01 + k * (z > ST_H ? -0.3 - out * 0.08 : 0.8 + hill + out * 0.12));
-      const ripple = 0.5 + 0.5 * Math.sin(x * 0.3 + Math.sin(z * 0.2) * 2) * Math.sin(z * 0.27);
+      // low hills round the station, the valley falling away to the south towards the reservoir
+      p.setY(i, groundY(x, z) - 0.01);
+      const out = beyond(x, z);
+      // ash lies in long drifts across the wind
+      const ripple = 0.5 + 0.5 * Math.sin((x * WIND.z - z * WIND.x) * 0.55 + Math.sin(x * 0.21 + z * 0.13) * 2.2) * Math.sin(z * 0.27 + x * 0.11);
       // dry grass shows through the ash away from the buildings
-      const g2 = THREE.MathUtils.smoothstep(z, 15, 27) * 0.35 + k * 0.3;
-      tmp.copy(c1).lerp(c2, 0.25 * ripple).lerp(grass, g2 * (0.5 + 0.5 * ripple));
+      const g2 = ss(z, 15, 27) * 0.35 + ss(out, 0, 8) * 0.3;
+      tmp.copy(c1).lerp(c2, 0.28 * ripple).lerp(grass, g2 * (0.5 + 0.5 * ripple)).lerp(haze, ss(out, 5, 20) * 0.75);
       cols.push(tmp.r, tmp.g, tmp.b);
     }
     g.setAttribute('color', new THREE.Float32BufferAttribute(cols, 3));
     g.computeVertexNormals();
     this.scene.add(mesh(g, new THREE.MeshStandardMaterial({ vertexColors: true, roughness: 1, flatShading: true }), 0, 0, 0, false));
-    // concrete floor slabs inside the building
-    const slab = mat(0x8a877f, { r: 0.95 });
+    // the concrete floor slab inside the building
     const x0 = ROOMS[0].x, x1 = ROOMS[ROOMS.length - 1].x + ROOMS[ROOMS.length - 1].w;
-    this.scene.add(mesh(new THREE.BoxGeometry(x1 - x0, 0.06, 10), slab, (x0 + x1) / 2, 0.0, 8, false));
+    this.scene.add(mesh(new THREE.BoxGeometry(x1 - x0, 0.06, 10), mat(0x8a877f, { r: 0.95 }), (x0 + x1) / 2, 0.0, 8, false));
   }
 
-  /** A material for the building that opens a soft round hole around Wolt when he is behind it. */
-  private holeMat(color: number, o: { r?: number; m?: number } = {}): THREE.MeshStandardMaterial {
-    const m = mat(color, o) as THREE.MeshStandardMaterial;
-    m.onBeforeCompile = sh => {
-      Object.assign(sh.uniforms, this.hole);
-      sh.fragmentShader = sh.fragmentShader
-        .replace('void main() {', `uniform vec2 uHole; uniform float uHoleR; uniform float uHoleZ;
-void main() {
-  if (uHoleR > 0.0 && gl_FragCoord.z < uHoleZ) {
-    float hd = distance(gl_FragCoord.xy, uHole);
-    float n = fract(sin(dot(floor(gl_FragCoord.xy / 2.0), vec2(12.9898, 78.233))) * 43758.5453);
-    if (hd < uHoleR * mix(0.82, 1.0, n)) discard;
-  }`);
-    };
-    m.customProgramCacheKey = () => 'hole';
-    return m;
-  }
-
-  private buildRooms() {
+  /** Ports, status lamps and the note on the facade; the glow behind the machine room window. */
+  private buildPorts() {
     const s = this.scene;
-    const wall = this.holeMat(0x6e6c66, { r: 0.95 }), trim = this.holeMat(0x55534e, { r: 0.9 });
-    for (const o of this.st.world.obstacles) {
-      if (o.kind !== 'container') continue;
-      s.add(box(o.w, WALL_H, o.h, wall, o.x + o.w / 2, WALL_H / 2, o.y + o.h / 2));
-    }
-    const x0 = ROOMS[0].x, x1 = ROOMS[ROOMS.length - 1].x + ROOMS[ROOMS.length - 1].w;
-    // lintels over the door gaps
-    for (const r of ROOMS) for (const d of r.doors) s.add(box(d.w, 0.8, 1, wall, d.x + d.w / 2, WALL_H - 0.4, r.y + r.h - 0.5));
-    // flat roof with an overhang, a parapet and a few things on top
-    const roof = this.holeMat(0x5e5d58, { r: 0.95 });
-    s.add(box(x1 - x0 + 0.6, 0.22, 10.6, roof, (x0 + x1) / 2, ROOF_Y + 0.11, 8));
-    s.add(box(x1 - x0 + 0.6, 0.35, 0.15, trim, (x0 + x1) / 2, ROOF_Y + 0.38, 13.22));
-    s.add(box(x1 - x0 + 0.6, 0.35, 0.15, trim, (x0 + x1) / 2, ROOF_Y + 0.38, 2.78));
-    // tar-paper seams and moss-grey patches so the roof is not one flat slab
-    const seam = this.holeMat(0x3c3b38, { r: 1 }), patch = this.holeMat(0x6f716a, { r: 1 });
-    for (let x = x0 + 1.2; x < x1; x += 1.6) s.add(box(0.05, 0.02, 10.4, seam, x, ROOF_Y + 0.23, 8));
-    for (const [px, pz, w, d] of [[6, 6, 2.2, 1.6], [17, 10.5, 3, 1.2], [27, 5.5, 1.8, 2.4], [31.5, 11, 2.4, 1]] as const)
-      s.add(box(w, 0.015, d, patch, px, ROOF_Y + 0.235, pz));
-    const metal = this.holeMat(0x5a5e62, { r: 0.6, m: 0.5 });
-    s.add(box(1.2, 0.7, 1.2, metal, 34, ROOF_Y + 0.55, 6));        // machine room vent
-    s.add(box(0.5, 0.9, 0.5, metal, 13, ROOF_Y + 0.65, 5));        // workshop flue
-    s.add(box(2.4, 0.08, 0.08, metal, 20, ROOF_Y + 0.6, 4.2));     // antenna boom
-    s.add(box(0.06, 1.4, 0.06, metal, 20, ROOF_Y + 0.9, 4.2));
-    // windows: back wall and the front
-    const glass = new THREE.MeshStandardMaterial({ color: 0x9aa3a6, roughness: 0.2, metalness: 0.3 });
-    this.machineGlass = new THREE.MeshStandardMaterial({ color: 0x8a9396, roughness: 0.2, metalness: 0.3, emissive: 0xffd9a0, emissiveIntensity: 0 });
-    for (const x of [3, 12, 19, 26, 33.5]) s.add(box(1.6, 0.9, 0.05, x === 33.5 ? this.machineGlass : glass, x, 2.1, 3.98));
-    for (const x of [3, 9.3, 14.6, 21, 23.6, 28.4]) s.add(box(1.3, 0.8, 0.05, glass, x, 1.9, 13.02));
-    s.add(box(1.3, 0.8, 0.05, this.machineGlass, 30.8 + 0.6, 1.9, 13.02));
-    s.add(box(1.3, 0.8, 0.05, this.machineGlass, 35.4, 2.1, 13.02));
-    // under the roof it is dim: a little grey light leaks in through each window
-    for (const r of ROOMS) {
-      const l = new THREE.PointLight(0xc8ccd0, r.id === 'machine' ? 0 : 3, 7, 1.6);
-      l.position.set(r.x + r.w / 2, 2.4, r.y + r.h / 2); s.add(l);
-      if (r.id === 'machine') { l.color.setHex(0xffd9a0); this.machineLight = l; }
-    }
-  }
-
-  private buildPowerLine() {
-    const s = this.scene;
-    // the cable drum at the mast foot
-    this.drum = mesh(new THREE.CylinderGeometry(0.35, 0.35, 0.4, 16).rotateZ(Math.PI / 2), mat(0x3e3f40, { r: 0.6, m: 0.5 }), P.junction.x, 0.4, P.junction.y);
-    s.add(this.drum);
-    s.add(box(0.7, 0.08, 0.5, mat(0x2f3133), P.junction.x, 0.04, P.junction.y));
+    // the lock port on the left of the workshop door, with its dead lamp
+    s.add(Building.plate(P.port.x, 0.9));
+    const port = Building.statusLamp(P.port.x, 1.05); this.portLamp = port.m; s.add(port.o);
     // the machine room inlet on its yard wall
-    s.add(box(0.36, 0.46, 0.08, mat(0x2a2c2e), P.socket.x, 0.9, 13.06));
-    this.socketLamp = new THREE.MeshStandardMaterial({ color: 0x220a06, emissive: PAL.off, emissiveIntensity: 0.2 });
-    s.add(mesh(new THREE.BoxGeometry(0.07, 0.07, 0.04), this.socketLamp, P.socket.x, 1.07, 13.11, false));
+    s.add(Building.plate(P.socket.x, 0.9, 0.36, 0.46));
+    s.add(box(0.2, 0.2, 0.05, mat(0x55595c, { r: 0.5, m: 0.6 }), P.socket.x, 0.86, 13.1));
+    const socket = Building.statusLamp(P.socket.x, 1.07); this.socketLamp = socket.m; s.add(socket.o);
+    // the technician's note, pinned by the door
+    const paper = new THREE.MeshStandardMaterial({ color: 0xe0dccf, roughness: 0.9, emissive: 0xe0dccf, emissiveIntensity: 0.08 });
+    const note = mesh(new THREE.PlaneGeometry(0.3, 0.4), paper, P.doorNote.x, 1.3, 13.04, false); note.rotation.z = -0.05; s.add(note);
+    // the machine room teaser: something glows green behind the fallen cabinet
+    this.teaser = new THREE.PointLight(Q_GREEN, 2, 6, 1.5); this.teaser.position.set(33.5, 1.2, 7); s.add(this.teaser);
+    this.teaserGlow = glow(Q_GREEN, 3.2); this.teaserGlow.position.set(33, 1.2, 12.2); s.add(this.teaserGlow);
   }
 
   /** Cable from the drum: lies on the ground between bends, rises to Wolt's hand or to the inlet. */
@@ -249,13 +220,13 @@ void main() {
     if (st.cableHeld) {
       const ex = this.wolt.cableExit.getWorldPosition(new THREE.Vector3());
       pts[pts.length - 1] = { x: ex.x, y: ex.z }; endY = ex.y;
-    } else if (st.machinePowered) { pts[pts.length - 1] = { x: P.socket.x, y: 13.1 }; endY = 0.9; }
+    } else if (st.machinePowered) { pts[pts.length - 1] = { x: P.socket.x, y: 13.1 }; endY = 0.86; }
     const key = pts.map(p => p.x.toFixed(2) + ',' + p.y.toFixed(2)).join(';') + endY.toFixed(2);
     if (key !== this.cableKey) {
       this.cableKey = key;
       const v: THREE.Vector3[] = [];
       for (let i = 0; i < pts.length; i++) {
-        const y = i === 0 ? 0.4 : i === pts.length - 1 ? endY : 0.04;
+        const y = i === 0 ? 0.42 : i === pts.length - 1 ? endY : 0.04;
         v.push(new THREE.Vector3(pts[i].x, y, pts[i].y));
         if (i < pts.length - 1) {
           const a = pts[i], b = pts[i + 1];
@@ -273,185 +244,6 @@ void main() {
     const strain = Math.max(0, (st.cableLength() - (CABLE_MAX - 3)) / 3);
     m.emissive.setHex(st.machinePowered ? PAL.flow : PAL.warn);
     m.emissiveIntensity = st.machinePowered ? 0.5 + Math.sin(st.t * 6) * 0.15 : st.cableHeld ? strain * 0.8 : 0;
-  }
-
-  private buildWorkshopDoor() {
-    const door = box(2, 2.0, 0.12, mat(0x4a5a54, { r: 0.7, m: 0.4 }), 12, 1.0, 12.5);
-    this.scene.add(door);
-    // the port on the left of the door, outside, with its dead lamp
-    const plate = box(0.3, 0.4, 0.06, mat(0x2a2c2e), P.port.x, 0.9, 13.05);
-    this.scene.add(plate);
-    const lamp = new THREE.MeshStandardMaterial({ color: 0x220a06, emissive: PAL.off, emissiveIntensity: 0.15 });
-    this.scene.add(mesh(new THREE.BoxGeometry(0.08, 0.08, 0.04), lamp, P.port.x, 1.05, 13.1, false));
-    return { door, lamp };
-  }
-
-  private buildFurniture() {
-    const s = this.scene, m = this.models;
-    const dark = mat(0x3a3d40, { r: 0.6, m: 0.4 }), wood = mat(0x6b5f50, { r: 0.95 });
-    // fabricator: a squat machine with a dead panel
-    s.add(box(2, 1.5, 2, mat(0x4d5257, { r: 0.6, m: 0.5 }), 11, 0.75, 5));
-    s.add(box(0.8, 0.4, 0.04, mat(0x0c0d0e, { e: 0x111111 }), 11, 1.05, 6.02));
-    s.add(box(1.0, 0.3, 0.8, dark, 11, 1.65, 5));
-    // workbench with clutter
-    s.add(box(2, 0.85, 1, wood, 14, 0.425, 4.5));
-    if (m.has('Parts_Pile_Small')) { const o = fit(m, 'Parts_Pile_Small', 0.8, 0.6); o.position.set(14.2, 0.85, 4.5); s.add(o); }
-    // duty room: desk, chair, mug, a jacket on the chair
-    s.add(box(2, 0.78, 1, wood, 20, 0.39, 4.5));
-    s.add(box(0.5, 0.5, 0.5, dark, 20, 0.25, 5.6));
-    s.add(box(0.5, 0.06, 0.4, mat(0x5a4d3e), 20, 0.75, 5.7)); // the jacket, slumped
-    s.add(mesh(new THREE.CylinderGeometry(0.05, 0.05, 0.1, 10), mat(0xb8b2a6), 19.4, 0.83, 4.4));
-    // the wall map: a pale sheet with seven dots and a line
-    const cv = document.createElement('canvas'); cv.width = 256; cv.height = 160;
-    const c = cv.getContext('2d')!;
-    c.fillStyle = '#d8d2c2'; c.fillRect(0, 0, 256, 160);
-    c.strokeStyle = '#8a8476'; c.lineWidth = 1;
-    for (let i = 0; i < 9; i++) { c.beginPath(); c.moveTo(0, 20 + i * 15 + Math.sin(i) * 6); c.bezierCurveTo(80, 10 + i * 16, 170, 40 + i * 12, 256, 25 + i * 15); c.stroke(); }
-    const dots = [[30, 110], [62, 92], [95, 100], [128, 76], [160, 84], [190, 62], [222, 70]];
-    c.strokeStyle = '#7a2a20'; c.lineWidth = 2.5; c.beginPath(); dots.forEach(([x, y], i) => i ? c.lineTo(x, y) : c.moveTo(x, y)); c.stroke();
-    c.fillStyle = '#7a2a20'; for (const [x, y] of dots) { c.beginPath(); c.arc(x, y, 5, 0, 7); c.fill(); }
-    c.lineWidth = 3; c.beginPath(); c.moveTo(196, 18); c.lineTo(214, 36); c.moveTo(214, 18); c.lineTo(196, 36); c.stroke();
-    const tex = new THREE.CanvasTexture(cv); tex.colorSpace = THREE.SRGBColorSpace;
-    const map = mesh(new THREE.PlaneGeometry(1.6, 1.0), new THREE.MeshStandardMaterial({ map: tex, roughness: 0.9 }), 16.56, 1.6, 6.5, false);
-    map.rotation.y = Math.PI / 2;
-    s.add(map);
-    // storage: crates
-    if (m.has('Prop_Crate4')) { const o = fit(m, 'Prop_Crate4', 1.8, 1.8); o.position.set(24, 0, 10); s.add(o); }
-    else s.add(box(1.8, 1.2, 1.8, wood, 24, 0.6, 10));
-    // machine room: switchboard behind, and the fallen cabinet across the doorway
-    s.add(box(3, 2.2, 0.6, mat(0x4a4e52, { r: 0.6, m: 0.5 }), 33.5, 1.1, 4.4));
-    const cab = box(2.2, 0.7, 0.9, mat(0x5a5e60, { r: 0.6, m: 0.4 }), 33, 0.35, 12.3); cab.rotation.y = 0.12; s.add(cab);
-  }
-
-  private buildShelf(): THREE.Object3D {
-    const s = this.scene, sh = mat(0x4a4d50, { r: 0.7, m: 0.4 });
-    for (const y of [0.05, 0.75, 1.45, 2.1]) s.add(box(6, 0.05, 0.8, sh, 26, y + 0.03, 4.45));
-    for (const x of [23.05, 26, 28.95]) s.add(box(0.06, 2.2, 0.8, sh, x, 1.1, 4.45));
-    // second shelf: the spare transformer module
-    const mod = moduleModel(); mod.position.set(26, 0.8, 4.55); s.add(mod);
-    return mod;
-  }
-
-  /** The transformer cabinet at the mast foot: Wolt's wheel reaches it, no climbing. */
-  private buildTransformer() {
-    const s = this.scene, x = 20.5, z = 21.5;
-    s.add(box(0.9, 1.2, 0.9, mat(0x4f5a55, { r: 0.6, m: 0.5 }), x, 0.6, z));
-    s.add(box(0.7, 0.9, 0.04, mat(0x3c4642, { r: 0.6, m: 0.5 }), x, 0.62, z + 0.47));
-    // the warning sign: a lightning bolt, readable without any decoding
-    const cv = document.createElement('canvas'); cv.width = 64; cv.height = 64;
-    const c = cv.getContext('2d')!;
-    c.fillStyle = '#d9b23a'; c.beginPath(); c.moveTo(32, 4); c.lineTo(60, 58); c.lineTo(4, 58); c.closePath(); c.fill();
-    c.fillStyle = '#1d1f20'; c.beginPath(); c.moveTo(35, 18); c.lineTo(24, 40); c.lineTo(32, 40); c.lineTo(28, 54); c.lineTo(42, 32); c.lineTo(34, 32); c.closePath(); c.fill();
-    const tex = new THREE.CanvasTexture(cv); tex.colorSpace = THREE.SRGBColorSpace;
-    s.add(mesh(new THREE.PlaneGeometry(0.26, 0.26), new THREE.MeshStandardMaterial({ map: tex, transparent: true, roughness: 0.8 }), x, 0.85, z + 0.5, false));
-    this.trafoLamp = new THREE.MeshStandardMaterial({ color: 0x220a06, emissive: PAL.off, emissiveIntensity: 0.4 });
-    s.add(mesh(new THREE.BoxGeometry(0.07, 0.07, 0.04), this.trafoLamp, x + 0.28, 1.08, z + 0.5, false));
-    // a cable from the cabinet up the mast leg
-    s.add(box(0.05, 2.4, 0.05, mat(0x1a1a1a), x + 0.4, 1.2, z - 0.35));
-    this.spark = new THREE.PointLight(0xbfe6ff, 0, 3, 2); this.spark.position.set(x, 1.0, z + 0.6); s.add(this.spark);
-  }
-
-  /** The weather plotter in the duty room: prints the route map once the station has power. */
-  private buildPlotter() {
-    const s = this.scene;
-    s.add(box(1.0, 0.8, 0.8, mat(0x6a6c68, { r: 0.7, m: 0.3 }), 17.5, 0.4, 10.5));
-    s.add(box(0.9, 0.08, 0.1, mat(0x2a2c2e), 17.5, 0.82, 10.85));
-    this.paper = mesh(new THREE.PlaneGeometry(0.8, 1).translate(0, -0.5, 0), new THREE.MeshStandardMaterial({ color: 0xe8e4d8, roughness: 0.9, emissive: 0xe8e4d8, emissiveIntensity: 0.1, side: THREE.DoubleSide }), 17.5, 0.8, 10.92, false);
-    this.paper.scale.y = 0.01;
-    s.add(this.paper);
-    // the machine room teaser: something glows green behind the fallen cabinet
-    this.teaser = new THREE.PointLight(0x5fe39a, 2, 6, 1.5); this.teaser.position.set(33.5, 1.2, 7); s.add(this.teaser);
-  }
-
-  /** The measurement mast with the small wind turbine on top. */
-  private buildMast(): THREE.Group {
-    const s = this.scene, steel = mat(0x5a5e62, { r: 0.5, m: 0.6 });
-    const g = new THREE.Group(); g.position.set(P.mast.x, 0, P.mast.y); s.add(g);
-    const H = 9;
-    for (const [x, z] of [[-0.6, -0.6], [0.6, -0.6], [-0.6, 0.6], [0.6, 0.6]]) {
-      const leg = box(0.08, H, 0.08, steel, x * 0.6, H / 2, z * 0.6);
-      leg.rotation.set(z * 0.035, 0, -x * 0.035); g.add(leg);
-    }
-    for (let y = 1; y < H; y += 1.2) g.add(box(0.8, 0.04, 0.04, steel, 0, y, 0.36));
-    for (let y = 0.4; y < H - 0.5; y += 0.35) g.add(box(0.3, 0.025, 0.025, mat(0x3a3c3e), 0, y, 0.5)); // ladder rungs
-    // nacelle, tail and rotor
-    g.add(box(0.3, 0.3, 0.9, mat(0x6a6e70, { r: 0.5, m: 0.5 }), 0, H + 0.1, 0));
-    g.add(box(0.03, 0.5, 0.6, steel, 0, H + 0.2, -0.75));
-    const rotor = new THREE.Group(); rotor.position.set(0, H + 0.1, 0.5); g.add(rotor);
-    rotor.add(mesh(new THREE.SphereGeometry(0.1, 8, 6), steel));
-    for (let k = 0; k < 3; k++) {
-      const b = box(0.12, 1.5, 0.03, mat(0xbab4a6, { r: 0.8 }), 0, 0.8, 0);
-      b.geometry.translate(0, 0, 0);
-      const arm = new THREE.Group(); arm.rotation.z = k * Math.PI * 2 / 3 + 0.3; arm.add(b); rotor.add(arm);
-    }
-    // the cracked blade hangs a bit
-    (rotor.children[1] as THREE.Group).rotation.x = 0.1;
-    // guy wires
-    const wireM = new THREE.LineBasicMaterial({ color: 0x3a3c3e });
-    for (const [x, z] of [[-4, -3], [4, -3], [0, 4]]) {
-      const geo = new THREE.BufferGeometry().setFromPoints([new THREE.Vector3(0, H - 1, 0), new THREE.Vector3(x, 0, z)]);
-      g.add(new THREE.Line(geo, wireM));
-    }
-    return rotor;
-  }
-
-  private buildYard() {
-    const s = this.scene, m = this.models;
-    for (const o of this.st.world.obstacles)
-      if (['rock', 'scrap', 'barrel', 'tree'].includes(o.kind)) s.add(obstacleMesh(o, m));
-    // weather balloon launcher: a hatch on a frame, a limp orange envelope
-    s.add(box(2, 0.6, 2, mat(0x50555a, { r: 0.6, m: 0.4 }), 18, 0.3, 25));
-    s.add(mesh(new THREE.SphereGeometry(0.7, 12, 8).scale(1, 0.35, 1), mat(0xb0703c, { r: 0.8 }), 18, 0.8, 25));
-    // the shed (the ice yacht frame waits inside, for later)
-    const sh = P.shed, wood = mat(0x5b5348, { r: 0.95 });
-    s.add(box(sh.w, 2.4, sh.h, wood, sh.x + sh.w / 2, 1.2, sh.y + sh.h / 2));
-    const roof = box(sh.w + 0.6, 0.12, sh.h + 0.6, mat(0x3f3a34), sh.x + sh.w / 2, 2.6, sh.y + sh.h / 2); roof.rotation.z = 0.08; s.add(roof);
-    // a fallen fence along the south
-    const fence = mat(0x6b6458, { r: 0.95 });
-    const gx = P.gate.x;
-    for (let x = 2; x < ST_W - 2; x += 2.2) {
-      if (x > gx - 2.2 && x < gx + 1.2) continue; // the gate gap
-      const post = box(0.1, 1.1, 0.1, fence, x, 0.55, ST_H - 0.6); post.rotation.z = Math.sin(x) * 0.25; s.add(post);
-      if (Math.sin(x * 3) > -0.3) s.add(box(2.1, 0.06, 0.04, fence, x + 1.1, 0.8 + Math.sin(x) * 0.15, ST_H - 0.6));
-    }
-    // the gate: two posts and a leaf hanging open
-    s.add(box(0.14, 1.4, 0.14, fence, gx - 1.3, 0.7, ST_H - 0.6));
-    s.add(box(0.14, 1.4, 0.14, fence, gx + 1.3, 0.7, ST_H - 0.6));
-    const leaf = new THREE.Group(); leaf.position.set(gx - 1.3, 0, ST_H - 0.6); leaf.rotation.y = -1.1; s.add(leaf);
-    for (const y of [0.35, 0.8, 1.2]) leaf.add(box(2.4, 0.06, 0.04, fence, 1.2, y, 0));
-    leaf.add(box(2.6, 0.05, 0.04, fence, 1.2, 0.78, 0)).rotation.z = 0.33;
-    if (m.size) {
-      for (let k = 0; k < 40; k++) {
-        const x = 1 + ((k * 7.31) % (ST_W - 2)), z = 14.5 + ((k * 3.77) % 12.5);
-        if (this.st.world.isBlocked(Math.floor(x), Math.floor(z))) continue;
-        const name = k % 3 ? 'Grass_Wispy_Short' : 'Grass_Wispy_Tall';
-        if (!m.has(name)) continue;
-        const o = fit(m, name, 0.6, 0.6); o.position.set(x, 0, z); o.rotation.y = k; s.add(o);
-      }
-    }
-  }
-
-  private buildNotes() {
-    const paper = new THREE.MeshStandardMaterial({ color: 0xe0dccf, roughness: 0.9, emissive: 0xe0dccf, emissiveIntensity: 0.08 });
-    // the technician's note on the door frame
-    this.scene.add(mesh(new THREE.PlaneGeometry(0.3, 0.4), paper, P.doorNote.x, 1.3, 13.04, false));
-    // the duty room's bookshelf: faded spines
-    const shelfM = mat(0x4a4238, { r: 0.9 });
-    this.scene.add(box(0.9, 1.9, 2.9, shelfM, 21.5, 0.95, 9.5));
-    const spines = [0x6b5a48, 0x5a6058, 0x7a6a52, 0x54504a, 0x6e5f5a];
-    for (let row = 0; row < 3; row++) for (let k = 0; k < 9; k++) {
-      const h = 0.32 + ((k * 7 + row) % 4) * 0.04;
-      this.scene.add(box(0.3, h, 0.22, mat(spines[(k + row) % spines.length], { r: 0.95 }), 21.05, 0.3 + row * 0.6 + h / 2, 8.3 + k * 0.29));
-    }
-    // the drawer front
-    this.scene.add(box(0.6, 0.15, 0.05, mat(0x4a4238), 20, 0.55, 5.03));
-  }
-
-  private buildDust(): THREE.Points {
-    const n = 500, arr = new Float32Array(n * 3);
-    for (let i = 0; i < n; i++) { arr[i * 3] = Math.random() * ST_W; arr[i * 3 + 1] = Math.random() * 6; arr[i * 3 + 2] = Math.random() * ST_H; }
-    const g = new THREE.BufferGeometry(); g.setAttribute('position', new THREE.BufferAttribute(arr, 3));
-    return new THREE.Points(g, new THREE.PointsMaterial({ color: 0xe8e3d8, size: 0.05, transparent: true, opacity: 0.5, depthWrite: false }));
   }
 
   // ---------- per frame
@@ -473,20 +265,11 @@ void main() {
   frame(dt: number) {
     const st = this.st, w = this.wolt, t = st.t;
 
-    this.door.position.x = 12 + st.doorOpen * 1.9;
+    this.door.position.x = 12 + ss(st.doorOpen, 0, 1) * 1.9;
     this.portLamp.emissive.setHex(st.doorOpen > 0 ? PAL.ok : PAL.off);
     this.portLamp.emissiveIntensity = st.plugged > 0 ? 2 : st.doorOpen > 0 ? 0.8 : 0.15 + (Math.sin(t * 3) > 0.9 ? 0.4 : 0);
-    this.moduleOnShelf.visible = !st.shelfTaken;
-    this.moduleOnTyre.visible = st.moduleOnTyre;
-    // the rotor always turns in the wind: the fault is electrical, not mechanical
-    this.rotorSpeed += ((st.turbine ? 6 : 4) - this.rotorSpeed) * Math.min(1, dt * 0.4);
-    this.rotor.rotation.z += this.rotorSpeed * dt;
-    this.trafoLamp.emissive.setHex(st.turbine ? PAL.ok : PAL.off);
-    this.trafoLamp.emissiveIntensity = st.turbine ? 2 : 0.3 + (Math.sin(t * 5) > 0.7 ? 0.8 : 0);
-    this.spark.intensity = st.turbine ? 0 : Math.random() < 0.04 ? 6 : this.spark.intensity * 0.7;
     this.teaser.intensity = 1.6 + Math.sin(t * 1.3) * 0.8;
-    const paperWant = st.plotted ? 1 : 0.01;
-    this.paper.scale.y += (paperWant - this.paper.scale.y) * Math.min(1, dt * 0.5);
+    this.teaserGlow.material.opacity = 0.1 + Math.sin(t * 1.3) * 0.05;
 
     // Wolt: the sim turns him at a wheel's pace, so the body follows it exactly
     w.group.position.set(st.pos.x, 0, st.pos.y);
@@ -506,7 +289,7 @@ void main() {
     if (st.plugged > 0) this.gesture = { pose: 'reach', t: 0.2 };
     this.prevTowing = st.towing;
     if (this.gesture && (this.gesture.t -= dt) <= 0) this.gesture = null;
-    const arm: ArmPose = st.repair > 0 ? 'work' : st.reading ? 'reach' : this.gesture?.pose ?? 'rest';
+    const arm: ArmPose = st.repair > 0 ? 'work' : st.reading || this.load.busy ? 'reach' : this.gesture?.pose ?? 'rest';
     let tension = 0, pullFrom: THREE.Vector3 | null = null;
     if (st.towing && st.towTaut && this.spd > 0.1) {
       tension = LOADS.tyre.drag * (st.moduleOnTyre ? 3 : 1.6);
@@ -538,7 +321,7 @@ void main() {
       this.rope = mesh(ropeGeometry(a, b, ROPE), mat(0x6b6355, { r: 0.9 }), 0, 0, 0, true);
       this.scene.add(this.rope);
     }
-    this.ground.setWind(-0.25, 0);
+    this.ground.setWind(WIND.x * 0.3, WIND.z * 0.3);
     this.ground.setScale(pxPerMetre(this.renderer, this.camera));
     this.ground.update(dt);
     // Wolt's own short cable into the port while it feeds the lock
@@ -550,40 +333,35 @@ void main() {
       this.scene.add(this.ownCable);
     }
 
-    const dp = this.dust.geometry.attributes.position as THREE.BufferAttribute;
-    for (let i = 0; i < dp.count; i++) {
-      let x = dp.getX(i) - dt * (0.6 + (i % 7) * 0.1);
-      if (x < -2) x += ST_W + 4;
-      dp.setX(i, x); dp.setY(i, dp.getY(i) + Math.sin(t + i) * 0.002);
-    }
-    dp.needsUpdate = true;
+    // the module: on the shelf, in the arm's care, on the tyre, in the cabinet
+    const tyreAt = new THREE.Vector3(st.tyre.pos.x, 0.24, st.tyre.pos.y);
+    this.load.update(dt, tyreAt);
+    this.trafo.update(dt, t, tyreAt);
+    this.moduleOnTyre.visible = st.moduleOnTyre && this.load.landed && !this.trafo.carrying;
+    this.plotter.update(dt, t);
+    this.building.update(dt, t);
+    this.interiors.update(t);
+    this.yard.update(dt, t);
+    swayTime.value = t;
 
     // the cable and the machine room waking up
     this.updateCable();
     this.drum.rotation.x = st.cable ? -st.cableLength() * 1.8 : 0;
-    const pw = st.machinePowered ? Math.min(1, st.poweredT / 2.5) * (st.poweredT < 1.2 ? (Math.random() < 0.5 ? 0.2 : 1) : 1) : 0;
-    this.machineLight.intensity = pw * 9;
-    this.machineGlass.emissiveIntensity = pw * 0.9;
     this.socketLamp.emissive.setHex(st.machinePowered ? PAL.ok : PAL.off);
     this.socketLamp.emissiveIntensity = st.machinePowered ? 2 : 0.15 + (st.turbine && Math.sin(t * 3) > 0.9 ? 0.5 : 0);
 
-    // camera follows Wolt, kept a little inside the map
-    const want = new THREE.Vector3(THREE.MathUtils.clamp(st.pos.x, 7, ST_W - 7), 0, THREE.MathUtils.clamp(st.pos.y, 7, ST_H - 5));
+    // camera follows Wolt, kept a little inside the map; wider at the opening and for the last shot
+    const leave = ss(st.leaving, 0, 4.5);
+    const zoom = 1 + OPENING_ZOOM * Math.exp(-t / 2.2) + LEAVE_ZOOM * leave;
+    if (Math.abs(zoom - this.zoom) > 1e-4) { this.zoom = zoom; this.frustum(); }
+    const want = new THREE.Vector3(THREE.MathUtils.clamp(st.pos.x, 7, ST_W - 7), 0, THREE.MathUtils.clamp(st.pos.y, 7, ST_H - 5 + leave * 3));
     if (this.camTarget.lengthSq() === 0) this.camTarget.copy(want);
     this.camTarget.lerp(want, 1 - Math.exp(-dt * 2.5));
     this.camera.position.copy(this.camTarget).add(CAM_OFFSET);
     this.camera.lookAt(this.camTarget);
     this.camera.updateMatrixWorld();
+    this.air.update(dt, t, this.camTarget);
     this.updateHole(dt);
     this.post.render(this.scene, this.camera);
   }
-}
-
-/** The spare transformer module: a heavy grey block with cooling fins and two terminals. */
-function moduleModel(): THREE.Group {
-  const g = new THREE.Group(), steel = mat(0x5d6366, { r: 0.5, m: 0.6 });
-  g.add(box(0.5, 0.32, 0.36, steel, 0, 0.16, 0));
-  for (let i = -2; i <= 2; i++) g.add(box(0.02, 0.26, 0.4, mat(0x4a4f52, { r: 0.5, m: 0.6 }), i * 0.09, 0.16, 0));
-  for (const x of [-0.12, 0.12]) g.add(mesh(new THREE.CylinderGeometry(0.03, 0.03, 0.08, 8), mat(0x8a5a3a, { r: 0.4, m: 0.8 }), x, 0.36, 0));
-  return g;
 }

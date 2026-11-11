@@ -33,12 +33,14 @@ src/
   main.ts, demoText.ts, style.css   tech demo
   game/                 GRA (sceny z POCZATEK.md), opis w docs/GRA.md
   craft/                demo „Warsztat” (wytwarzanie, technologie, moduły), opis w docs/DEMO-WARSZTAT.md
-  assets/craft/         modele KayKit tylko dla „Warsztatu”
+  assets/craft/         modele KayKit dla „Warsztatu” (część bierze też Scena 2 gry)
+  assets/station/       modele KayKit tylko dla Sceny 2 gry
   sail/                 demo „Żegluga” (jazda Żaglowozem: teren, pole wiatru, fizyka, trasy, intro), opis w docs/DEMO-ZEGLUGA.md
   sun/                  demo „Słońce” (przewóz ładunku na panelach, cienie chmur), opis w docs/DEMO-SLONCE.md
   assets/models/        skompresowane modele GLB (CC0)
 test/                   testy Vitest (logika)
 tools/pack-models.mjs   konwersja paczek CC0 do src/assets/models
+tools/pack-station-models.mjs   modele Sceny 2 gry (KayKit z GitHuba) do src/assets/station
 tools/pack-craft-models.mjs  paczki KayKit (z GitHuba) do src/assets/craft
 docs/                   dokumentacja (ten katalog), kopiowana też na Pages pod /docs/
 .github/workflows/      CI (PR) i deploy na Pages (main)
