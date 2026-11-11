@@ -138,6 +138,16 @@ Jak by to weszło:
 - **Demo „Żegluga”:** Wolt rysowany w widelcu zamiast na pokładzie, skręt jego kołem. Nowe klawisze: napęd silnikiem (zużywa baterię, pasek energii w HUD) i hamowanie z odzyskiem. Wychył zastąpiony jednym z powyższych. Intro: scena przechyłu bez wychyłu.
 - **Demo „Warsztat”:** zamiast „wsiądź” jest „wczep się z przodu” (Wolt podjeżdża tyłem do widelca wózka), a zejście to odczepienie.
 
+## Pomysł: analizator wiatru (Wojtek 2026-11-11, tylko zapis)
+
+Wojtek: „może być tak, że na początku nie widać wiatru, trzeba na czuja, potem dopiero ma moduł analizatora wiatru, najpierw bardzo ogólny, gdzie teraz wieje, a potem taki, że widać, jak dokładnie wiatr się rozkłada”. Na razie tylko zapisane, bez kodu.
+
+Trzy stopnie widoczności wiatru jako postęp Wolta:
+
+1. **Bez modułu:** wiatru nie widać. Zostają tylko ślady w świecie (proporczyk, łopot żagla, pył przy samym żaglowozie, dźwięk) i wyczucie.
+2. **Analizator ogólny:** kierunek i siła wiatru w miejscu, gdzie stoi żaglowóz (dzisiejszy kompas wiatru).
+3. **Analizator dokładny:** rozkład wiatru w terenie, czyli szkwały i flauty na popiele, smugi pyłu, cień wiatrowy za przeszkodami (to, co demo pokazuje dziś od razu).
+
 ## Do sprawdzenia przez Wojtka
 
 - Czy czucie jazdy jest dobre: prędkości (do ~70 km/h), jak łatwo się przewrócić, czy poślizg na solnisku nie jest za mocny.
