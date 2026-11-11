@@ -1,7 +1,7 @@
 import { V2 } from '../../sim/vec';
 import { buildObstacles, Obstacle, surfaceAt, slopeAt, heightAt, START } from './terrain';
 import { WindField, WindSample } from './windField';
-import { YachtState, newYacht, yachtStep, startSwap, YachtInput, StepEvents, World } from './landYacht';
+import { YachtState, newYacht, yachtStep, startSwap, toggleDock, YachtInput, StepEvents, World } from './landYacht';
 import { COURSES, Course, Run, newRun, runStep } from './courses';
 
 /**
@@ -39,7 +39,9 @@ export class SailGame {
     this.run = c ? newRun(c) : null;
     if (c) {
       const gear = this.yacht.gear;
+      const { dock, docking, energy } = this.yacht;
       this.yacht = newYacht(c.start.x, c.start.y, c.heading, gear);
+      Object.assign(this.yacht, { dock, docking, energy });
     }
   }
 
@@ -52,6 +54,10 @@ export class SailGame {
   restart() { if (this.run) this.setCourse(this.run.course); }
 
   swap() { return startSwap(this.yacht); }
+  /** Wolt lets go or rides back in. */
+  dock() { return toggleDock(this.yacht); }
+  /** Begin with Wolt beside the yacht, riding in to lock on. */
+  arrive() { this.yacht.dock = 0; this.yacht.docking = 1; }
   toggleAuto() { this.yacht.auto = !this.yacht.auto; }
 
   update(dt: number, input: YachtInput): Events {

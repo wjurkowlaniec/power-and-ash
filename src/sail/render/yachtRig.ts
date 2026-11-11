@@ -77,6 +77,9 @@ function wheel(r: number, w = 0.1): THREE.Group {
   return g;
 }
 
+/** Docking, in the steering group's frame (origin under the steering head, +z ahead): where Wolt waits and where he lines up. */
+const DOCK = { away: V(1.5, 0, 1.5), front: V(0, 0, 1.35) };
+
 /** A block: two cheeks, a sheave between them and a shackle on top. About 7 cm. */
 function block(k = 1): THREE.Group {
   const g = new THREE.Group();
@@ -137,6 +140,10 @@ export class YachtView {
   // Wolt's dock
   private steer = new THREE.Group();
   private shoe = new THREE.Group();
+  private jaws: THREE.Group[] = [];
+  private props: THREE.Group[] = [];
+  private woltWas = new THREE.Vector3();
+  private hangEnd = new THREE.Vector3();
   // ballast
   private box = ballastBox();
   private capstan = new THREE.Group();
@@ -207,9 +214,20 @@ export class YachtView {
     // the saddle: an open frame over his back, so he stays in sight
     for (const x of [-0.228, 0.228]) st.add(rbox(0.03, 0.03, 0.56, 0.01, M.steel, x, 1.215, -0.01));
     for (const z of [-0.26, 0, 0.24]) st.add(rbox(0.48, 0.03, 0.035, 0.01, M.steel, 0, 1.215, z));
-    for (const x of [-0.228, 0.228]) for (const z of [-0.26, 0.24]) {
-      st.add(rbox(0.024, 0.37, 0.05, 0.008, M.steel, x, 1.03, z));
-      st.add(rbox(0.04, 0.06, 0.075, 0.01, M.dark, x * 0.97, 0.84, z));                            // the clamp shut on his docking rail
+    // clamp arms hinged on the saddle's sides: they swing in and shut on his docking rails
+    for (const x of [-0.228, 0.228]) {
+      const jaw = new THREE.Group(); jaw.position.set(x, 1.215, 0); st.add(jaw); this.jaws.push(jaw);
+      for (const z of [-0.26, 0.24]) {
+        jaw.add(rbox(0.024, 0.37, 0.05, 0.008, M.steel, 0, -0.185, z));
+        jaw.add(rbox(0.04, 0.06, 0.075, 0.01, M.dark, -x * 0.03, -0.375, z));
+      }
+    }
+    // bow props: two legs that hold the bow up while Wolt is away, folded back along the frame once he is in
+    for (const sx of [-1, 1]) {
+      const leg = new THREE.Group(); leg.position.set(sx * 0.27, 1.04, wz - 0.5); body.add(leg); this.props.push(leg);
+      leg.add(rod(V(0, 0, 0), V(sx * 0.2, -1.03, 0.1), 0.016, M.steel, 6));
+      leg.add(rbox(0.1, 0.02, 0.12, 0.008, M.dark, sx * 0.2, -1.03, 0.1));
+      leg.add(mesh(new THREE.SphereGeometry(0.026, 8, 6), M.dark));
     }
     // on runners: his wheel stands in a short runner, strapped down
     const blade = runnerBlade(0.85); this.shoe.add(blade);
@@ -370,12 +388,34 @@ export class YachtView {
     this.sail.update(dt, t, appLocal, y.capsized > 0 ? 0 : y.app * (0.2 + 0.8 * Math.min(1, y.cn / 1.0)), this.sheetVis);
     this.pennant.rotation.y = -y.appDir - yaw + Math.sin(t * 9) * 0.07 * Math.min(1, y.app / 6);
 
+    // docking: Wolt rides up beside the bow, turns his back to the yacht, backs in under the
+    // steering head, the jaws shut on his rails, the props fold away, the sheet goes on his reel
+    const p = y.dock, sm = (x: number) => { const c = Math.max(0, Math.min(1, x)); return c * c * (3 - 2 * c); };
+    const ride = sm(p / 0.34), turn = sm((p - 0.34) / 0.16), back = sm((p - 0.5) / 0.3), lock = sm((p - 0.8) / 0.2);
+    const wg = this.wolt.group;
+    const awayYaw = Math.atan2(DOCK.front.x - DOCK.away.x, DOCK.front.z - DOCK.away.z);
+    wg.position.lerpVectors(DOCK.away, DOCK.front, ride);
+    wg.position.z *= 1 - back; wg.position.x *= 1 - back;
+    wg.position.y = -this.steer.position.y * (1 - back);
+    wg.rotation.y = awayYaw * (1 - turn);
+    for (const [i, j] of this.jaws.entries()) j.rotation.z = (i === 0 ? -1 : 1) * 0.6 * (1 - lock);
+    for (const l of this.props) l.rotation.x = 1.45 * lock;
+
     // Wolt: clamped in the saddle he cannot lean, but his wheel rolls and his reel works the sheet
     const fallsRate = dt > 0 ? (this.sheetVis - sheetWas) / dt : 0;
-    this.anim.update({ dt, time: t, speed: 0, yawRate: 0, accel: 0, strain: false, cableTo: null, tension: 0, pullFrom: null, reelSpin: fallsRate * 2 * RIG.sheetR / 0.11, arm: y.swap > 0 ? 'work' : 'rest', energy: Math.max(0.34, y.energy), lamp: 0, lookAt: null });
-    this.wolt.balance.rotation.set(0, 0, 0);
-    this.woltA = y.gear === 'runners' ? this.woltA : this.woltA + roll1 / WHEEL_R + y.thrust * (1 - Math.min(1, Math.abs(y.u) / 2)) * 3 * dt;
-    this.wolt.wheel.rotation.x = this.woltA;
+    const moved = wg.position.distanceTo(this.woltWas);
+    const free = dt > 0 && p < 1 ? (moved / dt) * (p > 0.5 === y.docking > 0 ? -1 : 1) : 0; // backing in, or riding out
+    this.woltWas.copy(wg.position);
+    this.anim.update({ dt, time: t, speed: Math.max(-3, Math.min(3, free)), yawRate: 0, accel: 0, strain: false, cableTo: null, tension: 0, pullFrom: null, reelSpin: fallsRate * 2 * RIG.sheetR / 0.11 + (p > 0.8 && p < 1 ? -y.docking * 9 : 0), arm: y.swap > 0 ? 'work' : 'rest', energy: Math.max(0.34, y.energy), lamp: 0, lookAt: null });
+    if (p >= 1) {
+      this.wolt.balance.rotation.set(0, 0, 0);
+      this.woltA = y.gear === 'runners' ? this.woltA : this.woltA + roll1 / WHEEL_R + y.thrust * (1 - Math.min(1, Math.abs(y.u) / 2)) * 3 * dt;
+      this.wolt.wheel.rotation.x = this.woltA;
+    } else {
+      this.wolt.balance.rotation.x *= 1 - lock; this.wolt.balance.rotation.z *= 1 - lock;
+      this.woltA = this.wolt.wheel.rotation.x;
+    }
+    this.lockVis = lock;
     this.wolt.guide.rotation.set(0.5, 0, 0); // the guide points down and aft, at the fairlead
 
     // the ballast box on its rail, the capstan hauling it
@@ -392,6 +432,7 @@ export class YachtView {
     this.updateRigging(dt, t, y);
   }
   private woltA = 0;
+  private lockVis = 1;
 
   /** The lines that move: the mainsheet's falls and lead, the shrouds. */
   private updateRigging(dt: number, t: number, y: YachtState) {
@@ -418,8 +459,11 @@ export class YachtView {
     this.inBody(this.neckBlock, A);
     this.lead.span(A, this.footBlock);
     // from the bow fairlead onto Wolt's reel (it follows him as he steers)
+    // (while he is away its end hangs from the fairlead; as the jaws shut he takes it up)
     this.inBody(this.wolt.cableExit, A);
-    this.toReel.span(this.fairlead, A, 0.015 + this.slackVis * 0.05);
+    this.hangEnd.copy(this.fairlead).add(B.set(0.01, -0.3, 0.06 + 0.02 * Math.sin(t * 2.1)));
+    A.lerpVectors(this.hangEnd, A, this.lockVis);
+    this.toReel.span(this.fairlead, A, (0.015 + this.slackVis * 0.05) * this.lockVis + 0.05 * this.lockVis * (1 - this.lockVis) * 4);
 
     // shrouds: the windward one carries the mast, the leeward one goes slack
     const load = y.capsized > 0 ? 0 : Math.min(1, Math.abs(y.tip));

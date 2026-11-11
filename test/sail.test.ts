@@ -1,7 +1,7 @@
 import { describe, it, expect } from 'vitest';
 import { surfaceAt, heightAt, buildObstacles, hitObstacle, LAKE, DUNES, START, MAP, ROAD } from '../src/sail/sim/terrain';
 import { WindField, WIND } from '../src/sail/sim/windField';
-import { newYacht, yachtStep, startSwap, sailCn, YACHT, YachtState, World, YachtInput } from '../src/sail/sim/landYacht';
+import { newYacht, yachtStep, startSwap, toggleDock, sailCn, YACHT, YachtState, World, YachtInput } from '../src/sail/sim/landYacht';
 import { COURSES, gatePoles, newRun, runStep } from '../src/sail/sim/courses';
 import { SailGame } from '../src/sail/sim/sailGame';
 import { SurfaceId, SURFACES } from '../src/sail/sim/terrain';
@@ -172,6 +172,27 @@ describe('land yacht', () => {
       return Math.abs(s.heading - h0) / SURFACES[surf].grip.wheels;
     };
     expect(turn('loose')).toBeLessThan(turn('ash') * 0.9);
+  });
+
+  it('Wolt lets go and locks back on; without him the yacht stays put', () => {
+    const s = newYacht(200, 200, headingOff(90));
+    expect(s.dock).toBe(1);
+    expect(toggleDock(s)).toBe(true);
+    let ev = yachtStep(s, YACHT.dockTime + 0.1, { dir: 0, speed: 9 }, idle, flat('road'));
+    expect(ev.docked).toBe(-1);
+    expect(s.dock).toBe(0);
+    sail(s, 5, 9, flat('road'), { ...idle, motor: 1, steer: 1 }, false);
+    expect(s.speed).toBeLessThan(0.05);
+    expect(startSwap(s)).toBe(false);
+    toggleDock(s);
+    yachtStep(s, YACHT.dockTime / 2, { dir: 0, speed: 9 }, idle, flat('road'));
+    expect(s.dock).toBeGreaterThan(0.4); expect(s.dock).toBeLessThan(0.6);
+    ev = yachtStep(s, YACHT.dockTime / 2 + 0.1, { dir: 0, speed: 9 }, idle, flat('road'));
+    expect(ev.docked).toBe(1);
+    sail(s, 6, 9, flat('road'));
+    expect(s.speed).toBeGreaterThan(3);
+    // not while moving
+    expect(toggleDock(s)).toBe(false);
   });
 
   it('is back on its wheels after a capsize', () => {
