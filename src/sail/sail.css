@@ -66,3 +66,12 @@ body.sim #app { filter: saturate(.55) contrast(1.05) hue-rotate(-8deg); }
 .intro .dots { display: flex; gap: 6px; margin: 0 6px; }
 .intro .dot { all: unset; cursor: pointer; width: 8px; height: 8px; border-radius: 50%; border: 1.5px solid #2b2c2e88; }
 .intro .dot.on { background: #2b2c2e; }
+
+/* touch devices (src/touch.ts): smaller HUD panels, room at the bottom for the thumbs */
+body.touch .speedp { transform: scale(.72); transform-origin: top left; }
+body.touch .windp { transform: scale(.72); transform-origin: top right; }
+body.touch .coursep { left: 50%; bottom: auto; top: calc(10px + env(safe-area-inset-top, 0px)); transform: translateX(-50%); width: min(300px, calc(100vw - 32px)); }
+body.touch .lessonp { top: calc(8px + env(safe-area-inset-top, 0px)); bottom: auto; width: min(430px, calc(100vw - 32px)); min-width: 0; padding: 8px 10px; gap: 4px; }
+body.touch .lessonp h3 { font-size: 14px; }
+body.touch .lessonp p { font-size: 11px; line-height: 1.45; }
+@media (orientation: portrait) { body.touch .lessonp { top: calc(150px + env(safe-area-inset-top, 0px)); } }

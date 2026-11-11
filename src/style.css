@@ -44,7 +44,7 @@ canvas { display: block; }
 @keyframes fade { 0%, 80% { opacity: 1 } 100% { opacity: 0 } }
 .help { position: absolute; left: 50%; top: calc(54px + env(safe-area-inset-top, 0px)); transform: translateX(-50%); color: #1c1d1f; opacity: .75; font-size: 11px; width: max-content; max-width: calc(100vw - 500px); text-align: center; line-height: 1.6; }
 .help b { font-weight: 500; }
-#start, #end { position: fixed; inset: 0; display: grid; place-items: center; background: linear-gradient(#b4b1aa00, #2a2b2c88); padding: 16px; }
+#start, #end { position: fixed; inset: 0; display: grid; place-items: safe center; overflow-y: auto; box-sizing: border-box; background: linear-gradient(#b4b1aa00, #2a2b2c88); padding: 16px; }
 #start .card, #end .card { max-width: 440px; background: #18191be6; border: 1px solid var(--line); border-radius: 6px; padding: 24px 26px; display: grid; gap: 10px; }
 #start h1, #end h1 { margin: 0; font-weight: 500; font-size: 26px; letter-spacing: .04em; }
 #start p, #end p { margin: 0; line-height: 1.55; color: var(--dim); font-size: 13px; }
