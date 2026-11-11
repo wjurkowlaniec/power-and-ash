@@ -1,6 +1,8 @@
 import * as THREE from 'three';
 import { ST_W, ST_H } from '../../sim/station';
 
+const FLAT_PAST = 3.2;   // m of level ground beyond the west, east and north edges (BOG_DEPTH and a bit)
+
 /** Small shared pieces for the station's view: textures, glows, the see-through hole, terrain height. */
 
 export function canvasTex(w: number, h: number, draw: (c: CanvasRenderingContext2D) => void): THREE.CanvasTexture {
@@ -79,7 +81,8 @@ export function rng(seed: number): () => number {
 
 /** Height of the ground: flat inside the map, hills around it, the valley falling away to the south. */
 export function groundY(x: number, z: number): number {
-  const out = Math.max(0, -x, x - ST_W, -z, z - ST_H);
+  // flat a little past the open sides too: Wolt can roll out there until the loose ash stops him
+  const out = Math.max(0, -x - FLAT_PAST, x - ST_W - FLAT_PAST, -z - FLAT_PAST, z - ST_H);
   if (out === 0) return 0;
   const hill = Math.sin(x * 0.09 + z * 0.05) * 0.9 + Math.sin(x * 0.04 - z * 0.08) * 1.4;
   const k = THREE.MathUtils.smoothstep(out, 0, 8);

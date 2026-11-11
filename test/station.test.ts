@@ -1,7 +1,7 @@
 import { describe, it, expect } from 'vitest';
-import { Station, P, DOOR_COST, REPAIR_TIME, CABLE_MAX, PLOT_DELAY, LEAVE_TIME } from '../src/game/sim/station';
+import { Station, P, DOOR_COST, REPAIR_TIME, CABLE_MAX, PLOT_DELAY, LEAVE_TIME, USE_RANGE, BOG_DEPTH, ST_W, ST_H, bogDepth } from '../src/game/sim/station';
 import { findPath } from '../src/sim/path';
-import { V2, sub, len } from '../src/sim/vec';
+import { V2, sub, len, dist } from '../src/sim/vec';
 
 const DT = 1 / 30;
 const inp = (o: Partial<{ move: V2; run: boolean; use: boolean; usePressed: boolean; drop: boolean }> = {}) =>
@@ -136,5 +136,60 @@ describe('Scene 2: Martwa stacja, part one', () => {
     goTo(s, { x: 3, y: 15 }, 30);   // far west: more than the drum holds
     expect(s.cableLength()).toBeLessThanOrEqual(18.05);
     expect(s.pos.x).toBeGreaterThan(5);
+  });
+
+  it('every interaction can be reached and used', () => {
+    const s = new Station(58);
+    s.doorOpen = 0.5; s.update(DT, inp()); for (let t = 0; t < 1; t += DT) s.update(DT, inp());   // workshop open
+    s.turbine = true; s.plotted = true;
+    for (const id of ['port', 'doorNote', 'fabricator', 'drawer', 'wallMap', 'books', 'shelf', 'machineDoor', 'mastUse', 'junction', 'socket', 'plotter', 'gate'] as const) {
+      goTo(s, P[id], 60);
+      expect(dist(s.pos, P[id]), id).toBeLessThan(USE_RANGE);
+    }
+  });
+
+  it('the workshop is optional: the goal line follows the tyre and the module', () => {
+    const s = new Station(58);
+    s.towing = true;
+    expect(s.goal()).toContain('oponę');
+    s.moduleOnTyre = true; s.towing = false;
+    expect(s.goal()).toContain('moduł');
+  });
+
+  it('a spent tyre left in a doorway can still be hooked and pulled away', () => {
+    const s = new Station(58);
+    s.turbine = true;
+    s.tyre.pos = { x: 19, y: 12.5 };      // in the duty room doorway
+    s.pos = { x: 19, y: 10.9 };           // Wolt inside the room
+    expect(s.nearest()).toBe('tyre');
+    press(s);
+    expect(s.towing).toBe(true);
+    expect(goTo(s, { x: 19, y: 15.5 })).toBe(true);   // out through his own tyre
+  });
+
+  it('no wall at the map edge: the wheel bogs down in loose ash and can always come back', () => {
+    const s = new Station(58);
+    s.pos = { x: 1.5, y: 16 };
+    for (let t = 0; t < 12; t += DT) s.update(DT, inp({ move: { x: -1, y: 0 } }));
+    expect(s.pos.x).toBeLessThan(-1);                    // he did leave the grid
+    expect(bogDepth(s.pos)).toBeLessThan(BOG_DEPTH);     // and the ash stopped him
+    expect(s.strain).toBe(true);                         // wheel spinning
+    expect(s.events).toContain('bog');
+    for (let t = 0; t < 4; t += DT) s.update(DT, inp({ move: { x: 1, y: 0 } }));
+    expect(s.pos.x).toBeGreaterThan(1);                  // back on firm ground
+    expect(s.bog).toBe(0);
+  });
+
+  it('the fences still hold: no way round the south fence from outside the grid', () => {
+    const s = new Station(58);
+    s.pos = { x: 1, y: 18 };
+    goTo(s, { x: -1.5, y: 18 }, 8);
+    for (let t = 0; t < 8; t += DT) s.update(DT, inp({ move: { x: 0, y: 1 } }));
+    expect(s.pos.y).toBeLessThan(20);
+    const e = new Station(58);
+    e.pos = { x: ST_W - 1, y: ST_H - 1.5 };
+    for (let t = 0; t < 6; t += DT) e.update(DT, inp({ move: { x: 0.7, y: 0.7 } }));
+    expect(e.pos.x).toBeLessThan(ST_W);
+    expect(e.pos.y).toBeLessThan(ST_H);
   });
 });

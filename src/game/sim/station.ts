@@ -45,6 +45,12 @@ export const LEAVE_TIME = 6;      // s of rolling out through the gate before th
 export const RECHARGE = 0.15;    // %/s Q-1 recovers while resting
 export const TURBINE_POWER = 1200; // W the repaired turbine gives in this wind
 export const MACHINE_POWER = 250;  // W the machine room draws once it wakes (control, lights, pumps)
+export const BOG_DEPTH = 2.5;    // m of loose ash beyond the firm ground before the wheel only digs
+export const BOG_BACK = 0.45;    // share of the speed he always keeps on the way back out
+export const BOG_NORTH = 2;      // firm ground behind the building ends here (y)
+export const FENCE_WEST_Y = 20;  // the side fences reach this far north from the south corners (y)
+export const FENCE_EAST_Y = 22;
+const REPAIR_TICK = 0.35;        // s between the sounds of the arm at work
 
 /** One line of a power balance. Wolt's in %/s of Q-1, the station's in W. */
 export interface Flow { label: string; rate: number; state?: 'off' | 'wait' | 'on' }
@@ -63,7 +69,7 @@ export const ROOMS: Room[] = [
 
 export const P = {
   start: { x: 6, y: 14.2 },
-  workshopDoor: { x: 12, y: 12.5 },
+  workshopDoor: { x: 12, y: 12.9 },     // door points sit towards the yard, so a click walks to the outside of a shut door
   port: { x: 10.2, y: 13.6 },          // port on the left of the workshop door, outside
   doorNote: { x: 13.4, y: 13.6 },      // the technician's note, pinned next to the door
   fabricator: { x: 11, y: 6 },
@@ -71,7 +77,7 @@ export const P = {
   wallMap: { x: 17.6, y: 6.5 },
   books: { x: 20.3, y: 9.5 },          // a shelf of books in the duty room: lots of text for the corpus
   shelf: { x: 26, y: 5.2 },            // second shelf: the spare transformer module
-  machineDoor: { x: 33, y: 12.5 },     // blocked by a fallen cabinet (next part)
+  machineDoor: { x: 33, y: 12.9 },     // blocked by a fallen cabinet (next part)
   mast: { x: 22, y: 21 },
   mastUse: { x: 20.5, y: 22.8 },       // transformer cabinet at the mast foot, at wheel height
   plotter: { x: 18.4, y: 10.5 },       // weather plotter in the duty room (prints once the station has power)
@@ -81,6 +87,24 @@ export const P = {
   socket: { x: 35.4, y: 13.6 },        // the machine room's outside power inlet
   shed: { x: 31, y: 18, w: 6, h: 6 },
 };
+
+/**
+ * How deep (m) a point lies in the loose ash around the station. The yard has no wall
+ * at its edge (the world is open): off the firm ground the wheel sinks and spins, and
+ * the only packed way out is the dirt road through the gate.
+ */
+export const bogDepth = (p: V2): number => Math.max(0, -p.x, p.x - ST_W, BOG_NORTH - p.y);
+
+/** The station grid with open sides: only the fences stop Wolt outside it, the ash does the rest. */
+class OpenWorld extends World {
+  isBlocked(i: number, j: number): boolean {
+    if (j >= this.height) return true;                 // the south fence
+    if (i < 0) return j >= FENCE_WEST_Y;
+    if (i >= this.width) return j >= FENCE_EAST_Y;
+    if (j < 0) return false;
+    return super.isBlocked(i, j);
+  }
+}
 
 function walls(): Obstacle[] {
   const o: Obstacle[] = [];
@@ -137,12 +161,12 @@ export function stationObstacles(): Obstacle[] {
 }
 
 export interface StHint { key: string; text: string; at: V2; ok: boolean; progress?: number }
-export type StEvent = 'plot' | 'leave' | 'grab' | 'drop' | 'connect' | 'step' | 'plug' | 'door' | 'deny' | 'pickup' | 'hook' | 'unhook' | 'load' | 'repair' | 'turbine' | 'note' | 'tow';
+export type StEvent = 'bog' | 'plot' | 'leave' | 'grab' | 'drop' | 'connect' | 'step' | 'plug' | 'door' | 'deny' | 'pickup' | 'hook' | 'unhook' | 'load' | 'repair' | 'turbine' | 'note' | 'tow';
 
 type Target = 'plotter' | 'gate' | 'books' | 'junction' | 'cableEnd' | 'socket' | 'port' | 'door' | 'doorNote' | 'fabricator' | 'drawer' | 'wallMap' | 'shelf' | 'tyre' | 'mast' | 'machineDoor';
 
 export class Station {
-  readonly world = new World(ST_W, ST_H, stationObstacles());
+  readonly world: World = new OpenWorld(ST_W, ST_H, stationObstacles());
   pos: V2 = { ...P.start };
   facing = 0;
   /** Forward speed along `facing`, m/s. */
@@ -150,6 +174,9 @@ export class Station {
   moving = false;
   /** Driving but held back (a snagged tyre): the wheel spins. */
   strain = false;
+  /** 0..1: how deep the wheel sits in the loose ash off the firm ground (for the view). */
+  bog = 0;
+  private bogAcc = 0;
   t = 0;
   battery: number;
   doorOpen = 0;       // 0..1
@@ -212,7 +239,7 @@ export class Station {
     if (this.plotted) on.push('plotter');
     if (this.doorOpen >= 1) on.push('fabricator'); else on.push('door');
     if (!this.shelfTaken) on.push('shelf');
-    if (!this.turbine) on.push('tyre');
+    on.push('tyre');
     if (this.turbine && !this.cable) on.push('junction');
     if (this.cable && !this.cableHeld && !this.machinePowered) on.push('cableEnd');
     if (!this.machinePowered) on.push('socket');
@@ -225,12 +252,14 @@ export class Station {
     for (const id of on) {
       const p = this.point(id);
       const r = id === 'tyre' ? LOADS.tyre.radius + TOW_RANGE - USE_RANGE + 0.6 : 0;
-      if (id === 'tyre' && this.towing) continue; // handled below
+      // the tyre has done its job once the turbine runs: it only answers when nothing else does
+      if (id === 'tyre' && (this.towing || this.turbine)) continue;
       const d = dist(p, this.pos) - r;
       if (d < bd) { bd = d; best = id; }
     }
-    // a hooked tyre is always right behind: E unhooks it when nothing else is in reach
-    if (!best && this.towing) best = 'tyre';
+    // a hooked tyre is always right behind: E unhooks it when nothing else is in reach;
+    // a spent tyre can still be hooked, so it never stays parked in a doorway
+    if (!best && (this.towing || (this.turbine && dist(this.tyre.pos, this.pos) < LOADS.tyre.radius + TOW_RANGE + 0.6))) best = 'tyre';
     return best;
   }
 
@@ -247,7 +276,7 @@ export class Station {
 
   /** The station's own grid in W: sources and consumers, once Wolt has seen the fabricator. */
   grid(): { sources: Flow[]; loads: Flow[]; balance: number } | null {
-    if (this.doorOpen < 1) return null;
+    if (this.doorOpen < 1 && !this.turbine) return null;
     const sources: Flow[] = [
       { label: tr('turbina na maszcie', 'turbine on the mast'), rate: this.turbine && this.machinePowered ? TURBINE_POWER : 0, state: this.turbine ? (this.machinePowered ? 'on' : 'wait') : 'off' },
       { label: tr(`Wolt (Q-1, maks. ${WOLT_POWER} W)`, `Wolt (Q-1, max ${WOLT_POWER} W)`), rate: 0, state: 'off' },
@@ -356,6 +385,20 @@ export class Station {
     if (g.pos !== this.pos) { this.pos = g.pos; if (this.cableHeld) this.cable!.moveEnd(this.world, this.pos); }
     const intended = len(step);
     this.strain = false;
+    // loose ash off the firm ground: the further out, the less the wheel bites; the way back always works
+    const deep = bogDepth(this.pos);
+    this.bog = Math.min(1, deep / BOG_DEPTH);
+    let grip = 1;
+    if (deep > 0 && intended > 1e-6) {
+      const out = bogDepth({ x: this.pos.x + step.x, y: this.pos.y + step.y }) > deep;
+      grip = out ? 1 - this.bog : Math.max(BOG_BACK, 1 - this.bog);
+      step = { x: step.x * grip, y: step.y * grip };
+      if (out && grip < 0.5 && this.denyT === 0) { this.denyT = 6; this.say(tr('Koło grzęźnie w sypkim popiele i buksuje. Ubita jest tylko droga za bramą.', 'The wheel sinks into loose ash and spins. Only the road beyond the gate is packed.')); }
+      // a spinning wheel still eats power and throws ash
+      this.bogAcc += intended * (1 - grip);
+      this.battery = Math.max(0, this.battery - intended * (1 - grip) * MOVE_COST);
+      if (this.bogAcc > 0.5) { this.bogAcc = 0; this.events.push('bog'); }
+    }
     if (intended < 1e-6) { this.moving = false; if (!want) this.towTaut = false; return; }
     const before = { ...this.pos };
     const free = (c: V2) => bodyOk(this.world, this.pos, this.facing, c, this.facing, PLAYER_R) && tyreOk(c);
@@ -378,9 +421,10 @@ export class Station {
     this.pos = cand;
     if (this.cableHeld) this.cable!.moveEnd(this.world, this.pos);
     const d = dist(before, this.pos);
-    settle(this, d, dt);
+    // loose ash takes the grip, not the wheel's speed: it keeps spinning
+    settle(this, grip > 1e-3 ? d / grip : intended, dt);
     this.moving = d > 1e-5;
-    this.strain = want && d < intended * 0.35;
+    this.strain = want && (d < intended * 0.35 || grip < 0.75);
     this.lastStep = d;
     this.battery = Math.max(0, this.battery - d * (MOVE_COST + (this.towing ? TOW_COST : 0)));
     this.stepAcc += d;
@@ -439,7 +483,11 @@ export class Station {
       case 'fabricator':
         if (pressed && this.denyT === 0) {
           this.denyT = 1; this.events.push('deny');
-          this.say(tr(`Fabrykator potrzebuje ok. ${FAB_POWER} W. Wolt da najwyżej ${WOLT_POWER} W. Trzeba uruchomić turbinę.`, `The fabricator needs about ${FAB_POWER} W. Wolt can give at most ${WOLT_POWER} W. The turbine has to be started.`));
+          this.say(this.machinePowered
+            ? tr('Fabrykator ma prąd z turbiny i mruga gotowością. Nie ma jeszcze wzoru, który mógłby wykonać.', 'The fabricator has power from the turbine and blinks ready. There is no pattern for it to make yet.')
+            : this.turbine
+              ? tr(`Fabrykator potrzebuje ok. ${FAB_POWER} W. Turbina już daje prąd, ale kabel musi dojść do maszynowni.`, `The fabricator needs about ${FAB_POWER} W. The turbine gives power now, but the cable has to reach the machine room.`)
+              : tr(`Fabrykator potrzebuje ok. ${FAB_POWER} W. Wolt da najwyżej ${WOLT_POWER} W. Trzeba uruchomić turbinę.`, `The fabricator needs about ${FAB_POWER} W. Wolt can give at most ${WOLT_POWER} W. The turbine has to be started.`));
         }
         break;
       case 'shelf':
@@ -447,7 +495,7 @@ export class Station {
         if (this.towing && dist(this.tyre.pos, this.pos) < 3) {
           this.shelfTaken = true; this.moduleOnTyre = true; this.events.push('load');
           this.say(tr('Moduł transformatora leży na oponie.', 'The transformer module lies on the tyre.'));
-        } else { this.events.push('deny'); this.say(tr('Moduł jest za ciężki dla ramienia. Przyciągnij tu oponę i połóż go na niej.', 'The module is too heavy for the arm. Drag the tyre here and put it on that.')); }
+        } else if (this.denyT === 0) { this.denyT = 1; this.events.push('deny'); this.say(tr('Moduł jest za ciężki dla ramienia. Przyciągnij tu oponę i połóż go na niej.', 'The module is too heavy for the arm. Drag the tyre here and put it on that.')); }
         break;
       case 'tyre':
         if (!pressed) break;
@@ -468,7 +516,7 @@ export class Station {
         }
         if (inp.use) {
           this.repair += dt;
-          if (Math.random() < dt * 3) this.events.push('repair');
+          if (Math.floor(this.repair / REPAIR_TICK) !== Math.floor((this.repair - dt) / REPAIR_TICK)) this.events.push('repair');
           if (this.repair >= REPAIR_TIME) {
             this.repair = 0; this.turbine = true; this.moduleOnTyre = false;
             this.battery = Math.max(0, this.battery - 3);
@@ -498,7 +546,8 @@ export class Station {
     if (this.cableHeld) return tr(`Doprowadź kabel do przyłącza na ścianie maszynowni (${num(this.cableLength())} / ${CABLE_MAX} m).`, `Bring the cable to the inlet on the machine room wall (${num(this.cableLength())} / ${CABLE_MAX} m).`);
     if (this.cable) return tr('Kabel leży na ziemi. Podnieś koniec i doprowadź go do maszynowni.', 'The cable lies on the ground. Pick up the end and bring it to the machine room.');
     if (this.turbine) return tr('Turbina daje prąd. Pod masztem jest bęben z kablem: prąd trzeba doprowadzić do maszynowni.', 'The turbine gives power. Under the mast there is a cable drum: the power has to reach the machine room.');
-    if (this.doorOpen === 0) return tr('Drzwi warsztatu mają zamek elektryczny. Po lewej jest port.', 'The workshop door has an electric lock. There is a port on the left.');
+    // the workshop is optional: once the tyre or the module is in play, the line follows that
+    if (this.doorOpen === 0 && !this.towing && !this.moduleOnTyre) return tr('Drzwi warsztatu mają zamek elektryczny. Po lewej jest port.', 'The workshop door has an electric lock. There is a port on the left.');
     if (!this.moduleOnTyre) return this.towing ? tr('Zaciągnij oponę pod drugą półkę w magazynie i połóż na niej moduł transformatora.', 'Drag the tyre to the second shelf in the storeroom and put the transformer module on it.') : tr('Turbina kręci się na próżno: spalony transformator u stóp masztu. Nowy moduł jest w magazynie, na drugiej półce, ale jest ciężki: stara opona posłuży jak sanki.', 'The turbine spins for nothing: a burnt transformer at the mast foot. A new module is in the storeroom, on the second shelf, but it is heavy: the old tyre will do as a sled.');
     return tr('Zaciągnij moduł pod szafkę u stóp masztu i wymień go (przytrzymaj E).', 'Drag the module to the cabinet at the mast foot and swap it (hold E).');
   }

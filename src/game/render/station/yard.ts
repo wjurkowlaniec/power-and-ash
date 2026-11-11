@@ -1,7 +1,7 @@
 import * as THREE from 'three';
 import { mat, mesh, box, obstacleMesh } from '../../../render/models';
 import { Models, fit } from '../../../render/assets';
-import { Station, ST_W, ST_H, P } from '../../sim/station';
+import { Station, ST_W, ST_H, P, FENCE_WEST_Y, FENCE_EAST_Y } from '../../sim/station';
 import { glow, groundRibbon, rng } from './kit';
 import { WIND } from './atmosphere';
 import { Crows, windSock, anemometer, cupSpeed } from './life';
@@ -188,8 +188,8 @@ export class Yard {
     };
     run(0.2, FENCE_Z, gx - GATE_W / 2, FENCE_Z, [2, 7]);
     run(gx + GATE_W / 2, FENCE_Z, ST_W - 0.2, FENCE_Z, [4]);
-    run(0.2, FENCE_Z, 0.2, FENCE_Z - 8, [3]);
-    run(ST_W - 0.2, FENCE_Z - 6, ST_W - 0.2, FENCE_Z, [0]);
+    run(0.2, FENCE_Z, 0.2, FENCE_WEST_Y, [3]);
+    run(ST_W - 0.2, FENCE_EAST_Y, ST_W - 0.2, FENCE_Z, [0]);
     for (const x of [gx - GATE_W / 2, gx + GATE_W / 2, 0.2, ST_W - 0.2]) this.put('fence_pillar', 0.3, 0.3, x, FENCE_Z);
     this.gate = new THREE.Group(); this.gate.userData.live = true; this.gate.position.set(gx - GATE_W / 2 + 0.12, 0, FENCE_Z);
     const leaf = fit(this.models, 'fence_seperate', GATE_W - 0.3, 0.3); leaf.position.x = (GATE_W - 0.3) / 2;

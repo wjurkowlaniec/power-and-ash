@@ -25,6 +25,8 @@ const HOLE_R = 2.7;       // m, radius of the see-through hole around Wolt
 const Q_GREEN = 0x5fe39a;
 const OPENING_ZOOM = 0.22; // the scene opens a little wider and settles on Wolt
 const LEAVE_ZOOM = 0.3;    // the last shot pulls back as he rolls out of the gate
+const BOG_SINK = 0.14;     // m the wheel digs in at the deepest point of the loose ash
+const CAM_EDGE = 6;        // m from the map's side edges where the camera stops following
 const ss = THREE.MathUtils.smoothstep;
 
 /**
@@ -62,6 +64,7 @@ export class StationView {
   private cableKey = '';
   private camTarget = new THREE.Vector3();
   private zoom = 1;
+  private sink = 0;
   private prevPos: THREE.Vector3 | null = null;
   private prevYaw = 0; private spd = 0; private acc = 0; private yawRate = 0;
   private gesture: { pose: ArmPose; t: number } | null = null;
@@ -272,7 +275,9 @@ export class StationView {
     this.teaserGlow.material.opacity = 0.1 + Math.sin(t * 1.3) * 0.05;
 
     // Wolt: the sim turns him at a wheel's pace, so the body follows it exactly
-    w.group.position.set(st.pos.x, 0, st.pos.y);
+    // in the loose ash off the firm ground the wheel digs itself in
+    this.sink += (st.bog * BOG_SINK - this.sink) * Math.min(1, dt * 5);
+    w.group.position.set(st.pos.x, -this.sink, st.pos.y);
     w.group.rotation.y = Math.PI / 2 - st.facing;
     w.group.updateMatrixWorld(true);
     const p = w.group.position;
@@ -354,7 +359,7 @@ export class StationView {
     const leave = ss(st.leaving, 0, 4.5);
     const zoom = 1 + OPENING_ZOOM * Math.exp(-t / 2.2) + LEAVE_ZOOM * leave;
     if (Math.abs(zoom - this.zoom) > 1e-4) { this.zoom = zoom; this.frustum(); }
-    const want = new THREE.Vector3(THREE.MathUtils.clamp(st.pos.x, 7, ST_W - 7), 0, THREE.MathUtils.clamp(st.pos.y, 7, ST_H - 5 + leave * 3));
+    const want = new THREE.Vector3(THREE.MathUtils.clamp(st.pos.x, CAM_EDGE, ST_W - CAM_EDGE), 0, THREE.MathUtils.clamp(st.pos.y, 7, ST_H - 5 + leave * 3));
     if (this.camTarget.lengthSq() === 0) this.camTarget.copy(want);
     this.camTarget.lerp(want, 1 - Math.exp(-dt * 2.5));
     this.camera.position.copy(this.camTarget).add(CAM_OFFSET);

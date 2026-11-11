@@ -113,6 +113,27 @@ Nowe przeszkody w logice (`sim/station.ts`), żeby meble nie były przenikalne: 
 
 Propozycje agenta do potwierdzenia: czasy budzenia (`WAKE`), kierunek wiatru, wygląd znaku „OLSZANKA” przy drodze (nazwa stacji jest z SWIAT.md).
 
+### Skraj mapy i przegląd logiki (2026-11-11)
+
+**Skraj mapy.** Decyzja Wojtka: świat jest otwarty, więc mapa nie ma ściany na brzegu. Na stacji działa to tak (`sim/station.ts`):
+
+- `OpenWorld` otwiera zachodni, wschodni i północny bok siatki. Zamknięte zostają tylko miejsca, gdzie stoi płot: całe południe oraz boki od rogów do `FENCE_WEST_Y` i `FENCE_EAST_Y`.
+- `bogDepth(p)` mówi, jak głęboko punkt leży w sypkim popiele poza ubitym placem. Przyczepność spada liniowo do zera na `BOG_DEPTH` (2,5 m). Koło dalej się kręci (`strain`, pył, zdarzenie `bog` z dźwiękiem), Wolt zapada się w popiół (`st.bog`, widok obniża go o 14 cm), a buksowanie zjada baterię.
+- Powrót zawsze działa: w stronę ubitego gruntu zostaje co najmniej `BOG_BACK` (45%) prędkości. Nie ma martwego punktu.
+- Komunikat mówi wprost: ubita jest tylko droga za bramą.
+- `src/sim/path.ts` (wspólny silnik) szuka drogi także wtedy, gdy start albo cel leży poza siatką. Dla zamkniętych światów nic się nie zmienia.
+
+**Przegląd logiki.** Przeszedłem wszystkie interakcje sceny (port, drzwi, kartka, fabrykator, szuflada, mapa ścienna, książki, półka, opona, szafka transformatora, bęben, koniec kabla, przyłącze, drzwi maszynowni, ploter, brama). Poprawione:
+
+- Oponę da się doczepić także po naprawie turbiny. Wcześniej opona zostawiona w drzwiach (np. dyżurki) mogła zamknąć Wolta w pokoju na stałe.
+- Linijka celu nie wraca do „drzwi warsztatu”, gdy gracz pominie warsztat i od razu ciągnie oponę albo moduł (warsztat jest opcjonalny).
+- Panel „Sieć stacji” pojawia się także po naprawie turbiny, a nie tylko po otwarciu warsztatu.
+- Fabrykator mówi prawdę o stanie: brak turbiny, turbina bez kabla, zasilony.
+- Klik w zamknięte drzwi warsztatu albo w przewróconą szafę prowadzi Wolta pod drzwi od podwórza (punkty użycia były w środku ściany i szukanie drogi mogło wybrać stronę nie do osiągnięcia).
+- Odmowa przy półce nie powtarza dźwięku co klatkę, a dźwięk naprawy nie zależy już od losowania.
+
+Testy w `test/station.test.ts`: każda interakcja jest osiągalna, opona w drzwiach, grzęźnięcie i powrót, płoty.
+
 **Różnice względem POCZATEK.md** (do uzgodnienia lub do dorobienia):
 
 - Moduł transformatora leży gotowy na półce. Nie ma jeszcze rozbiórki złomu. Łożyska i drabinki nie ma celowo: Wolt ma koło i się nie wspina (Wojtek 2026-11-09).
@@ -138,6 +159,7 @@ Pełne sformułowania i kontekst są w wątkach projektu, a tutaj są ich skrót
 - **2026-11-09** Wolt ma koło, więc nie wspina się po drabinkach: zamiast łożyska na szczycie masztu naprawia się **transformator** w szafce u stóp masztu. Scena 2 ma się kończyć wyruszeniem dalej, z elementami metroidvanii (coś fajnego widać, ale jeszcze nie da się wejść). Pisma ludzi Wolt nie czyta, ale rysunki tak: mapa dojścia do drugiej lokacji.
 - **2026-11-11** Przyjęte zakończenie: ploter w dyżurce drukuje rysunkową mapę do R-2, Wolt wyjeżdża przez bramę, karta „Scena 4 · Odjazd”.
 - **2026-11-08** Każda decyzja i zmiana musi być w dokumentacji w repo (ten plik, DECYZJE.md, SWIAT.md, POCZATEK.md, [AGENTS.md](../AGENTS.md)), tak żeby inny agent albo człowiek mógł przejąć pracę.
+- **2026-11-11** Otwarty świat nie ma skraju mapy: poza ubitym gruntem Wolt grzęźnie w sypkim popiele i buksuje, a ubita jest tylko droga. Nowe sceny mają robić to samo zamiast ściany na brzegu.
 
 Kierunek artystyczny i dźwiękowy (wspólny dla całego projektu): nastrój jak w Inside (wyblakła mgła, sylwetki, kolor tylko dla ważnych rzeczy), wyblakła europejska i słowiańska przyroda (nie PRL, nie Ameryka), ambient jak w GrassChopper, wszystkie dźwięki własne i proceduralne.
 

@@ -42,9 +42,9 @@ export function buildBackdrop(scene: THREE.Scene, models: Models) {
   for (let k = 0; k < 150; k++) {
     const side = k % 3;
     let x: number, z: number;
-    if (side === 0) { x = -9 + r() * (ST_W + 18); z = -10 + r() * 11.5; }             // north, behind the roof line
-    else if (side === 1) { x = -10 + r() * 8.6; z = -6 + r() * 38; }                  // west
-    else { x = ST_W + 1.4 + r() * 8.6; z = -6 + r() * 38; }                           // east
+    if (side === 0) { x = -9 + r() * (ST_W + 18); z = -10.5 + r() * 9.5; }             // north, behind the roof line
+    else if (side === 1) { x = -10.4 + r() * 7; z = -6 + r() * 38; }                  // west
+    else { x = ST_W + 3.4 + r() * 7; z = -6 + r() * 38; }                           // east
     tree(x, z, 4.5 + r() * 4.5 + (side === 0 ? 1.5 : 0));
   }
   // south, down the valley: only as tall as leaves the gate and the fence in clear view
