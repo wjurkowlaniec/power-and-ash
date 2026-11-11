@@ -309,6 +309,8 @@ Bunkry **[propozycja]**:
 
 Typy misji **[propozycja]**: dostawa (przewieź coś przez trudny teren w określonym czasie), naprawa (przywróć prąd do pompy, wentylacji, światła), poszukiwanie (znajdź człowieka, sprzęt, nasiona), eskorta (przewieź człowieka żaglowozem, a on komentuje świat, co pomaga w słowniku), budowa linii (połącz bunkier z siecią).
 
+**Dostawa w słońcu [pomysł Wojtka 2026-11-11, prototyp w demie „Słońce”]**: zręcznościowa odmiana dostawy. Ładunek (sadzonki, próbki w chłodziarce, hodowla) żyje z paneli słonecznych na Żaglowozie i musi być cały czas oświetlony. Po niebie płyną chmury, a ich cienie suną po ziemi z wiatrem; w cieniu ładunek ciągnie z małego zapasu (ok. 20 s), więc trzeba trzymać się jasnych plam i szukać drogi. Pasuje do Kopuły (ogrodnicy, rośliny) i do „ładowania przez fizyczne połączenie”: panele to jedyne źródło prądu, które działa w ruchu. Szczegóły i liczby: [DEMO-SLONCE.md](DEMO-SLONCE.md).
+
 Pokolenia w osadach (genealogia, pamięć o Wolcie, zegar od pierwszego kontaktu): [SYMULACJA.md](SYMULACJA.md#4-pokolenia-ludzi).
 
 ## Czas: doba, pory roku, hibernacja
@@ -465,6 +467,12 @@ Szkic: `img/koncepty/symbol-wolta.html` (`?sciana` albo `?zblizenie`). Prompt do
 Jak to policzyć technicznie (do decyzji później): świat ma prosty „zegar starzenia” na obiekt, który tyka szybciej przy wilgoci i braku opieki, a hibernacja przelicza go skokowo.
 
 ### Spoiwa: pomysły, które sklejają to, co już jest **[propozycja agenta 2026-11-11, na pytanie Wojtka „jakieś jeszcze pomysły, tak by było spójnie”]**
+
+**Wojtek 2026-11-11:** „jedna tajemnica”: tak (pytał, co nią jest; odpowiedź poniżej to propozycja). „Światło w oknie”: może być. Zasada do wszystkiego: **nie może być za ciężko ani zbyt skomplikowanie; komunikacja obrazem zamiast opisanej, sztywnej mechaniki; gracz sam ma odkryć, co dana rzecz znaczy.**
+
+**Czym jest tajemnica [propozycja]:** coś wciąż pije prąd ze świata. Q-2 w laboratorium nie zgasła po Popiele i ciągnie energię ze wszystkiego, co świeci: z lamp, z baterii Wolta, a powoli też z ludzi. Dlatego popiół wciąż pada, kable słabną, a ludzi ubywa. Gracz nie dostaje tego w tekście, tylko widzi: iskry z każdego światła płyną w jedną stronę, popiół leci stamtąd, a gdy poświata na horyzoncie pulsuje, wszystkie światła na chwilę przygasają.
+
+**Grywalny szkic „Powroty”:** [artefakt](https://claude.ai/artifact/LP9nxfwMkJWjK9S17Ugmvf), kopia: [demo-powroty.html](demo-powroty.html) (na Pages pod `/docs/demo-powroty.html`). Jedna osada przez lata, bez słów: kabel do podpięcia, sen na lata przy zimowisku (kreski na kamieniu), ten sam kadr przy domu, ludzie i symbol na ścianie, dary, jeleń, gasnące okna na wzgórzach z akordem, iskry i poświata. Widok z boku służy tylko pokazaniu języka obrazów, gra ma kamerę z góry.
 
 Żaden z nich nie dokłada nowego systemu. Każdy łączy rzeczy już zapisane, w duchu zasady „dużo, ale subtelnie”. Polecane na początek: 1, 2 i 3.
 

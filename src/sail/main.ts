@@ -6,7 +6,8 @@ import { Sound } from '../audio/ambient';
 import { loadCraftModels } from '../craft/render/craftModels';
 import { SailGame } from './sim/sailGame';
 import { SURFACES } from './sim/terrain';
-import { COURSES } from './sim/courses';
+import { COURSES, EXAM } from './sim/courses';
+import { Training, LESSONS } from './sim/training';
 import { SailView } from './render/sailView';
 import { CART_MODELS } from './render/yachtRig';
 import { RollSound } from './rollSound';
@@ -57,7 +58,29 @@ goBtn.textContent = tr('Wypłyń (z dźwiękiem)', 'Set sail (with sound)');
 
 let running = false;
 const intro = new Intro();
-const sail = () => { running = true; keys.clear(); showTouch(pad, true); };
+let training: Training | null = null;
+const licence = () => { try { return localStorage.getItem('sail-licence') === '1'; } catch { return false; } };
+let first = true;
+const sail = () => {
+  running = true; keys.clear(); showTouch(pad, true);
+  // the first time, Wolt has to learn it: Q-1 runs the lessons in his head (skippable)
+  const q = new URLSearchParams(location.search);
+  if (first && (q.has('train') || (!licence() && !q.has('go') && !q.has('course')))) startTraining(q.get('train') === 'exam' ? LESSONS.length : 0);
+  first = false;
+};
+function startTraining(at = 0) {
+  training = new Training(game);
+  if (at) training.go(at);
+  document.body.classList.add('sim');
+  courseKey = ''; lessonKey = '';
+  toast(tr('Symulator Q-1: nauka żeglugi', 'Q-1 simulator: learning to sail'));
+}
+function endTraining() {
+  training = null;
+  game.wind.strength = WINDS[windLevel].k;
+  document.body.classList.remove('sim');
+  $('lesson').hidden = true; courseKey = ''; lessonKey = '';
+}
 goBtn.addEventListener('click', () => {
   sound.start(); roll.start(); $('start').remove();
   if (new URLSearchParams(location.search).has('go')) sail();
@@ -75,8 +98,10 @@ addEventListener('keydown', e => {
     case 'KeyF': game.toggleAuto(); toast(game.yacht.auto ? tr('Q-1 trymuje szot', 'Q-1 trims the sheet') : tr('Szot ręcznie', 'Sheet by hand')); break;
     case 'KeyR': if (game.swap()) toast(game.yacht.gear === 'wheels' ? tr('Wolt zakłada płozy…', 'Wolt fits the runners…') : tr('Wolt zakłada koła…', 'Wolt fits the wheels…')); else toast(tr('Najpierw stań (Spacja)', 'Stop first (Space)')); break;
     case 'KeyG': if (game.dock()) toast(game.yacht.docking > 0 ? tr('Wolt wczepia się w dziób…', 'Wolt docks into the bow…') : tr('Wolt odczepia się…', 'Wolt lets go…')); else toast(tr('Najpierw stań (Spacja)', 'Stop first (Space)')); break;
-    case 'KeyC': game.cycleCourse(); courseKey = ''; announceCourse(); break;
-    case 'KeyT': case 'Backspace': if (game.run) { game.restart(); toast(tr('Od nowa', 'Restart')); } break;
+    case 'KeyC': if (training) break; game.cycleCourse(); courseKey = ''; announceCourse(); break;
+    case 'KeyN': if (training && !training.passed && !training.exam) { training.go(training.index + 1); lessonKey = ''; } break;
+    case 'Escape': if (training) { endTraining(); game.setCourse(null); toast(tr('Symulator wyłączony. Wrócisz do niego z panelu trasy.', 'Simulator off. You can return to it from the course panel.')); } break;
+    case 'KeyT': case 'Backspace': if (training && !training.exam) { training.go(training.index); lessonKey = ''; } else if (game.run) { game.restart(); toast(tr('Od nowa', 'Restart')); } break;
     case 'KeyV': windLevel = (windLevel + 1) % WINDS.length; game.wind.strength = WINDS[windLevel].k; toast(WINDS[windLevel].name); break;
     case 'KeyH': helpOn = !helpOn; $('help').hidden = !helpOn; break;
     case 'KeyM': sound.toggleMute(); roll.toggleMute(); break;
@@ -145,8 +170,44 @@ function announceCourse() {
 }
 
 $('help').innerHTML = tr(
-  '<b>I</b> intro · <b>A/D</b> ster · <b>W/S</b> wybierz/luzuj szot · <b>F</b> Q-1 trymuje · <b>Shift</b> balast na nawietrzną · <b>E</b> silnik Wolta (<b>Q</b> wstecz) · <b>Spacja</b> hamulec (ładuje baterię) · <b>R</b> koła↔płozy · <b>G</b> odczep/wczep Wolta · <b>C</b> trasa · <b>T</b> od nowa · <b>V</b> siła wiatru · <b>kółko</b> zoom (z bliska widać olinowanie) · <b>H</b> ukryj',
-  '<b>I</b> intro · <b>A/D</b> steer · <b>W/S</b> haul in/ease the sheet · <b>F</b> Q-1 trims · <b>Shift</b> ballast to windward · <b>E</b> Wolt’s motor (<b>Q</b> reverse) · <b>Space</b> brake (charges the battery) · <b>R</b> wheels↔runners · <b>G</b> undock/dock Wolt · <b>C</b> course · <b>T</b> restart · <b>V</b> wind strength · <b>wheel</b> zoom (up close you see the rigging) · <b>H</b> hide');
+  '<b>I</b> intro · <b>A/D</b> ster · <b>W/S</b> wybierz/luzuj szot · <b>F</b> Q-1 trymuje · <b>Shift</b> balast na nawietrzną · <b>E</b> silnik Wolta (<b>Q</b> wstecz) · <b>Spacja</b> hamulec (ładuje baterię) · <b>R</b> koła↔płozy · <b>G</b> odczep/wczep Wolta · <b>C</b> trasa · <b>N</b> pomiń lekcję · <b>Esc</b> wyjdź z symulatora · <b>T</b> od nowa · <b>V</b> siła wiatru · <b>kółko</b> zoom (z bliska widać olinowanie) · <b>H</b> ukryj',
+  '<b>I</b> intro · <b>A/D</b> steer · <b>W/S</b> haul in/ease the sheet · <b>F</b> Q-1 trims · <b>Shift</b> ballast to windward · <b>E</b> Wolt’s motor (<b>Q</b> reverse) · <b>Space</b> brake (charges the battery) · <b>R</b> wheels↔runners · <b>G</b> undock/dock Wolt · <b>C</b> course · <b>N</b> skip a lesson · <b>Esc</b> leave the simulator · <b>T</b> restart · <b>V</b> wind strength · <b>wheel</b> zoom (up close you see the rigging) · <b>H</b> hide');
+
+// the lesson panel
+let lessonKey = '';
+function lessonPanel() {
+  const t = training;
+  if (!t) return;
+  const key = JSON.stringify([t.index, Math.round(t.progress * 50), t.passed, t.exam ? Math.ceil(t.left) : 0, t.tries]);
+  if (key === lessonKey) return;
+  lessonKey = key;
+  const el = $('lesson');
+  el.hidden = false;
+  const head = `<div class="lbl">${tr('SYMULATOR Q-1 · NAUKA ŻEGLUGI', 'Q-1 SIMULATOR · LEARNING TO SAIL')} · ${Math.min(t.count, t.index + 1)}/${t.count}</div>`;
+  const bar = `<div class="bar ${t.progress >= 1 ? 'done' : ''}"><i style="width:${(t.progress * 100).toFixed(0)}%"></i></div>`;
+  if (t.passed) {
+    el.innerHTML = `${head}<h3>${tr('Zdane. Wolt umie żeglować.', 'Passed. Wolt can sail.')}</h3>
+      <p>${tr('Symulacja się kończy, popiół jest prawdziwy. Od teraz płyniesz, dokąd chcesz, a trasy na czas czekają w panelu.', 'The simulation ends; the ash is real. From now on you sail where you like, and the timed courses wait in the panel.')}</p>${bar}
+      <div class="nav"><span></span><button class="btn on" data-a="end">${tr('Wypłyń naprawdę', 'Sail for real')}</button></div>`;
+  } else if (t.exam) {
+    const started = game.run?.time !== null && game.run?.time !== undefined;
+    el.innerHTML = `${head}<h3>${EXAM.name}</h3><p>${EXAM.hint}</p>
+      <div class="row"><span class="clock ${t.left < 20 ? 'limit' : ''}">${fmt(Math.max(0, t.left))}</span><span class="dim">${started ? tr('zostało', 'left') : tr('zegar ruszy na pierwszej bramce', 'the clock starts at the first gate')} · ${tr('podejście', 'attempt')} ${t.tries}</span></div>${bar}
+      <div class="nav"><span class="dim">${tr('T od nowa', 'T restart')}</span><button class="btn" data-a="end">${tr('wyjdź (Esc)', 'leave (Esc)')}</button></div>`;
+  } else {
+    const l = t.lesson!;
+    el.innerHTML = `${head}<h3>${l.title}${t.progress >= 1 ? ' ✓' : ''}</h3><p>${l.text}</p>${bar}
+      <div class="nav"><span class="dim">${tr('T od nowa', 'T restart')}</span><span><button class="btn" data-a="skip">${tr('pomiń lekcję (N)', 'skip the lesson (N)')}</button> <button class="btn" data-a="end">${tr('wyjdź (Esc)', 'leave (Esc)')}</button></span></div>`;
+  }
+}
+$('lesson').addEventListener('click', e => {
+  const b = (e.target as HTMLElement).closest('button');
+  if (!b || !training) return;
+  if (b.dataset.a === 'skip') { training.go(training.index + 1); lessonKey = ''; }
+  else { const passed = training.passed; endTraining(); if (!passed) game.setCourse(null); }
+  (b as HTMLButtonElement).blur();
+});
+$('lesson').addEventListener('pointerdown', e => e.stopPropagation());
 
 // the course picker
 let courseKey = '';
@@ -156,14 +217,15 @@ function coursePanel() {
   if (key === courseKey) return;
   courseKey = key;
   const btns = [`<button class="btn ${!r ? 'on' : ''}" data-c="">${tr('swobodnie', 'free')}</button>`]
-    .concat(COURSES.map(c => `<button class="btn ${r?.course === c ? 'on' : ''}" data-c="${c.id}">${c.name}</button>`)).join('');
+    .concat(COURSES.map(c => `<button class="btn ${r?.course === c ? 'on' : ''}" data-c="${c.id}">${c.name}</button>`))
+    .concat(`<button class="btn ${training ? 'on' : ''}" data-c="train">${tr('szkolenie', 'lessons')}</button>`).join('');
   let body = '';
   if (r) {
     const n = r.course.gates.length;
     const best = game.best[r.course.id];
     const t = r.time;
     body = `<div class="row big"><span>${t === null ? tr('do startu', 'to the start') : fmt(t)}</span><span class="dim">${r.done ? tr('meta', 'finish') : `${tr('bramka', 'gate')} ${Math.min(n, r.next + 1)}/${n}`}</span></div>
-      <div class="row dim"><span>${tr('rekord', 'best')}</span><span>${best !== undefined ? fmt(best) : '—'}</span></div>
+      <div class="row dim"><span>${tr('rekord', 'best')}</span><span>${best !== undefined ? fmt(best) : '—'}</span></div>${r.course.limit ? `<div class="row dim"><span>${tr('limit', 'limit')}</span><span>${fmt(r.course.limit)}</span></div>` : ''}
       <p class="dim">${r.course.hint}</p>`;
   } else body = `<p class="dim">${tr('Płyń, gdzie chcesz. Trasy na czas: wybierz wyżej albo C.', 'Sail anywhere. For a timed course pick one above or press C.')}</p>`;
   $('course').innerHTML = `<div class="lbl">${tr('TRASA', 'COURSE')}</div><div class="nav">${btns}</div>${body}`;
@@ -171,6 +233,8 @@ function coursePanel() {
 $('course').addEventListener('click', e => {
   const b = (e.target as HTMLElement).closest('button');
   if (!b) return;
+  if (b.dataset.c === 'train') { if (training) endTraining(); startTraining(); (b as HTMLButtonElement).blur(); return; }
+  if (training) endTraining();
   const c = COURSES.find(x => x.id === b.dataset.c) ?? null;
   game.setCourse(c); courseKey = ''; announceCourse();
   (b as HTMLButtonElement).blur();
@@ -262,7 +326,8 @@ function frame(now: number) {
       else if (ev.finished === null) sound.play('light');
     }
     if (ev.finished !== null) {
-      toast(`${tr('Meta', 'Finish')}: ${fmt(ev.finished)}${ev.record ? ' · ' + tr('rekord!', 'new best!') : ''}`, ev.record ? 'good' : '');
+      const lim = game.run?.course.limit;
+      toast(`${tr('Meta', 'Finish')}: ${fmt(ev.finished)}${ev.record ? ' · ' + tr('rekord!', 'new best!') : ''}${lim ? ' · ' + (ev.finished <= lim ? tr('w limicie', 'inside the limit') : tr('po czasie', 'over the limit')) : ''}`, ev.record ? 'good' : '');
       sound.play(ev.record ? 'win' : 'charged');
       try { localStorage.setItem('sail-best', JSON.stringify(game.best)); } catch { /* no storage */ }
     }
@@ -278,6 +343,14 @@ function frame(now: number) {
       else if (y.energy <= 0) toast(tr('Bateria pusta: hamuj z górki albo łap wiatr', 'Battery empty: brake downhill or find the wind'), 'bad');
     }
     motorWas = !!inp.motor;
+    if (training) {
+      const te = training.step(dt, inp, ev);
+      if (te === 'next') { sound.play('light'); toast(`${tr('Lekcja', 'Lesson')} ${training.index + 1}: ${training.lesson!.title}`); }
+      else if (te === 'exam') { sound.play('plug'); toast(tr('Egzamin: z A do B pod wiatr, na czas', 'The exam: from A to B upwind, against the clock'), 'good'); courseKey = ''; }
+      else if (te === 'failed') { sound.play('deny'); toast(tr('Po czasie. Jeszcze raz od startu.', 'Out of time. Again from the start.'), 'bad'); courseKey = ''; }
+      else if (te === 'passed') { sound.play('win'); toast(tr('Egzamin zdany: żegluga lądowa opanowana', 'Exam passed: land sailing learned'), 'good'); try { localStorage.setItem('sail-licence', '1'); } catch { /* no storage */ } }
+      lessonPanel();
+    }
     hud(); coursePanel();
   }
   view.update(dt, t);

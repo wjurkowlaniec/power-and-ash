@@ -36,6 +36,27 @@ Poligon głównej rozgrywki: jazda Żaglowozem po różnym terenie. Wojtek (2026
 
 Do zrobienia później: animacja budowania Żaglowozu część po części (maszt, olinowanie, szyna balastu) i to samo w demie „Warsztat” (zamiast „wsiądź” ma być „wczep się z przodu”, a Żaglowóz ma dostać to samo olinowanie) i w grze.
 
+## Szkolenie w symulatorze Q-1 i egzamin (Wojtek 2026-11-11)
+
+Pomysł Wojtka: gdy bohater uczy się czegoś po raz pierwszy, musi zdać tutorial, pokazany jako symulator w jego głowie. Nie same proste rzeczy: na końcu jest wyzwanie (nie za trudne), które sprawdza umiejętności razem, z zależnościami między nimi. Dla żeglugi: dojechać z A do B na czas, z przeszkodami, pod wiatr, tak żeby trzeba było halsować.
+
+![Egzamin: start pod wiatr, panel symulatora](img/zegluga/egzamin.jpg)
+
+Jak to działa w demie (`src/sail/sim/training.ts`):
+
+- Przy pierwszym uruchomieniu (bez zdanego egzaminu w tej przeglądarce) po intro i wczepieniu Wolta włącza się **symulator Q-1**: obraz jest chłodniejszy, z liniami skanowania i ramką, u góry panel lekcji z paskiem postępu. Można pominąć lekcję (**N**), zacząć ją od nowa (**T**) albo wyjść (**Esc**). Wraca się przyciskiem „szkolenie” w panelu trasy albo linkiem `?train` (`?train=exam` od razu egzamin).
+- **Sześć lekcji**, każda z jednym zadaniem mierzonym przez fizykę:
+  1. Półwiatr: ponad 25 km/h z wiatrem z boku przez 5 s (Q-1 trymuje).
+  2. Szot: ręcznie ustawić bom na najlepszy kąt i utrzymać 5 s.
+  3. Ostro do wiatru: poniżej 55° od wiatru, bez utraty prędkości, 5 s.
+  4. Zwrot przez sztag: dwa zwroty i rozpędzenie po drugim.
+  5. Balast w szkwale: przy mocnym wietrze 4 s na krawędzi z balastem na nawietrznej, bez wywrotki.
+  6. Hamulec i silnik: zahamować do zera, ruszyć silnikiem Wolta.
+- **Egzamin „Pod wiatr”** (trasa `exam`, dostępna też w panelu tras): pięć bramek w jednej linii prosto pod wiatr, ok. 205 m, limit 2:00 od pierwszej bramki. Po drodze cień wiatrowy za domami wsi, drzewo i słup linii w korytarzu, błotnisty strumień. Po czasie egzamin zaczyna się od nowa. Zdany zapisuje się w przeglądarce i symulator więcej nie włącza się sam.
+- Test z prostym sternikiem-automatem przejeżdża egzamin w ok. 75 do 100 s, z co najmniej trzema zwrotami.
+
+**Czy da się płynąć ostrzej niż półwiatr?** Tak, i zmierzyłem to na obecnej fizyce (wiatr 7 m/s): na ubitym popiele Żaglowóz jedzie już przy 45° od wiatru (5 m/s), a najszybciej zbliża się do celu pod wiatr przy 50 do 60° (ok. 4,3 m/s w linii wiatru); na szosie i solnisku rusza od 30 do 35° i robi pod wiatr prawie 6 m/s. Poniżej ok. 40° na popiele żagiel nie pokonuje oporu kół. Skrętne koło z przodu nie zmienia tego, jak ostro można płynąć (o tym decyduje żagiel i opór), zmienia zwroty: przód skręca natychmiast, tył idzie po łuku, więc zwrot przez sztag jest szybki, o ile ma się rozpęd. Na sypkim popiele wąska opona Wolta trzyma słabiej i zwrot wychodzi szerzej. Wolno jadący Żaglowóz, który stanął w martwym kącie, można wypchnąć silnikiem (E).
+
 ## Sterowanie
 
 | Klawisz | Co robi |
@@ -49,6 +70,7 @@ Do zrobienia później: animacja budowania Żaglowozu część po części (masz
 | R | koła ↔ płozy (tylko na postoju, ~2,5 s) |
 | G | Wolt odczepia się / wczepia (tylko na postoju, ~4,5 s) |
 | C | następna trasa (albo przyciski w panelu trasy) |
+| N / Esc | w symulatorze: pomiń lekcję / wyjdź |
 | T | trasa od nowa |
 | V | siła wiatru: słaby, zwykły, mocny |
 | I | intro |
@@ -57,7 +79,7 @@ Do zrobienia później: animacja budowania Żaglowozu część po części (masz
 
 **Na telefonie i tablecie** (Wojtek 2026-11-11) są kontrolki na ekranie, pokazywane tylko na urządzeniach dotykowych: z lewej ster ◀ ▶ (trzymaj stronę, przesunięcie palca przełącza), z prawej pionowy szot (góra wybiera, dół luzuje). Obok przyciski: przytrzymywane hamulec, balast, silnik, wstecz (przerywana ramka) oraz stuknięcia odczep / wczep, koła / płozy, Q-1, trasy (otwiera panel tras, na telefonie domyślnie ukryty) i zoom + / −. Pomoc z klawiszami jest wtedy schowana, a panele HUD zmniejszone. Kontrolki naciskają te same klawisze co klawiatura (wspólny moduł `src/touch.ts`, opis w [ARCHITEKTURA.md](ARCHITEKTURA.md#sterowanie-dotykowe-srctouchts)). `?touch` wymusza je na komputerze, `?touch=0` wyłącza.
 
-Linki: `?touch` pokazuje kontrolki dotykowe, `?course=lake|village|dunes|forest` zaczyna na trasie, `?go` pomija kartę startową i intro, `?intro` otwiera od razu intro, `?debug` wystawia `window.sail` i `window.view`.
+Linki: `?touch` pokazuje kontrolki dotykowe, `?course=lake|village|dunes|forest|exam` zaczyna na trasie, `?train` włącza szkolenie (`?train=exam` sam egzamin), `?go` pomija kartę startową i intro, `?intro` otwiera od razu intro, `?debug` wystawia `window.sail` i `window.view`.
 
 ## Fizyka (src/sail/sim/landYacht.ts)
 
@@ -77,7 +99,8 @@ Czysty TS, testy w `test/sail.test.ts`.
 | `src/sail/sim/terrain.ts` | mapa: wysokość, pola podłoży (`surfaceFields`, wspólne dla fizyki i shadera), przeszkody |
 | `src/sail/sim/windField.ts` | pole wiatru: wiatr bazowy, szkwały i flauty, cień przeszkód z turbulencją |
 | `src/sail/sim/landYacht.ts` | fizyka żaglowozu |
-| `src/sail/sim/courses.ts` | trasy, bramki, pomiar czasu |
+| `src/sail/sim/courses.ts` | trasy, bramki, pomiar czasu, limit czasu egzaminu |
+| `src/sail/sim/training.ts` | szkolenie w symulatorze: lekcje z warunkami zaliczenia i egzamin |
 | `src/sail/sim/sailGame.ts` | całość: mapa, wiatr, żaglowóz, trasa, rekordy, statystyki |
 | `src/sail/render/sailView.ts` | scena 3D: teren z shaderem (krawędzie podłoży z pól, szkwały na popiele, cień), smugi pyłu, bramki z chorągiewkami, kamera |
 | `src/sail/render/yachtRig.ts` | żaglowóz 3D: wózek z warsztatu, oś z kołami albo płozy, maszt, żagiel z balonu, Wolt w siodle na dziobie, balast na szynie, całe olinowanie |
@@ -117,6 +140,16 @@ Jak by to weszło:
 - **Demo „Żegluga”:** Wolt rysowany w widelcu zamiast na pokładzie, skręt jego kołem. Nowe klawisze: napęd silnikiem (zużywa baterię, pasek energii w HUD) i hamowanie z odzyskiem. Wychył zastąpiony jednym z powyższych. Intro: scena przechyłu bez wychyłu.
 - **Demo „Warsztat”:** zamiast „wsiądź” jest „wczep się z przodu” (Wolt podjeżdża tyłem do widelca wózka), a zejście to odczepienie.
 
+## Pomysł: analizator wiatru (Wojtek 2026-11-11, tylko zapis)
+
+Wojtek: „może być tak, że na początku nie widać wiatru, trzeba na czuja, potem dopiero ma moduł analizatora wiatru, najpierw bardzo ogólny, gdzie teraz wieje, a potem taki, że widać, jak dokładnie wiatr się rozkłada”. Na razie tylko zapisane, bez kodu.
+
+Trzy stopnie widoczności wiatru jako postęp Wolta:
+
+1. **Bez modułu:** wiatru nie widać. Zostają tylko ślady w świecie (proporczyk, łopot żagla, pył przy samym żaglowozie, dźwięk) i wyczucie.
+2. **Analizator ogólny:** kierunek i siła wiatru w miejscu, gdzie stoi żaglowóz (dzisiejszy kompas wiatru).
+3. **Analizator dokładny:** rozkład wiatru w terenie, czyli szkwały i flauty na popiele, smugi pyłu, cień wiatrowy za przeszkodami (to, co demo pokazuje dziś od razu).
+
 ## Do sprawdzenia przez Wojtka
 
 - Czy czucie jazdy jest dobre: prędkości (do ~70 km/h), jak łatwo się przewrócić, czy poślizg na solnisku nie jest za mocny.
@@ -124,4 +157,5 @@ Jak by to weszło:
 - Czy mapa 400 m nie jest za mała przy tych prędkościach (łatwo ją powiększyć).
 - Czy silnik Wolta nie jest za mocny albo za słaby, czy bateria starcza w sam raz i czy balast (Shift, przerzucanie po zwrocie) jest przyjemny.
 - Czy olinowanie jest oddane tak, jak ma być, i czy czegoś brakuje.
+- Czy lekcje są zrozumiałe i czy egzamin (limit 2:00) nie jest za łatwy albo za trudny. Czy symulator ma się włączać sam przy pierwszym uruchomieniu.
 - Czy intro jest w dobrym tonie i czy ma być też w grze, czy tylko w demie.
