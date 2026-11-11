@@ -33,6 +33,21 @@
 .btn { all: unset; cursor: pointer; font: inherit; font-size: 11px; padding: 4px 8px; border: 1px solid var(--line); border-radius: 3px; color: var(--ink); background: #ffffff0a; }
 .btn:hover, .btn:focus-visible { border-color: var(--warn); }
 .btn.on { border-color: var(--warn); color: #1b1a17; background: var(--warn); }
+/* the lessons: Q-1 runs them as a simulation in Wolt's head */
+#simfx { position: fixed; inset: 0; pointer-events: none; opacity: 0; transition: opacity .8s; z-index: 2;
+  background: repeating-linear-gradient(0deg, #9fd8e60d 0 1px, transparent 1px 4px), radial-gradient(ellipse at center, transparent 55%, #0b1a2066 100%);
+  box-shadow: inset 0 0 0 1px #9fd8e655, inset 0 0 90px #9fd8e622; }
+body.sim #simfx { opacity: 1; }
+body.sim #app { filter: saturate(.55) contrast(1.05) hue-rotate(-8deg); }
+.lessonp { left: 50%; top: max(16px, env(safe-area-inset-top, 0px)); transform: translateX(-50%); width: min(520px, calc(100vw - 560px)); min-width: 320px; pointer-events: auto; display: grid; gap: 6px; border: 1px solid #9fd8e655; }
+.lessonp h3 { margin: 0; font-size: 17px; font-weight: 500; }
+.lessonp p { margin: 0; font-size: 12px; line-height: 1.55; }
+.lessonp .bar { height: 5px; background: #ffffff1a; position: relative; }
+.lessonp .bar > i { position: absolute; inset: 0 auto 0 0; background: #9fd8e6; transition: width .15s; }
+.lessonp .bar.done > i { background: var(--ok); }
+.lessonp .nav { display: flex; gap: 6px; justify-content: space-between; align-items: center; }
+.lessonp .clock { font-size: 20px; }
+@media (max-width: 1100px) { .lessonp { top: auto; bottom: 150px; width: min(520px, calc(100vw - 32px)); } }
 .toast.bad { border: 1px solid var(--limit); color: var(--limit); }
 .toast.good { border: 1px solid var(--ok); color: var(--ok); }
 .help { top: auto; bottom: calc(16px + env(safe-area-inset-bottom, 0px)); left: calc(50% + 160px); max-width: calc(100vw - 700px); color: #1c1d1f; }
