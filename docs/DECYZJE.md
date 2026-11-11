@@ -87,6 +87,7 @@ Oznaczenia w SWIAT.md: **[ustalone]** to decyzja Wojtka, **[propozycja]** to szk
 - Mapa świata (później, Wojtek chce ją narysować sam).
 - Żaglowóz w demie „Warsztat” (2026-11-09): czy sterowanie szotem ręcznie (W/S) jest fajne, czy domyślnie ma trymować Q-1; czy przetarcie żagla ma być ostrzejsze; czy tak ma wyglądać przejście od wózka do żaglowozu w grze. [DEMO-WARSZTAT.md: Żaglowóz](DEMO-WARSZTAT.md#żaglowóz)
 - Szkielet fabuły z [FABULA.md](FABULA.md): filary, klucze, wybory, które są nieodwracalne, i czy Kronika 100% jest widoczna (2026-11-09).
+- Które „spoiwa” wchodzą (jedna tajemnica, światło w oknie, ten sam kadr, symbol pamięta stare ciało, dary przy zimowisku, radio jako akord, jeleń jako zegar) (2026-11-11). [SWIAT.md: Spoiwa](SWIAT.md#spoiwa-pomysły-które-sklejają-to-co-już-jest-propozycja-agenta-2026-11-11-na-pytanie-wojtka-jakieś-jeszcze-pomysły-tak-by-było-spójnie)
 - Pozostałe punkty w [Otwartych pytaniach](SWIAT.md#otwarte-pytania).
 
 ## Sposób pracy, technologia, styl i rozgrywka
