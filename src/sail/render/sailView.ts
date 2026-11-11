@@ -368,6 +368,9 @@ export class SailView {
     this.camera.updateProjectionMatrix();
   }
 
+  /** The yacht's 3D root (other demos hang their own load on it). */
+  get yachtRoot(): THREE.Group { return this.yacht.root; }
+
   zoomBy(f: number) { this.zoom = THREE.MathUtils.clamp(this.zoom * f, 0.22, 2.2); this.resize(); }
 
   /** A jolt for the camera (a bump, a wheel slamming down). */
