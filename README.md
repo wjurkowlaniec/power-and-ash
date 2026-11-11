@@ -63,6 +63,8 @@ Co dalej: agent (Claude) i Wojtek czytają zgłoszenia, błędy naprawiają w PR
 
 ## Sterowanie
 
+Ta sama mysz działa w grze (Hala, Stacja) i w tech demach „Rozruch” i „Warsztat”. Menu PPM jest tylko w tech demach, a w grze klik w rzecz od razu jej używa.
+
 | Klawisz | Akcja |
 |---|---|
 | LPM na terenie | idź tam (przytrzymaj: Wolt idzie za kursorem) |

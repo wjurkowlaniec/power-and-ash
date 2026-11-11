@@ -45,7 +45,8 @@ const RESERVE_DRIVE = { accel: 3.5, brake: 8, turn: 4.5 };
 export type HallPoint = 'pipe' | 'lever' | 'battery' | 'door' | 'note';
 export type HallEvent = 'stand' | 'step' | 'strain' | 'pickup' | 'pry' | 'open' | 'take' | 'insert' | 'log' | 'door' | 'exit' | 'deny' | 'note';
 
-export interface HallInput { move: V2; run: boolean; use: boolean; usePressed: boolean }
+/** `stopIn`: metres to a click mark where he must come to a stop (src/game/sim/clickWalk.ts). */
+export interface HallInput { move: V2; run: boolean; use: boolean; usePressed: boolean; stopIn?: number }
 export interface HallHint { key: string; text: string; at: V2; ok: boolean; progress?: number }
 
 export const layout = {
@@ -131,21 +132,32 @@ export class Hall {
   /** Id of the note `nearest()` returned. */
   noteAt: string | null = null;
 
-  nearest(): HallPoint | null {
+  /** Things E can use right now, wherever Wolt is (notes as `note:<id>`): click targets. */
+  usables(): { id: string; at: V2 }[] {
     const L = layout;
-    const cands: [HallPoint, V2, boolean][] = [
-      ['pipe', this.pipeDown ?? L.pipe, !!this.pipeDown],
-      ['lever', L.lever, !this.leverDown],
-      ['battery', L.batteryUse, this.chamberOpen >= 1 && !this.powered && this.insertT === 0],
-      ['door', L.door, this.doorOpen < 1],
-    ];
+    const out: { id: string; at: V2 }[] = L.notes.map(n => ({ id: 'note:' + n.id, at: n }));
+    if (this.pipeDown) out.push({ id: 'pipe', at: this.pipeDown });
+    if (!this.leverDown) out.push({ id: 'lever', at: L.lever });
+    if (this.chamberOpen >= 1 && !this.powered && this.insertT === 0) out.push({ id: 'battery', at: L.batteryUse });
+    if (this.doorOpen < 1) out.push({ id: 'door', at: L.door });
+    return out;
+  }
+
+  /** Id of the thing E would use now, notes as `note:<id>` (same ids as `usables`). */
+  current(): string | null {
+    const n = this.nearest();
+    return n === 'note' ? 'note:' + this.noteAt : n;
+  }
+
+  nearest(): HallPoint | null {
+    const all = this.usables();
     // a note wins when you stand right on it
-    for (const n of L.notes) if (dist(n, this.pos) < 0.9) { this.noteAt = n.id; return 'note'; }
+    for (const n of all) if (n.id.startsWith('note:') && dist(n.at, this.pos) < 0.9) { this.noteAt = n.id.slice(5); return 'note'; }
     let best: HallPoint | null = null, bd = USE_RANGE;
-    for (const [id, p, on] of cands) {
-      if (!on) continue;
-      const d = dist(p, this.pos);
-      if (d < bd) { bd = d; best = id; }
+    for (const { id, at } of all) {
+      if (id.startsWith('note:')) continue;
+      const d = dist(at, this.pos);
+      if (d < bd) { bd = d; best = id as HallPoint; }
     }
     return best;
   }
@@ -240,7 +252,7 @@ export class Hall {
     // reserve mode: the body surges and sags as the weak current comes and goes
     if (!this.powered) sp *= 0.82 + 0.18 * Math.sin(this.t * 2.3) * Math.sin(this.t * 0.9 + 1);
     const f0 = this.facing;
-    let step = drive(this, dt, want ? inp.move : { x: 0, y: 0 }, sp, this.powered ? undefined : RESERVE_DRIVE);
+    let step = drive(this, dt, want ? inp.move : { x: 0, y: 0 }, sp, this.powered ? undefined : RESERVE_DRIVE, inp.stopIn);
     const before = { ...this.pos };
     // the nose and the reel must not swing into a wall (src/sim/footprint.ts)
     const g = guardTurn(this.world, this.pos, f0, this.facing, PLAYER_R, c => this.inside(c) && this.tetherOk(c));

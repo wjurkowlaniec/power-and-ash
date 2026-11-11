@@ -195,7 +195,15 @@ export class Station {
     return t === 'tyre' ? this.tyre.pos : t === 'door' ? P.workshopDoor : t === 'mast' ? P.mastUse : (P as unknown as Record<string, V2>)[t];
   }
 
-  nearest(): Target | null {
+  /** Things E can use right now, wherever Wolt is: click targets (src/game/sim/clickWalk.ts). */
+  usables(): { id: string; at: V2 }[] {
+    return this.active().map(id => ({ id, at: this.point(id) }));
+  }
+
+  /** Same as `nearest`, for the click walker. */
+  current(): string | null { return this.nearest(); }
+
+  private active(): Target[] {
     const on: Target[] = ['port', 'doorNote', 'drawer', 'wallMap', 'books', 'machineDoor', 'mast', 'gate'];
     if (this.plotted) on.push('plotter');
     if (this.doorOpen >= 1) on.push('fabricator'); else on.push('door');
@@ -204,6 +212,11 @@ export class Station {
     if (this.turbine && !this.cable) on.push('junction');
     if (this.cable && !this.cableHeld && !this.machinePowered) on.push('cableEnd');
     if (!this.machinePowered) on.push('socket');
+    return on;
+  }
+
+  nearest(): Target | null {
+    const on = this.active();
     let best: Target | null = null, bd = USE_RANGE;
     for (const id of on) {
       const p = this.point(id);
@@ -282,7 +295,7 @@ export class Station {
   }
 
   /** What Wolt can see from the door note onwards (objectives come from notes, not a list). */
-  update(dt: number, inp: { move: V2; run: boolean; use: boolean; usePressed: boolean; drop?: boolean }) {
+  update(dt: number, inp: { move: V2; run: boolean; use: boolean; usePressed: boolean; drop?: boolean; stopIn?: number }) {
     this.t += dt;
     if (this.message && this.t - this.message.t > 5) this.message = null;
     this.denyT = Math.max(0, this.denyT - dt);
@@ -324,14 +337,14 @@ export class Station {
     this.lastStep = 0;
   }
 
-  private move(dt: number, inp: { move: V2; run: boolean }) {
+  private move(dt: number, inp: { move: V2; run: boolean; stopIn?: number }) {
     const want = len(inp.move) > 0.01 && this.repair === 0;
     let sp = SPEED * (inp.run ? RUN_MULT : 1);
     if (this.cableHeld && this.cableLength() > CABLE_WARN) sp *= 0.6;
     if (this.towing) sp *= 1 - LOADS.tyre.drag * (this.moduleOnTyre ? 2.2 : 1);
     if (this.battery < 5) sp *= 0.5;
     const f0 = this.facing;
-    let step = drive(this, dt, want ? inp.move : { x: 0, y: 0 }, sp);
+    let step = drive(this, dt, want ? inp.move : { x: 0, y: 0 }, sp, undefined, inp.stopIn);
     const tyreOk = (c: V2) => this.towing || dist(c, this.tyre.pos) >= PLAYER_R + LOADS.tyre.radius;
     // the nose and the reel must not swing into a wall (src/sim/footprint.ts)
     const g = guardTurn(this.world, this.pos, f0, this.facing, PLAYER_R, c => tyreOk(c) && (!this.cableHeld || this.cableOk(c)));

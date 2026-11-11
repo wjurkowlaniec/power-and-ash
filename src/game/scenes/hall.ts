@@ -1,5 +1,6 @@
 import { Ctx, Scene } from '../scene';
-import { Hall, BATTERY_POWER } from '../sim/hall';
+import { Hall, BATTERY_POWER, PLAYER_R } from '../sim/hall';
+import { MouseWalk } from './mouse';
 import { HallView } from '../render/hallView';
 import { NOTES, journal, noteHtml, journalHtml } from '../notes';
 import { story } from '../state';
@@ -24,6 +25,7 @@ export class HallScene implements Scene {
   private fadeIn = 1;
   private justOpened = false;
   private journalOpen = false;
+  private mouse = new MouseWalk(PLAYER_R);
 
   enter(c: Ctx) {
     this.view = new HallView(this.hall, c.app, c.models);
@@ -38,13 +40,14 @@ export class HallScene implements Scene {
       <div class="htip" id="hTip" hidden></div>
       <div class="hmsg" id="hMsg" hidden></div>
       <div class="note" id="hNote" hidden></div>
-      <div class="hkeys" id="hKeys">${tr('<b>WASD</b> ruch · <b>E</b> użyj · <b>J</b> archiwum', '<b>WASD</b> move · <b>E</b> use · <b>J</b> archive')}</div>`;
+      <div class="hkeys" id="hKeys">${tr('<b>klik</b> / <b>WASD</b> ruch · <b>E</b> użyj · <b>J</b> archiwum', '<b>click</b> / <b>WASD</b> move · <b>E</b> use · <b>J</b> archive')}</div>`;
     c.hud.appendChild(this.el);
   }
 
   modal() { return !!this.hall.reading || this.journalOpen; }
 
   exit(c: Ctx) {
+    this.mouse.dispose();
     c.sound.onDrip = null;
     this.view.dispose();
     this.el.remove();
@@ -53,8 +56,8 @@ export class HallScene implements Scene {
 
   update(dt: number, c: Ctx) {
     const h = this.hall, k = c.input.keys, pr = c.input.pressed;
-    // reading a note: E, Esc or Space puts it down; J opens the journal
-    if (h.reading && ['KeyE', 'Escape', 'Space'].some(x => pr.has(x)) && !this.justOpened) { h.closeNote(); pr.delete('KeyE'); }
+    // reading a note: E, Esc, Space or a click beside it puts it down; J opens the journal
+    if (h.reading && (['KeyE', 'Escape', 'Space'].some(x => pr.has(x)) || c.input.click) && !this.justOpened) { h.closeNote(); pr.delete('KeyE'); c.input.click = null; }
     this.justOpened = false;
     if (pr.has('KeyJ')) {
       if (this.journalOpen || h.reading) { this.journalOpen = false; h.closeNote(); }
@@ -67,9 +70,16 @@ export class HallScene implements Scene {
     }
     const mx = (k.has('KeyD') || k.has('ArrowRight') ? 1 : 0) - (k.has('KeyA') || k.has('ArrowLeft') ? 1 : 0);
     const my = (k.has('KeyS') || k.has('ArrowDown') ? 1 : 0) - (k.has('KeyW') || k.has('ArrowUp') ? 1 : 0);
+    // the mouse: a click on the ground goes there, a click on a thing goes and uses it;
+    // while he still lies in the cradle a click just wakes him, like any key
+    const busy = !!h.reading || this.journalOpen || h.insertT > 0 || !h.awake;
+    if (busy) this.mouse.cancel();
+    const m = busy ? null : this.mouse.update(dt, c.input, h, this.view, mx !== 0 || my !== 0);
+    const wakeClick = !h.awake && !!c.input.click;
     h.update(dt, {
-      move: { x: mx, y: my }, run: k.has('ShiftLeft') || k.has('ShiftRight'),
-      use: k.has('KeyE'), usePressed: c.input.pressed.has('KeyE'),
+      move: m ? m.move : { x: mx, y: my }, run: k.has('ShiftLeft') || k.has('ShiftRight'),
+      use: k.has('KeyE') || !!m?.use, usePressed: c.input.pressed.has('KeyE') || !!m?.usePressed || wakeClick,
+      stopIn: m?.stopIn,
     });
 
     // heartbeat: slow and heavy on reserve, calmer and quieter with the battery in
