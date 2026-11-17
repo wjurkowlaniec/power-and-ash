@@ -78,6 +78,7 @@ Oznaczenia w SWIAT.md: **[ustalone]** to decyzja Wojtka, **[propozycja]** to szk
 | 2026-11-11 | Komunikacja obrazem zamiast opisanej, sztywnej mechaniki: gracz sam odkrywa, co dana rzecz znaczy; nie za ciężko i nie za skomplikowanie. | [SWIAT.md: Spoiwa](SWIAT.md#spoiwa-pomysły-które-sklejają-to-co-już-jest-propozycja-agenta-2026-11-11-na-pytanie-wojtka-jakieś-jeszcze-pomysły-tak-by-było-spójnie), [DEMO-POWROTY.md](DEMO-POWROTY.md) |
 | 2026-11-11 | Przyjęte spoiwa: „jedna tajemnica” (tak; treść to propozycja: Q-2 wciąż pije prąd ze świata) i „światło w oknie” (może być). | jw. |
 | 2026-11-11 | Cała gra ma rzut izometryczny, więc dema i szkice świata też (szkic „Powroty” w widoku z boku odrzucony i zrobiony od nowa w silniku gry jako `/demo-returns/`). | [DEMO-POWROTY.md](DEMO-POWROTY.md) |
+| 2026-11-17 | Prośba: zaprojektować prawdziwy poziom na ok. 15 min, w którym gracz buduje coś od zera. Odpowiedź agenta **[propozycja, czeka na akceptację przed kodem]**: poziom „R-2: Pierwszy Żaglowóz”: Wolt dociera do R-2 na rezerwie, czyści panele, składa Żaglowóz z gołej ramy według rysunku technicznego (oś z wraku, pokład z palet, maszt antenowy położony holem, balast zza zamka elektrycznego, żagiel z plandeki albo balonu, olinowanie z kabla), ładuje go w słońcu z chmurami, przechodzi krótki symulator Q-1 i wyjeżdża żaglem na Popielną Równinę. „Od zera” odczytane jako składanie z części znalezionych w świecie, bez przepisów (zgodnie z decyzją z 2026-11-09). | [POZIOM-R2.md](POZIOM-R2.md) |
 
 ## Czeka na decyzję
 
@@ -175,6 +176,7 @@ Decyzje z rozmów o prototypie, tech demo i grze (wątki: research, prototyp, wy
 
 ## Czeka na decyzję (sposób pracy, styl, rozgrywka)
 
+- Poziom „R-2: Pierwszy Żaglowóz” (2026-11-17): czy „od zera” to dobrze odczytane, czy łączyć Scenę 5 z budową żagla, plandeka kontra balon, krótki symulator. [POZIOM-R2.md](POZIOM-R2.md#do-decyzji)
 - Ruiny kamienic za krawędzią mapy tech demo: zostawić czy pustkowie bez miasta (pytanie z 2026-11-06 bez odpowiedzi, ruiny na razie są).
 - Liczby mocy na stacji (turbina 1200 W, maszynownia 250 W, fabrykator 600 W) są wymyślone przez agenta, do potwierdzenia.
 - Czy pył przy buksowaniu jest wystarczająco widoczny na jasnym popiele.
