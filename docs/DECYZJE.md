@@ -101,7 +101,8 @@ Decyzje z rozmów o prototypie, tech demo i grze (wątki: research, prototyp, wy
 
 | Data | Decyzja | Gdzie |
 |---|---|---|
-| 2026-11-06 | Na razie pracujemy tylko w chmurze. | [AGENTS.md](../AGENTS.md) |
+| 2026-11-06 | ~~Na razie pracujemy tylko w chmurze.~~ Zmienione 2026-11-17: praca tylko lokalnie (wiersz niżej). | [AGENTS.md](../AGENTS.md) |
+| 2026-11-17 | **Praca tylko lokalnie.** Od teraz cała praca nad grą dzieje się wyłącznie na MacBooku Wojtka (klon w `~/games/power-and-ash`), nie w chmurze. Zasady PR, CI i deployu na GitHub Pages bez zmian. Środowisko sprawdzone: `npm ci`, `npm test` (118 testów), `npm run build` przechodzą (Node 24, npm 11). | [CLAUDE.md: Praktyczne](../CLAUDE.md#praktyczne), [ARCHITEKTURA.md: Build](ARCHITEKTURA.md#build) |
 | 2026-11-06 | Wszystko w repo `wjurkowlaniec/power-and-ash`: kod, dokumenty, issues, deploy na GitHub Pages. Własny hosting (LAMP/FTP) był proponowany, niepotrzebny. | [ARCHITEKTURA.md: CI i deploy](ARCHITEKTURA.md#ci-i-deploy) |
 | 2026-11-06 | **Zawsze deploy do testów.** Każda zmiana ma być grywalna online. Praktyka: PR, zielone CI, agent sam robi squash-merge do `main`, Pages wdraża się automatycznie. | [ARCHITEKTURA.md: CI i deploy](ARCHITEKTURA.md#ci-i-deploy) |
 | 2026-11-06 | Aktualizacje postępów krok po kroku (commit, deploy, zamknięty etap). | |

@@ -11,3 +11,4 @@ Pełne zasady pracy są w [CLAUDE.md](CLAUDE.md) i obowiązują każdego agenta,
 5. **Logika bez Three.js i z testami, teksty przez `tr('pl', 'en')`**, wspólny silnik nie może zepsuć ani gry, ani tech demo.
 6. Dokumenty, commity i PR-y po polsku, komentarze w kodzie po angielsku.
 7. **Zgłoszenia testerów są w GitHub Issues** (etykiety `bug`, `pomysł`, `do-decyzji`, formularze w `.github/ISSUE_TEMPLATE/`). Poprawka błędu idzie w PR z `Fixes #numer`; pomysł trafia do dokumentów dopiero po decyzji Wojtka. Linki dla testerów utrzymuj w README, w sekcji „Jak testować” (nowa wersja albo scena na Pages = nowy wiersz).
+8. **Praca tylko lokalnie (od 2026-11-17).** Cała praca dzieje się na MacBooku Wojtka w `~/games/power-and-ash`, nie w chmurze. Szczegóły w [CLAUDE.md](CLAUDE.md#praktyczne).
