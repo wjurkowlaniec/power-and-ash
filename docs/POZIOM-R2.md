@@ -1,174 +1,172 @@
-# Poziom „R-2: Pierwszy Żaglowóz” (projekt, ok. 15 min)
+# Poziom „R-2: Uśpiona rozdzielnia” (test craftingu, ok. 15 min)
 
-**Status: [propozycja 2026-11-17] — czeka na akceptację Wojtka, zanim powstanie kod.**
+**Status: [propozycja 2026-11-17, druga wersja] — czeka na akceptację Wojtka, zanim powstanie kod.**
 
-Prośba Wojtka (2026-11-17, sparafrazowana): zaprojektować prawdziwy poziom na ok. 15 minut, w którym gracz **buduje coś od zera**. Ten dokument to odpowiedź: jeden poziom, który spina trzy rdzenie gry naraz, czyli **prąd i kabel**, **składanie maszyny z części** i **żeglugę**. Osadzony po Scenie 2 (wyjazd z Olszanki z mapą do R-2), w rozdzielni polowej R-2 z [POCZATEK.md](POCZATEK.md#scena-5-rozdzielnia-polowa-i-pierwszy-pojazd-ok-20-min).
+## Po co ten poziom
 
-Liczby (czasy, moce, metry) to punkt wyjścia do strojenia w testach.
+Prośba Wojtka (2026-11-17, sparafrazowana): zrobić prawdziwy poziom na ok. 15 minut, który **sprawdzi, czy crafting i robienie przedmiotów są wygodne i fajne**. Nie musi to być składanie Żaglowozu. Przykład w duchu The Last Caretaker: docierasz na miejsce i musisz coś odpalić, żeby coś innego zadziałało. Panele słoneczne są uszkodzone i niepodłączone. Naprawa nie wystarcza, trzeba zbudować więcej, odpalić, wejść do bazy, a w bazie jest komputer, z którego trzeba pobrać dane. Komputer potrzebuje dużo prądu.
 
-## Jak czytam „od zera”
+To jest **test**: po zagraniu Wojtek decyduje, ile craftingu wchodzi do gry. Decyzja z 2026-11-09 („bez craftingu od zera, rozwój eksploracyjny”) jest punktem wyjścia, więc przepisy nie są dane z góry: **Q-1 uczy się ich z rzeczy, które Wolt rozbierze albo obejrzy**. Kształt pętli, czyli zbierz, zrób, zamontuj, zasil, jest za to pełnym craftingiem do oceny.
 
-Decyzja z 2026-11-09 ([FABULA.md](FABULA.md#decyzja-wojtka-2026-11-09)) mówi: **bez craftingu od zera z przepisów, rozwój eksploracyjny**. SWIAT.md mówi zaś: **Żaglowóz budowany od zera przez całą grę** [ustalone]. Łączę to tak:
+Pierwsza wersja tego dokumentu (składanie Żaglowozu z gołej ramy w R-2) jest odłożona na później, skrót jest na końcu, w sekcji [Odłożone](#odłożone-pierwszy-żaglowóz-z-gołej-ramy).
 
-- „Od zera” = **pierwszy pojazd złożony z niczego**: na starcie poziomu pod wiatą stoi goła rama wózka na klockach. Wszystko inne (koła, pokład, maszt, żagiel, liny, prąd) gracz znajduje, rozbiera, holuje i montuje na miejscu.
-- **Bez menu przepisów.** Planem jest **rysunek techniczny** przybity na ścianie wiaty (Wolt rozumie rysunki, pisma ludzi nie). Każda zamontowana część zapełnia się na rysunku. Montaż to fizyczna czynność przy ramie z animacją, a nie klik w okienku.
-- To jest pierwszy etap Żaglowozu (etap 0 → 1 z [SWIAT.md: Żaglowóz](SWIAT.md#żaglowóz)) i pierwsze użycie przyjętej zasady „Wolt jest przednim kołem” ([DEMO-ZEGLUGA.md](DEMO-ZEGLUGA.md#wolt-jako-przednie-koło-balast-i-olinowanie-wojtek-2026-11-1011)).
+Liczby (moce, czasy, ilości) to punkt wyjścia do strojenia w testach.
 
-Jeśli Wojtkowi chodziło o coś innego (np. budowę bazy, prawdziwy crafting z surowców), to jest pierwsze pytanie w [Do decyzji](#do-decyzji).
+## Pętla w jednym zdaniu
 
-## Miejsce w fabule
+**Prąd otwiera drzwi, za drzwiami jest warsztat, warsztat robi części na więcej prądu, a więcej prądu otwiera dane.** Każdy etap daje narzędzie do następnego. To ten sam łańcuch co w The Last Caretaker (zasil, otwórz, zbuduj, zasil więcej), tylko nasz: kable owijają się o przeszkody, prąd zależy od chmur, Wolt wszystko ładuje przez fizyczne połączenie.
 
-Zmiana względem POCZATEK.md: dotychczasowa Scena 5 (wózek gotowy, tylko pusta bateria) i część Sceny 6 (maszt i żagiel na wózku) zlewają się w ten jeden poziom. Scena 6 zaczyna się wtedy od razu na Popielnej Równinie, z Żaglowozem etapu 1. Płozy (rama bojerka) zostają na równinę, jako pierwsza brama metroidvanii.
+## Miejsce
 
-| Przed | Ten poziom | Po |
-|---|---|---|
-| Scena 2: mapa z plotera, wyjazd przez bramę. Scena 4 „Odjazd” (droga 4,2 km, na razie karta) | Wolt dociera do R-2 na rezerwie, składa Żaglowóz z gołej ramy, ładuje go, przechodzi symulator Q-1 i wyjeżdża żaglem z kotliny | Scena 6: Popielna Równina, świat otwarty, wydmy wymagają płóz |
+Rozdzielnia polowa **R-2** w kotlinie (z [POCZATEK.md, Scena 5](POCZATEK.md#scena-5-rozdzielnia-polowa-i-pierwszy-pojazd-ok-20-min)): kontenery, ogrodzenie, rząd paneli, szafa sterownicza. Wolt dociera tu na rezerwie z mapą z plotera (koniec Sceny 2 i 4). Dochodzi **moduł bazy**: niski, półzakopany bunkier-kontener techników z zamkiem elektrycznym. W środku jest stół warsztatowy i **terminal misji** z dziennikiem trasy wózka.
 
-## Czego uczy
-
-1. **Prąd jest fizyczny i zależy od świata:** zakurzone panele, chmury, kabel z ograniczoną długością.
-2. **Budowa z części:** szukanie, rozbiórka, holowanie ciężkich rzeczy, montaż według rysunku, w dowolnej kolejności.
-3. **Zasób, który ma dwa zastosowania:** jeden bęben kabla na ładowanie i na olinowanie. Sprytna trasa kabla zostawia metry na liny.
-4. **Żegluga:** wiatr, cień wiatrowy za kontenerami, szot, zwrot. Najpierw w symulatorze w głowie Q-1 (decyzja 2026-11-11), potem naprawdę.
-
-## Mapa kotliny R-2 (ok. 70 × 50 m)
-
-Kotlina jest osłonięta od wiatru. Ubity jest plac rozdzielni i droga. Poza nimi sypki popiół, w którym Wolt grzęźnie (zasada „bez skraju mapy” z 2026-11-11). Wiatr wieje z zachodu, ale na dnie kotliny jest słaby; pełny wiatr zaczyna się na krawędzi, przy wyjeździe na wschód.
+Poziom da się też włączyć osobno (`?scene=r2` i menu), bo to test.
 
 ```
   N
-  ^       wydmy (sypkie, zajawka: płozy)            ~~~~~~~~~~~~~~
-          . . . . . . . . . . . . . . . . . . . .   ~ POPIELNA   ~
-   [WRAK PRZYCZEPY]   . . . . . . . . . . . . .     ~ RÓWNINA    ~
-    w popiele, oś z     .                            ~ (meta)     ~
-    kołami, beczka     .        [MASZT ANTENOWY]       ~~~~~~^~~~~~~
-    z olejem obok     .          na zawiasie, 9 m             |
-          :          +====== płot ==========+                 | droga pod górę,
-          :          |  [P1][P2][P3][P4]    |                 | pełny wiatr
-          :  dziura  |   panele (kurz)      |                 |
-          :<-w płocie|                      |   [STOS PALET]  |
-                     |  [SZAFA R-2]  port   |    przy płocie  |
-                     |   + bęben 26 m       |                 |
-  wjazd z zachodu    |                      |                 |
-  (z Olszanki) ====> brama   [KONT. A]  [KONT. B]             |
-                     |        okno ^          ^ zamek elektr. |
-                     |                                        |
-                     |      [WIATA]  rama wózka na klockach ==+==> wyjazd
-                     |      plandeka na dachu, rysunek na ścianie
-                     +========================================+
-                                                         S
+  ^      sypki popiół (bez skraju mapy: grzęźnięcie)
+     [ZŁOMOWISKO]                     [WRAK AUTA]
+     wraki paneli, akumulatory,       akumulator, miedź,
+     latarnia, beczka z olejem        plastik, szkło
+          :                                :
+          +========= płot ==========+======+
+          |  P1   P2   P3   [P4]    |
+          |  ok   szyba złącze pusty|   panele na stelażach, kable zerwane
+          |    \   |    /           |
+          |   [REGULATOR / SZAFA]   |   spalony bezpiecznik, port Wolta
+          |         :               |
+  wjazd   |   [KONT. A]   [KONT. B] |   A: otwarty, skrzynia serwisowa
+  ====>  brama   okno        |      |   B: przewrócony, złom w środku
+          |                         |
+          |   [BUNKIER BAZY]========+   zamek elektryczny, wyrwany zawias
+          |    stół, terminal,      |
+          |    akumulatory stacji   |
+          +=========================+
+                                  S
 ```
 
-- **Szafa R-2** z portem i bębnem 26 m kabla, panele P1–P4 (razem 600 W czyste, ok. 90 W zakurzone).
-- **Kontener A** (otwarty, okno w ścianie): notatka technika z R-2, dziennik trasy. Okno daje skrót dla kabla.
-- **Kontener B** (zamek elektryczny): w środku pakiet balastowy (skrzynia z baterią na szynie) i bloczki.
-- **Wiata**: goła rama wózka (burty, widelec dziobowy pod Wolta, gniazdo osi tylnej, pięta masztu), na dachu plandeka, na ścianie rysunek techniczny.
-- **Wrak przyczepy** za dziurą w płocie, na skraju sypkiego popiołu: tylna oś z dwoma kołami (zapieczone łożyska), obok cieknąca beczka z olejem.
-- **Maszt antenowy** R-2 na zawiasie (9 m), podstawa na czterech śrubach.
-- **Stos europalet** (pokład, decyzja Wojtka z 2026-11-06, że pokład ma być z palet i podpór).
+## Sterowanie i UX craftingu (to testujemy)
 
-## Rysunek techniczny (plan budowy)
+Bierzemy to, co już działa w demie [„Warsztat”](DEMO-WARSZTAT.md) (`src/craft`): ekwipunek ze stosami, rozbiórka, przepisy ręczne i stołowe, sieć z bilansem. Zmieniamy tylko to, co ma być sprawdzone w grze:
 
-Na ścianie wiaty wisi pożółkły rysunek wózka z dorysowanym ołówkiem masztem i trójkątem żagla (technik z R-2 też o tym myślał). Wolt go skanuje (E), a od tej chwili:
-
-- rysunek jest w Archiwum (J) i w rogu ekranu jako mała ikona z polami części: puste pola są szarym konturem, zamontowane wypełniają się kolorem;
-- przy ramie widać duch części w jej gnieździe, gdy Wolt podjedzie z pasującą częścią (na ramieniu albo na holu);
-- przytrzymanie E montuje część z animacją (ramię podnosi, dopasowuje, iskra lub stuk klucza, dźwięk). Montaż kosztuje trochę baterii Wolta.
-
-| # | Część | Skąd | Mechanika | Czas |
-|---|---|---|---|---|
-| 1 | **Oś tylna z kołami** | wrak przyczepy | rozbiórka (przytrzymaj E), łożyska zapieczone → olej z beczki (E przy beczce, potem E przy osi), oś za ciężka do ramienia → hol na linie, przez dziurę w płocie, w popiele zarzuca | ~3 min |
-| 2 | **Pokład z palet** | stos palet | każda paleta osobno na holu (3 kursy po kilkanaście metrów), montaż jedna po drugiej na burtach | ~1,5 min |
-| 3 | **Maszt** | maszt antenowy | odkręcić 4 śruby (przytrzymaj E), zaczepić hol do topu przez linkę, odjechać: maszt kładzie się powoli na zawiasie (pierwsza fizyka „ciągnę coś, co się przewraca”), potem odpiąć z zawiasu i doholować pod wiatę. Długi ładunek: na zakrętach zahacza o płot | ~2,5 min |
-| 4 | **Balast** (skrzynia z baterią na szynie) | kontener B | zamek elektryczny: kabel własny Wolta (3 m) już nie sięga, trzeba podać prąd z szafy R-2 kablem z bębna (powtórka lekcji ze Sceny 2, ale teraz z obcego źródła) | ~1,5 min |
-| 5 | **Żagiel** | plandeka z dachu wiaty **albo** powłoka balonu meteo | plandeka: ściągnąć ramieniem z dachu (przytrzymaj E), wiata zostaje goła. Balon: jeśli gracz przywiózł powłokę z Olszanki (droga powrotna, gdy wyrzutnia balonów będzie dostępna). Balon jest lżejszy i ciągnie lepiej, plandeka jest ciężka i wolniejsza: powód, żeby kiedyś wrócić | ~1 min |
-| 6 | **Olinowanie** | bęben 26 m | 8 m kabla jako liny (szot, wanty, fał). Montaż lina po linie (decyzja „sznurki dokładnie”) | ~1 min |
-
-**Kolejność jest dowolna**, poza dwiema zależnościami ze świata: żagiel wymaga masztu, olinowanie wymaga masztu i żagla. Oś można zamontować w każdej chwili, a dopóki jej nie ma, rama stoi na klockach.
-
-## Prąd: panele, chmury, kabel
-
-1. **Przyjazd na rezerwie.** Wolt wjeżdża z zachodu w szarości, wolno (jak koniec Sceny 4). Pierwsza rzecz: wpiąć kabel własny (3 m) w port szafy. Zakurzone panele dają ok. 90 W, pasek rośnie powoli.
-2. **Czyszczenie paneli** ramieniem (przytrzymaj E przy każdym): każdy czysty panel +130 W. Po czterech jest 600 W w pełnym słońcu. Kolor obrazu wraca stopniowo razem z baterią (jak w Hali).
-3. **Chmury.** Po niebie płyną cienie chmur (mechanika z dema [„Słońce”](DEMO-SLONCE.md)). Gdy cień siedzi na panelach, moc spada do ok. 25%. Bilans Q-1 pokazuje to linia po linii. Nie jest to przeszkoda, tylko rytm: ładowanie idzie falami, a gracz czuje, że prąd zależy od nieba.
-4. **Kabel z bębna (26 m).** Potrzebny dwa razy:
-   - do zamka kontenera B (chwilowo, potem można go zwinąć: Q),
-   - do ładowania balastu w gotowym wózku.
-   Trasa z szafy do wiaty dookoła kontenerów ma ok. 20 m. Trasa przez okno kontenera A ma ok. 14 m. Olinowanie bierze 8 m. **20 + 8 = 28 > 26**, więc ze zwykłą trasą zabraknie 2 m. Rozwiązania (żeby nie było martwego punktu): poprowadzić przez okno (14 + 8 = 22, zapas), **albo** zamontować olinowanie dopiero po naładowaniu i zwinąć kabel ładujący, **albo** dorobić 5 m z drutu z płotu (rozbiórka przęsła). Trzy drogi, każda działa.
-5. **Ładowanie balastu**: bateria pojazdu 1,2 kWh, w pełnym słońcu ok. 90 s czasu realnego, w cieniu dłużej. Ładowanie idzie w tle, więc gracz może w tym czasie montować pozostałe części (równoległość = tempo).
-
-Po co ładować, skoro jest wiatr: **na dnie kotliny wiatru prawie nie ma** (cień za kontenerami i zboczem). Z kotliny trzeba wyjechać na silniku w piaście Wolta, który czerpie z balastu. Bez ładunku też się da (Wolt pcha z własnej baterii, wolniej i na granicy), więc nie ma blokady, jest tylko gorsza wersja.
-
-## Symulator Q-1 (pierwsza żegluga)
-
-Gdy ostatnia część jest na miejscu, Wolt wczepia się w dziób jako przednie koło (animacja z dema „Żegluga”, ok. 4,5 s). Zanim ruszy, bateria pierwszy raz „uczy się” żeglugi: obraz przechodzi w chłodny symulator z liniami skanowania ([DEMO-ZEGLUGA.md: Szkolenie](DEMO-ZEGLUGA.md#szkolenie-w-symulatorze-q-1-i-egzamin-wojtek-2026-11-11)).
-
-W poziomie krótsza wersja, ok. 2 min, trzy lekcje i mini-egzamin:
-
-1. **Szot**: ustawić bom na najlepszy kąt i utrzymać 4 s.
-2. **Ostro do wiatru i zwrot**: jeden zwrot przez sztag i rozpędzenie.
-3. **Balast w szkwale**: przetrzymać podmuch na krawędzi.
-4. **Mini-egzamin**: trzy bramki pod wiatr, halsując, bez limitu czasu (porażka = start od początku egzaminu, nic więcej).
-
-Lekcje 4–6 z dema i pełny egzamin zostają na później (np. pierwszy szkwał na równinie). Symulator można pominąć (N), ale wtedy Q-1 mówi przy każdej pierwszej pomyłce jedną linijkę podpowiedzi.
-
-## Wyjazd i zakończenie
-
-1. **Silnikiem z kotliny.** Wolt pcha Żaglowóz drogą na wschód. Żagiel łopocze bez wiatru. Za kontenerami i wiatą widać na ziemi zmarszczki pyłu tylko tam, gdzie dochodzi wiatr.
-2. **Krawędź kotliny.** Pierwszy prawdziwy podmuch z zachodu: żagiel się napina, liny trzeszczą, balast trzeba przesunąć. Wiatr od tyłu i z boku, więc łatwo.
-3. **Popielna Równina.** Szeroki widok: płaskie, szare pole, wydmy, słupy z drutami, w oddali punkt z dziennika trasy wózka. Meta poziomu to pierwszy słup przy starej drodze, ok. 250 m. Kto zjedzie z nasypu w wydmy, poczuje, że koła grzęzną (zajawka płóz).
-4. Kamera się oddala, Żaglowóz jest małą kropką z pomarańczowym trójkątem, wyciemnienie, karta „Scena 6 · Popielna Równina”.
-
-## Rytm (ok. 15 min)
-
-| Minuta | Co robi gracz | Nowe |
+| Element | Jak działa | Co sprawdzamy |
 |---|---|---|
-| 0:00–1:30 | przyjazd na rezerwie, port, czyszczenie paneli | chmury i moc paneli |
-| 1:30–2:30 | wiata, rama, skan rysunku; kontener A (notatka, dziennik) | rysunek jako plan budowy |
-| 2:30–9:30 | sześć części w dowolnej kolejności, w tym kabel do kontenera B i ładowanie w tle | rozbiórka osi, olej, kładzenie masztu holem, kabel na dwa cele |
-| 9:30–10:00 | wczepienie w dziób | Wolt jako przednie koło |
-| 10:00–12:00 | symulator Q-1 | szot, zwrot, balast |
-| 12:00–15:00 | silnik z kotliny, pierwszy wiatr, równina, meta | prawdziwa żegluga, cień wiatrowy |
+| **Ekwipunek** | 6 miejsc na Wolcie, stosy jak w „Warsztacie” (surowce po 20, kabel 40 m, części 5–10). Duże rzeczy (rama panelu, akumulator) tylko na **oponie na holu** (Scena 2). | czy 6 miejsc daje przyjemne decyzje, czy tylko irytuje |
+| **Rozbiórka** | przytrzymaj E albo LPM przy złomie. Najechanie myszą mówi, co to jest i co da (decyzja 2026-11-08). | tempo i czytelność łupu |
+| **Nauka przepisów** | pierwsza rozbiórka albo skan zepsutej rzeczy daje obserwację, Q-1 liczy ją 5–15 s w tle, tylko z nadwyżką prądu, i dopisuje przepis. Bez drzewka. | czy gracz rozumie, skąd się bierze przepis |
+| **Naprawa w miejscu** | przy zepsutej rzeczy przytrzymaj E: jeśli Wolt ma materiały i zna przepis, robi część i od razu ją montuje (jedna czynność, animacja ramienia). Bez otwierania menu. | **wariant A** |
+| **Panel wytwarzania** | C otwiera listę znanych przepisów. Brakujący materiał świeci na czerwono, z ikoną miejsca, w którym Wolt go widział. Seria ×5. | **wariant B** |
+| **Ręcznie a przy stole** | ręcznie: wszędzie, wolno (np. 4 s), z baterii Wolta. Przy stole w bazie: 2× szybciej, z sieci, i tylko tam rzeczy duże (rama panelu, magazyn). | czy stół jest wyraźną nagrodą |
+| **Montaż budowli** | nowy panel albo magazyn stawia się z holu na wolny stelaż lub podłogę (duch w miejscu, przytrzymaj E), z animacją. | czy stawianie jest wygodne |
 
-Zasada „co 15–30 s coś do zrobienia” (2026-11-08) jest spełniona: w części budowy zawsze jest kilka otwartych celów naraz, a ładowanie biegnie w tle.
+A i B działają razem. Test pokaże, czy menu C jest w ogóle potrzebne, czy wystarcza naprawa w miejscu.
+
+## Przepisy (8)
+
+Surowce jak w PLAN.md (M5): **miedź, plastik, żelazo, szkło**, plus **olej** jako materiał zużywalny (rdza, SWIAT.md). Części z rozbiórki: **ogniwo PV**, **akumulator**, **szyba panelu**.
+
+| Przepis | Skład | Gdzie | Uczy się z | Do czego |
+|---|---|---|---|---|
+| Kabel 5 m | 1 miedź + 1 plastik | ręcznie | znany od początku (Scena 2) | połączenia |
+| Złącze panelu | 1 miedź + 1 plastik | ręcznie | skan złącza P3 | P3, nowe panele |
+| Bezpiecznik | 1 miedź + 1 szkło | ręcznie | skan regulatora | regulator |
+| Rozgałęźnik | 2 miedź + 1 plastik + 1 żelazo | ręcznie | rozbiórka latarni | łączenie paneli w jedną linię |
+| Sworzeń | 1 żelazo | ręcznie | skan zawiasu | drzwi bunkra (+ 1 olej) |
+| Rama panelu | 3 żelazo | stół | rozbiórka wraku panelu | nowy panel |
+| Panel słoneczny | rama + 2 ogniwa PV + szyba + złącze | stół | rozbiórka wraku panelu | +150 W |
+| Magazyn energii | 4 akumulatory + 2 żelazo + 1 kabel | stół | skan akumulatorów stacji w bunkrze | bufor 1,5 kWh, oddaje do 600 W |
+
+## Etapy i rytm
+
+| Minuta | Etap | Co robi gracz | Wynik |
+|---|---|---|---|
+| 0:00–1:00 | **Przyjazd** | Wolt na rezerwie wpina kabel własny w port szafy: cisza, lampka gaśnie. Panele nie są podłączone. Skan regulatora: spalony bezpiecznik, pierwsza obserwacja | cel: „prąd z paneli” |
+| 1:00–5:00 | **Panele** | P1 sprawny, ale ma zerwany kabel. P2 ma pękniętą szybę: zamiana na szybę z wraku panelu na złomowisku. P3 ma spalone złącze: skan, przepis, złącze. P4 to pusty stelaż (na później). Rozgałęźnik zbiera P1–P3 w jedną linię do regulatora, bezpiecznik w regulatorze. Kable owijają się o stelaże i kontenery | 3 × 150 W = **450 W** w słońcu, Wolt się ładuje, kolor obrazu wraca |
+| 5:00–7:00 | **Drzwi bunkra** | Zamek elektryczny dostaje prąd kablem z szafy, ale drzwi stoją: wyrwany zawias. Skan, sworzeń z żelaza, olej z beczki. Przytrzymaj E: drzwi się otwierają | wejście do bazy |
+| 7:00–8:30 | **Baza** | Stół warsztatowy (zasila go linia z paneli), terminal misji: ekran budzi się i odmawia, wymaga **900 W przez 90 s** do pobrania dziennika. Pod ścianą martwe akumulatory stacji (skan, przepis na magazyn) | cel: „więcej prądu” i licznik W na terminalu |
+| 8:30–13:00 | **Więcej prądu** | Dwie drogi, można łączyć: **(a) panele** — na stole ramy z żelaza, ogniwa i szyby z wraków, złącza; P4 na pustym stelażu i dwa nowe na wolnym placu. 450 → 900 W w pełnym słońcu. **(b) magazyn** — 4 akumulatory z wraku auta i złomowiska (ciężkie, jadą na oponie), na stole magazyn, ładuje się z nadwyżki i przykrywa cień chmur. Najprościej: 1 nowy panel + magazyn | ≥ 900 W na terminalu |
+| 13:00–14:30 | **Pobieranie** | Wolt wpina ramię w terminal. Pasek 90 s. Przechodzi chmura: panele spadają do 25%. Z magazynem pobieranie idzie dalej, bez niego **staje (nie cofa się)** i rusza, gdy wyjdzie słońce | dziennik trasy wózka: punkt na równinie |
+| 14:30–15:00 | **Koniec** | Bunkier świeci, stół i kołyska zostają jako druga baza. Q-1 dostaje przepis z dziennika (zajawka). Karta następnej sceny | |
+
+Zasada „co 15–30 s coś do zrobienia” (2026-11-08): w środkowej części zawsze jest kilka celów naraz, a Q-1 liczy przepisy w tle.
+
+## Prąd w liczbach
+
+| Źródło / odbiór | Moc |
+|---|---|
+| panel czysty, pełne słońce | 150 W |
+| panel w cieniu chmury | 40 W (ok. 25%) |
+| magazyn energii | 1,5 kWh, oddaje do 600 W |
+| stół warsztatowy (gdy pracuje) | 200 W |
+| zamek bunkra | 50 W |
+| terminal (pobieranie) | 900 W przez 90 s |
+| Wolt w kołysce bunkra | do 150 W |
+
+Cienie chmur przesuwają się po placu z wiatrem (logika z dema [„Słońce”](DEMO-SLONCE.md)). Panel „Sieć” pokazuje bilans linia po linii (decyzja 2026-11-08), a terminal ma własny wskaźnik „mam / potrzebuję”.
+
+## Surowce: ile jest, ile trzeba
+
+Najkrótsza droga (3 naprawy, drzwi, 1 nowy panel, magazyn) potrzebuje ok. **10 miedzi, 8 plastiku, 7 żelaza, 1 szkła, 1 oleju, 2 ogniw PV, 2 szyb z wraków (P2 i nowy panel) i 4 akumulatorów** (licząc 10 m kabla ze skrzyni na start). Na placu leży ok. 30% więcej każdego surowca, żeby żadna pomyłka (np. zmarnowany kabel) nie zamykała drogi.
+
+| Źródło | Daje |
+|---|---|
+| złomowisko: 2 wraki paneli | po 2 ogniwa, 1 szyba, 2 żelaza |
+| złomowisko: kupki złomu (×5) | razem ok. 7 miedzi, 8 plastiku, 3 żelaza |
+| złomowisko: latarnia | 2 miedź, 1 szkło, 1 żelazo |
+| złomowisko: beczka | 2 olej, 1 żelazo |
+| wrak auta | 2 akumulatory, 2 miedź, 2 plastik, 1 szkło |
+| kontener B (przewrócony) | 2 akumulatory, 2 żelazo |
+| skrzynia serwisowa w kontenerze A | 10 m kabla (starter), 2 miedź, 1 plastik |
 
 ## Brak martwych punktów
 
-- Każdy ładunek na holu odczepia Q. Oś, maszt i palety da się zostawić i wrócić.
-- Bateria Wolta na postoju się odnawia (0,15%/s) i ma port szafy na stałe pod ręką.
-- Kabel zawsze da się zwinąć i poprowadzić od nowa. Za mało metrów: trzy wyjścia (wyżej).
-- Maszt przewrócony w złą stronę (na płot) da się podnieść holem z drugiej strony.
-- Wywrotka Żaglowozu w symulatorze: restart lekcji. Na żywo: Wolt odczepia się (G), stawia pojazd holem i wczepia z powrotem.
+- Bateria Wolta na postoju się odnawia, a port szafy jest zawsze pod ręką.
+- Każdy kabel da się zwinąć (Q) i odzyskać metry. Hol zawsze odczepia Q.
+- Surowców jest więcej, niż trzeba, a zrobione części można rozebrać z powrotem (z małą stratą).
+- Pobieranie przy braku prądu staje, a nie cofa się.
+- Q-1 liczy przepisy tylko z nadwyżką, ale nawet na samym regulatorze nadwyżka jest, więc nauka nigdy nie stoi na stałe.
 
 ## Fabuła i notatki
 
-- **Notatka technika z R-2** w kontenerze A: rysunek wskaźnika baterii zakreślony na 80% i ikona ognia (bez zmian z POCZATEK.md).
-- **Dziennik trasy wózka** w pamięci szafy R-2 (format maszyn, czytelny od razu): ostatni kurs, punkt na równinie, którego nie ma na mapie stacji. To cel Sceny 6.
-- **Rysunek techniczny z dorysowanym masztem**: ktoś tu przed Woltem planował żagiel. Nowa notatka w Archiwum, z odręcznym podpisem do odkodowania później.
-- **Zajawki metroidvanii**: wydmy za płotem (płozy), drugi zamknięty kontener z innym złączem (analiza protokołu, później), krater po balonie meteo na zboczu (powód, żeby wrócić z powłoką).
+- **Notatka technika** w kontenerze A: rysunek wskaźnika baterii zakreślonego na 80% i ikona ognia (z POCZATEK.md).
+- **Kartka na drzwiach bunkra**: rysunek zawiasu z kropelką oleju, czyli wskazówka do drzwi bez czytania pisma.
+- **Terminal**: dziennik trasy wózka w formacie maszyn, czytelny od razu. Ostatni kurs, punkt na równinie, którego nie ma na mapie stacji (cel Sceny 6).
+- **Zajawki**: zamknięta szafa w bunkrze z innym złączem (analiza protokołu później), wózek serwisowy pod wiatą z pustą baterią (pojazd, gdy przyjdzie jego czas).
+
+## Co mierzymy w teście
+
+Do oceny przez Wojtka po zagraniu:
+
+1. Czy naprawa w miejscu (A) jest przyjemniejsza niż panel C (B), i czy C jest w ogóle potrzebny.
+2. Czy 6 miejsc w ekwipunku daje decyzje, czy tylko bieganie w tę i z powrotem.
+3. Czy nauka przepisów z obserwacji jest czytelna (czy gracz wie, czemu nagle umie zrobić złącze).
+4. Czy stół warsztatowy jest odczuwalną nagrodą za wejście do bazy.
+5. Czy dwie drogi do 900 W (panele i magazyn) są zrozumiałe i czy chmury robią dobre napięcie, a nie irytację.
+6. Czy 15 minut to dobry czas.
+
+Pomoc w ocenie: poziom zapisuje w przeglądarce (`localStorage`, w `try/catch`) prosty dziennik testu: czas każdego etapu, liczbę otwarć panelu C, liczbę napraw w miejscu, przepełnienia ekwipunku, kursy z holem. Na końcu poziom pokazuje go jako kartkę do skopiowania.
 
 ## Jak to zbudować w kodzie (plan po akceptacji)
 
-Nowa scena `r2` w grze, według [GRA.md: Jak dodać nową scenę](GRA.md#jak-dodać-nową-scenę). Wspólny silnik już ma prawie wszystko:
+Nowa scena gry `r2` według [GRA.md: Jak dodać nową scenę](GRA.md#jak-dodać-nową-scenę). Wspólne kawałki:
 
 | Potrzeba | Skąd |
 |---|---|
-| jazda, hol, kabel z owijaniem, A*, grzęźnięcie w popiele | `src/sim/drive`, `tow`, `cable`, `path`, `bogDepth` z `src/game/sim/station.ts` |
-| fizyka Żaglowozu, wiatr z cieniem za przeszkodami, lekcje | `src/sail/sim/landYacht.ts`, `windField.ts`, `training.ts` |
+| ekwipunek, przepisy, rozbiórka, sieć z magazynami | `src/craft/sim/inventory.ts`, `src/craft/data.ts`, `solveNetworks` (do wydzielenia do wspólnego silnika, żeby demo „Warsztat” dalej działało) |
+| jazda, hol, kabel z owijaniem, A*, grzęźnięcie | `src/sim/drive`, `tow`, `cable`, `path`, `bogDepth` |
 | cienie chmur i moc paneli | logika z dema „Słońce” (`src/sun`) |
-| wczepianie, olinowanie, żagiel | widok z dema „Żegluga” (`src/sail/render`) |
+| modele paneli, stołu, akumulatorów, wraków | KayKit z `src/assets/craft` |
 
-Nowe:
+Nowe pliki: `src/game/sim/r2.ts` (logika poziomu, czysty TS), `test/r2.test.ts` (przejście obiema drogami przez A*, jak `test/station.test.ts`), `src/game/render/r2View.ts`, `src/game/scenes/r2.ts`.
 
-- `src/game/sim/build.ts`: **ogólny montaż według rysunku** (gniazda, zależności, postęp montażu, zdarzenia). Wielokrotnego użytku dla następnych pojazdów i baz. Test w `test/build.test.ts`.
-- `src/game/sim/r2.ts`: logika poziomu (panele, chmury, kabel, kontenery, maszt na zawiasie, oś, palety, plandeka, przejście w żeglugę). Test przejścia całego poziomu przez A* jak `test/station.test.ts`.
-- `src/game/render/r2View.ts` + `render/r2/*`: kotlina, wiata, animacje montażu część po części (decyzja 2026-11-11: budowanie ma mieć animację).
-
-Proponowane PR-y: (1) logika i test całego poziomu z prostym widokiem, (2) animacje montażu i wygląd kotliny, (3) symulator i wyjazd żaglem, (4) dopieszczenie dźwięku i światła. Każdy idzie na Pages, a scena jest dostępna pod `?scene=r2` i w menu.
+Proponowane PR-y: (1) wspólny crafting wydzielony z dema i logika poziomu z testem, (2) widok kotliny i bunkra z animacjami naprawy, (3) chmury, terminal, dziennik testu. Każdy idzie na Pages.
 
 ## Do decyzji
 
-1. Czy „od zera” to dobrze odczytane: **pierwszy pojazd złożony z części znalezionych na miejscu**, bez przepisów? Czy raczej budowa bazy albo prawdziwy crafting z surowców?
-2. Czy łączymy Scenę 5 z budową żagla (pierwszy Żaglowóz już w R-2, płozy dopiero na równinie)?
-3. Żagiel z plandeki jako główna droga, a powłoka balonu jako lepsza wersja na powrót: OK?
-4. Krótki symulator (3 lekcje + mini-egzamin) w poziomie, reszta później: OK?
+1. Czy R-2 to dobre miejsce, czy wolisz inne (np. wyspa w Szklanym Zalewie, gdzie dopływa się Żaglowozem)?
+2. Czy cel „terminal 900 W przez 90 s” to dobry finał, czy ma być większy (np. kilka etapów pobierania)?
+3. Czy testujemy oba warianty naraz (naprawa w miejscu i panel C), czy przełącznik w menu, żeby porównać osobno?
+
+## Odłożone: pierwszy Żaglowóz z gołej ramy
+
+Pierwsza wersja z 2026-11-17: w R-2 pod wiatą stoi goła rama wózka, a Wolt składa z niej Żaglowóz według rysunku technicznego (oś z wraku, pokład z europalet, maszt antenowy położony holem, balast, żagiel z plandeki albo balonu, liny z kabla), ładuje go i wyjeżdża żaglem na Popielną Równinę po krótkim symulatorze Q-1. Wojtek: nie musi to być składanie Żaglowozu. Pomysł zostaje do wykorzystania przy przejściu od wózka do Żaglowozu (POCZATEK.md, Scena 6).
