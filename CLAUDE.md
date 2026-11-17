@@ -31,4 +31,5 @@
 
 - `npm run dev`, `npm test`, `npm run build`. `?scene=hall|station|odjazd` przeskakuje do sceny gry, a `?lang=en` włącza angielski.
 - Modele: `tools/pack-models.mjs` pakuje paczki CC0 do `src/assets/models`.
-- Zrzuty z Playwright w chmurze: `vite preview` nie działa z headless Chromium (404 na skryptach). Trzeba skopiować `dist/` do `<katalog>/power-and-ash/` i uruchomić `python3 -m http.server`.
+- **Praca tylko lokalnie (od 2026-11-17).** Projekt rozwijamy wyłącznie na MacBooku Wojtka, klon w `~/games/power-and-ash`. Nie zakładaj sesji w chmurze ani worktree; przed pracą `git pull` na `main`, potem gałąź i PR jak zwykle.
+- Podgląd lokalnie: `npm run dev` (Vite na localhost). Stara uwaga z czasów chmury: `vite preview` w headless Chromium dawał 404 na skryptach; obejście to skopiować `dist/` do `<katalog>/power-and-ash/` i uruchomić `python3 -m http.server`.

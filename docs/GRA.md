@@ -15,7 +15,7 @@ npm run build   # tsc --noEmit + vite build do dist/
 
 - `?scene=<id>` przeskakuje do sceny, np. `?scene=hall` albo `?scene=station`. Identyfikatory są w `src/game/main.ts`.
 - W konsoli przeglądarki stan sceny jest dostępny jako `window.hall` albo `window.station`. Można go zmieniać ręcznie, np. `station.turbine = true`.
-- Zrzuty ekranu z Playwright w chmurze: `vite preview` w headless Chromium zwraca 404 dla skryptów. Trzeba skopiować `dist/` do katalogu `www/power-and-ash/` i podać go przez `python3 -m http.server`.
+- Zrzuty ekranu z Playwright (uwaga z czasów pracy w chmurze, od 2026-11-17 pracujemy lokalnie): `vite preview` w headless Chromium zwraca 404 dla skryptów. Trzeba skopiować `dist/` do katalogu `www/power-and-ash/` i podać go przez `python3 -m http.server`.
 
 ## Architektura
 

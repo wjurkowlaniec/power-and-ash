@@ -159,6 +159,8 @@ Nowa mechanika w logice dostaje test. Testy logiki nie dotykają Three.js.
 
 ## Build
 
+Środowisko: od 2026-11-17 praca tylko lokalnie na MacBooku Wojtka (`~/games/power-and-ash`, Node 24, npm 11). Wzmianki o „chmurze” niżej są historyczne.
+
 - `npm run dev`: Vite na localhost, gra pod `/`, demo pod `/demo/`.
 - `npm run build`: `tsc --noEmit` (typy), potem `vite build` do `dist/` z sześcioma stronami (`rollupOptions.input`: `index.html`, `demo/index.html`, `demo-craft/index.html`, `demo-sail/index.html`, `demo-sun/index.html`, `demo-returns/index.html`). `base: './'`, więc działa pod `/power-and-ash/`.
 - `npm run build:single`: jeden samodzielny plik HTML w `dist-single/` (modele wklejone jako data URI). Domyślnie gra, `PAGE=demo` robi demo, `PAGE=craft` demo „Warsztat”, `PAGE=sail` demo „Żegluga”, `PAGE=sun` demo „Słońce”. Przydaje się do publikacji jako artefakt.
