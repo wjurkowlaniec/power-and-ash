@@ -8,7 +8,8 @@ import { GroundFx, SURFACES, Surface, pxPerMetre } from '../../render/groundFx';
 import { LOADS, ROPE } from '../../sim/tow';
 import { V2 } from '../../sim/vec';
 import { ItemId } from '../sim/craft';
-import { Island, IS_W, IS_H, P, BUNKER, DOOR_W, CLOUDS, cloudX, Heap, Pad } from '../sim/island';
+import { Island, IS_W, IS_H, P, BUNKER, DOOR_W, CLOUDS, cloudX, Heap, Pad, Pop, LineId, WARN_HEAT } from '../sim/island';
+import { Juice } from '../../render/juice';
 import { Post } from './post';
 import { glow, softDisc, canvasTex } from './station/kit';
 
@@ -18,6 +19,8 @@ const Q_GREEN = 0x5fe39a;
 const BEAM_TURN = 6;          // s per turn of the lighthouse
 const CX = 22, CY = 17, RX = 23, RY = 17.5;
 const ss = THREE.MathUtils.smoothstep;
+const HOT = new THREE.Color(0xff6a20);
+const FLOW = new THREE.Color(PAL.flow);
 
 const STEEL = mat(0x4b5155, { r: 0.6, m: 0.5 });
 const DARK = mat(0x2c2f31, { r: 0.8, m: 0.3 });
@@ -29,7 +32,7 @@ const WALL = mat(0x6d6a62, { r: 0.95 });
 /** Item colours for piles and the sled: colour only says "what kind", like the HUD. */
 const ITEM_COL: Partial<Record<ItemId, number>> = {
   copper: 0x8a5a3a, plastic: 0xc8c2b4, iron: 0x5d6266, glass: 0xaecbd0, oil: 0x2a2620,
-  cell: 0x22313c, pane: 0x9fb8c0, cable: 0x1b1b1b, battery: 0x3a3d40, frame: 0x6a6f73, panel: 0x1d2a33,
+  cell: 0x22313c, pane: 0x9fb8c0, cable: 0x1b1b1b, cableThick: 0x111111, trafo: 0x3d4447, battery: 0x3a3d40, frame: 0x6a6f73, panel: 0x1d2a33,
 };
 
 function lamp(): { o: THREE.Mesh; m: THREE.MeshStandardMaterial } {
@@ -62,6 +65,11 @@ export class IslandView {
   private piles = new Map<number, THREE.Object3D>();
   private cables = new Map<string, THREE.Mesh>();
   private flowMat = new THREE.MeshStandardMaterial({ color: 0x161818, roughness: 0.7, emissive: PAL.flow, emissiveIntensity: 0 });
+  /** The two lines that can overheat have their own material (they glow orange when hot). */
+  private lineMat: Record<LineId, THREE.MeshStandardMaterial> = { trunk: this.flowMat.clone(), feed: this.flowMat.clone() };
+  private juice: Juice;
+  private shake = 0;
+  private jolt = 0;
   private shadows: THREE.Mesh[] = [];
   private junctionBox!: THREE.Object3D;
   private junctionLamp!: THREE.MeshStandardMaterial;
@@ -130,6 +138,7 @@ export class IslandView {
     cm.emissive.setHex(Q_GREEN); cm.color.setHex(0x0c140f); this.wolt.cell.material = cm;
     this.anim = new WoltAnimator(this.wolt);
     s.add(this.wolt.group);
+    this.juice = new Juice(s, Math.max(3, Math.round(3 * Math.min(devicePixelRatio, 2))));
 
     const rock: Surface = { ...SURFACES.ash, y: 0.005 }, floor: Surface = { ...SURFACES.dustyConcrete, y: 0.04 };
     const b = BUNKER;
@@ -152,6 +161,7 @@ export class IslandView {
   }
   dispose() {
     removeEventListener('resize', this.onResize);
+    this.juice.dispose();
     this.post.dispose(); this.renderer.dispose(); this.renderer.domElement.remove();
   }
   project(p: V2, y = 0): { x: number; y: number } {
@@ -345,12 +355,49 @@ export class IslandView {
 
   // ---------- per frame
 
-  private cable(key: string, a: V2, b: V2, ya: number, yb: number) {
+  private cable(key: string, a: V2, b: V2, ya: number, yb: number, mt = this.flowMat, r = 0.035) {
     let m = this.cables.get(key);
     if (!m) {
+      // a heavy cable replaces the thin one under a new key: drop the old tube
+      const base = key.replace(/:.*$/, '');
+      for (const [k, o] of this.cables) if (k !== key && k.replace(/:.*$/, '') === base) { this.scene.remove(o); o.geometry.dispose(); this.cables.delete(k); }
       const pts = [new THREE.Vector3(a.x, ya, a.y), new THREE.Vector3(a.x + (b.x - a.x) * 0.15, 0.03, a.y + (b.y - a.y) * 0.15), new THREE.Vector3(a.x + (b.x - a.x) * 0.85, 0.03, a.y + (b.y - a.y) * 0.85), new THREE.Vector3(b.x, yb, b.y)];
-      m = mesh(cableTube(pts, 0.035), this.flowMat, 0, 0, 0, true);
+      m = mesh(cableTube(pts, r), mt, 0, 0, 0, true);
       this.cables.set(key, m); this.scene.add(m);
+    }
+  }
+
+  /** A small action happened: puff, sparks, flash, a bump of what was touched, a nudge of the camera. */
+  pop(p: Pop) {
+    const at = new THREE.Vector3(p.at.x, 0.5, p.at.y), J = this.juice;
+    const near = (): THREE.Object3D | null => {
+      const pad = this.st.pads.findIndex(x => Math.abs(x.at.x - p.at.x) < 0.1 && Math.abs(x.at.y - p.at.y) < 0.1);
+      return pad >= 0 ? this.pads[pad].g : Math.abs(p.at.x - P.junction.x) < 0.1 && Math.abs(p.at.y - P.junction.y) < 0.1 ? this.junctionBox : null;
+    };
+    switch (p.kind) {
+      case 'take': if (!p.text || Math.random() < 0.5) J.burst(at.setY(0.25), { color: 0x6f6a62, n: 8, speed: 1.2, life: 0.7, gravity: 1.5, up: 0.7 }); break;
+      case 'tick': J.burst(at.setY(0.6), { color: 0xffb860, n: 3, speed: 2.2, life: 0.3, gravity: 12 }); this.jolt = Math.max(this.jolt, 0.25); break;
+      case 'fit': {
+        J.burst(at.setY(0.7), { color: 0xffd28a, n: 18, speed: 3, life: 0.45, gravity: 12 });
+        J.flash(at.clone().setY(1.2), 0xfff0d0, 8, 0.25);
+        const o = near(); if (o) J.bump(o, 0.14);
+        this.shake = Math.max(this.shake, 0.18); this.jolt = 1;
+        break;
+      }
+      case 'link':
+        J.burst(at.setY(0.6), { color: PAL.flow, n: 10, speed: 2, life: 0.35, gravity: 10 });
+        J.flash(at.clone().setY(1), PAL.flow, 5, 0.2);
+        { const o = near(); if (o) J.bump(o, 0.08); }
+        this.jolt = Math.max(this.jolt, 0.6);
+        break;
+      case 'made': J.burst(at.setY(0.9), { color: Q_GREEN, n: 12, speed: 1.5, life: 0.6, gravity: 2, up: 0.9 }); J.flash(at.clone().setY(1.2), Q_GREEN, 4, 0.35); this.jolt = Math.max(this.jolt, 0.5); break;
+      case 'spark': J.burst(at.setY(0.35 + Math.random() * 0.4), { color: 0xffa040, n: 4, speed: 2.5, life: 0.3, gravity: 14 }); break;
+      case 'trip':
+        J.burst(new THREE.Vector3(P.reg.x, 1, 13), { color: 0xffc070, n: 30, speed: 4, life: 0.6, gravity: 12 });
+        J.flash(new THREE.Vector3(P.reg.x, 1.4, 13), 0xffe0b0, 14, 0.35, 6);
+        this.shake = Math.max(this.shake, 0.4);
+        break;
+      case 'reset': J.flash(new THREE.Vector3(P.reg.x, 1.2, 13), PAL.ok, 4, 0.25); this.jolt = Math.max(this.jolt, 0.4); break;
     }
   }
 
@@ -369,12 +416,19 @@ export class IslandView {
     });
     this.junctionBox.visible = st.junction;
     setLamp(this.junctionLamp, st.junction ? (flowing ? 'ok' : 'off') : 'off', t);
-    if (st.junction) this.cable('junction', { x: P.junction.x, y: P.junction.y - 0.4 }, { x: P.reg.x, y: 12.1 }, 0.95, 0.6);
-    if (st.fed) this.cable('feed', { x: P.reg.x + 0.6, y: 12.9 }, { x: BUNKER.door - 0.3, y: BUNKER.y }, 0.4, 1.2);
+    const LN = st.lines;
+    if (st.junction) this.cable(LN.trunk.thick ? 'junction:thick' : 'junction', { x: P.junction.x, y: P.junction.y - 0.4 }, { x: P.reg.x, y: 12.1 }, 0.95, 0.6, this.lineMat.trunk, LN.trunk.thick ? 0.065 : 0.035);
+    if (st.fed) this.cable('feed', { x: P.reg.x + 0.6, y: 12.9 }, { x: BUNKER.door - 0.3, y: BUNKER.y }, 0.4, 1.2, this.lineMat.feed);
     setLamp(this.regLamp, st.regOk ? 'ok' : st.bridged ? 'blink' : st.overloaded ? 'bad' : 'blink', t);
     setLamp(this.portLamp, st.plugged ? 'ok' : flowing ? 'blink' : 'off', t);
     this.sparks.material.opacity = st.overloaded && !st.regOk ? (Math.random() < 0.15 ? 0.9 : 0.05) : st.bridged ? 0.3 + Math.random() * 0.4 : 0;
     this.flowMat.emissiveIntensity = flowing ? 0.45 + Math.sin(t * 6) * 0.15 : 0;
+    // an overloaded line glows from flow-blue to hot orange, and flickers once it sparks
+    for (const id of ['trunk', 'feed'] as LineId[]) {
+      const l = LN[id], m = this.lineMat[id];
+      m.emissive.copy(FLOW).lerp(HOT, Math.min(1, l.heat * 1.4));
+      m.emissiveIntensity = l.tripped ? 0 : (l.flow > 1 ? 0.45 + Math.sin(t * 6) * 0.15 : 0) + l.heat * 1.6 + (l.heat > WARN_HEAT ? Math.random() * 0.8 : 0);
+    }
     this.crateLid.parent!.rotation.x = st.crateOpen ? -1.9 : 0;
 
     // the bunker: the door slides aside, the roof lifts away while Wolt is inside
@@ -402,7 +456,9 @@ export class IslandView {
     CLOUDS.forEach((c, i) => { this.shadows[i].position.x = cloudX(c, t); });
 
     // Wolt
-    w.group.position.set(st.pos.x, -st.bog * 0.12, st.pos.y);
+    // a jolt when he works or fits something: a short hop and a shiver of the body
+    this.jolt = Math.max(0, this.jolt - dt * 4);
+    w.group.position.set(st.pos.x, -st.bog * 0.12 + this.jolt * 0.05 * Math.abs(Math.sin(t * 40)), st.pos.y);
     w.group.rotation.y = Math.PI / 2 - st.facing;
     w.group.updateMatrixWorld(true);
     const p = w.group.position;
@@ -491,8 +547,11 @@ export class IslandView {
     if (this.camTarget.lengthSq() === 0) this.camTarget.copy(want);
     this.camTarget.lerp(want, 1 - Math.exp(-dt * 2.5));
     this.camera.position.copy(this.camTarget).add(CAM_OFFSET);
+    this.shake = Math.max(0, this.shake - dt * 2.5);
+    if (this.shake > 0) this.camera.position.add(new THREE.Vector3((Math.random() - 0.5) * this.shake * 0.3, 0, (Math.random() - 0.5) * this.shake * 0.3));
     this.camera.lookAt(this.camTarget);
     this.camera.updateMatrixWorld();
+    this.juice.update(dt);
     this.post.render(this.scene, this.camera);
   }
 }

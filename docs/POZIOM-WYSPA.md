@@ -102,8 +102,25 @@ Zasada „co 15–30 s coś do zrobienia” (2026-11-08): w środkowej części 
 | zamek bunkra | 50 W |
 | terminal (pobieranie) | 900 W przez 90 s |
 | Wolt w kołysce bunkra | do 150 W |
+| kabel cienki / gruby | niesie 500 W / 1500 W (transformator: cienki ×3) |
 
 Cienie chmur przesuwają się po placu z wiatrem (logika z dema [„Słońce”](DEMO-SLONCE.md)). Panel „Sieć” pokazuje bilans linia po linii (decyzja 2026-11-08), a terminal ma własny wskaźnik „mam / potrzebuję”.
+
+## Klasy kabli i przeciążenie (decyzja 2026-11-17)
+
+Wojtek przyjął wniosek 2 z [INSPIRACJE.md](INSPIRACJE.md): klasy kabli i przeciążenie z transformatorem; grubsze kable będzie można później fabrykować. Na Wyspie:
+
+- **Dwie linie, które mogą się przegrzać:** od rozgałęźnika do szafy (niesie wszystko z paneli) i od szafy do bunkra (niesie wszystko, co pracuje w bunkrze, plus ładowanie magazynu). Kable od paneli do rozgałęźnika (po 150 W) nigdy się nie przegrzewają.
+- **Cienki kabel niesie 500 W, gruby 1500 W.** Trzy panele (450 W) mieszczą się w cienkim, czwarty panel już nie.
+- **Objawy przed szkodą:** przeciążony kabel świeci coraz mocniej z niebieskiego na pomarańczowy, brzęczy coraz wyżej, po kilku sekundach iskrzy i Q-1 mówi, ile watów idzie przez przewód na ile. Gdy dalej jest za dużo, **wybija zabezpieczenie linii** w szafie (trzask, błysk, linia gaśnie). E przy szafie je załącza; przy tym samym obciążeniu wybije znowu, szybciej.
+- **Na stałe:** gruby kabel na odcinek od rozgałęźnika (3 m, 5 m leży we wraku łodzi, przytrzymaj E przy słupku) i **transformator** w szafie na linię do bunkra (leży w przewróconym kontenerze, przytrzymaj E przy szafie), dzięki któremu ten sam cienki kabel niesie 3× więcej.
+- **Kiedy gracz to spotyka:** w drodze przez nowe panele (4–6 paneli, 600–900 W). Droga przez magazyn energii przy trzech panelach się nie przegrzewa, ale czwarty panel i ładowanie magazynu już tak.
+- **Brak prądu to brak prądu:** odbiornik bez pełnej mocy stoi (zamek, stół, kołyska, terminal), bez spowalniania.
+- Gruby kabel na Wyspie tylko się znajduje; przepis przyjdzie później w grze.
+
+## Soczyste drobne akcje (decyzja 2026-11-17)
+
+Wniosek 10 z [INSPIRACJE.md](INSPIRACJE.md): każda drobna czynność ma krótki dźwięk, błysk i drgnięcie. Rozbiórka: kurz, „+2 miedź” unoszące się nad kupką, brzęk; praca ramienia: iskierki i drżenie Wolta; montaż części: błysk, snop iskier, klik, sprężyste drgnięcie panelu albo słupka, lekkie szarpnięcie kamery; wpięcie kabla: niebieski błysk i klik wtyczki; zrobiona rzecz: zielony błysk Q-1 i dwa tony; wybicie linii: trzask i snop iskier z szafy.
 
 ## Surowce: ile jest, ile trzeba
 
@@ -115,8 +132,8 @@ Najkrótsza droga (3 naprawy, drzwi, 1 nowy panel, magazyn) potrzebuje ok. **10 
 | złomowisko: kupki złomu (×5) | razem ok. 7 miedzi, 8 plastiku, 3 żelaza |
 | złomowisko: latarnia | 2 miedź, 1 szkło, 1 żelazo |
 | złomowisko: beczka | 2 olej, 1 żelazo |
-| wrak łodzi przy przystani | 2 akumulatory, 2 miedź, 2 plastik, 1 szkło |
-| kontener B (przewrócony) | 2 akumulatory, 2 żelazo |
+| wrak łodzi przy przystani | 2 akumulatory, 2 miedź, 2 plastik, 1 szkło, 5 m grubego kabla |
+| kontener B (przewrócony) | 2 akumulatory, 2 żelazo, transformator |
 | skrzynia serwisowa w kontenerze A | 10 m kabla (starter), 2 miedź, 1 plastik |
 
 ## Brak martwych punktów
@@ -168,6 +185,7 @@ Kolejność: (1) logika poziomu z testem i grywalny widok, (2) animacje naprawy 
 1. Miejsce: **wyspa** (Szklany Zalew).
 2. Finał: „zaskocz mnie, dla mnie to też będzie granie”. Szczegóły w [SPOILER-WYSPA.md](SPOILER-WYSPA.md).
 3. Oba warianty UX naraz: bez odpowiedzi, agent wybrał oba naraz plus przełącznik `?craft=a|b`.
+4. Klasy kabli z przeciążeniem i transformatorem oraz soczyste drobne akcje (z [INSPIRACJE.md](INSPIRACJE.md)): sekcje [Klasy kabli](#klasy-kabli-i-przeciążenie-decyzja-2026-11-17) i [Soczyste drobne akcje](#soczyste-drobne-akcje-decyzja-2026-11-17).
 
 ## Odłożone: pierwszy Żaglowóz z gołej ramy
 

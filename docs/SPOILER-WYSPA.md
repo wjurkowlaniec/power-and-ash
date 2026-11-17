@@ -19,6 +19,10 @@
 - Opcja „Wolt jako mostek” wraca do tematu gry (prąd to życie Wolta) i nie wymaga niczego od gracza poza decyzją.
 - Odpowiedź światłem z Kopuły to obietnica świata i ludzi, bez wykładu fabularnego.
 
+## Uwaga: dwa różne przeciążenia (2026-11-17)
+
+Od 2026-11-17 na Wyspie są też klasy kabli: przeciążona linia (za cienki kabel) grzeje się i wybija swoje zabezpieczenie, które E przy szafie załącza bez materiałów. To coś innego niż finał: w finale strzela **bezpiecznik regulatora** i trzeba go zrobić albo zastąpić Woltem. Gracz, który poznał przeciążenie kabla, może spodziewać się kłopotu, ale nie tego, że reset nie pomoże.
+
 ## Liczby
 
 - Przeciążenie przy 70% postępu (`OVERLOAD_AT`).

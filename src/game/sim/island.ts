@@ -19,6 +19,11 @@ import { ITEMS, ItemId, Bag, RECIPES, Recipe, RecipeId, Inventory, BENCH_SPEED, 
  *   a cradle, and the terminal that wants 900 W for 90 s.
  * - Two ways to 900 W: new panels on the free stands, or an energy storage from four
  *   accumulators that covers the cloud shade.
+ * - Cable classes (decision 2026-11-17): a thin cable carries 500 W, a heavy one 1500 W.
+ *   Too much power through a thin line heats it (it glows, buzzes, sparks) and then the
+ *   line's breaker in the regulator trips; E there switches it back on. The trunk from the
+ *   splitter takes heavy cable (found in the boat wreck), the feed to the bunker takes the
+ *   transformer (found in the overturned container), which lets the thin line carry 3x.
  * - The ending is in docs/SPOILER-WYSPA.md.
  *
  * Recipes are not given: Q-1 learns them from what Wolt scans or takes apart (the decision
@@ -65,6 +70,21 @@ export const BOG_BACK = 0.45;
 export const JUNCTION_CABLE = 3;    // m from the splitter post to the regulator
 export const FEED_CABLE = 6;        // m from the regulator to the bunker lock
 export type CraftMode = 'ab' | 'a' | 'b';
+export const THIN_W = 500;          // W a thin cable carries before it heats up
+export const THICK_W = 1500;        // W a heavy cable carries
+export const TRAFO_MULT = 3;        // the transformer lets the same thin line carry 3x
+export const HEAT_BASE = 0.08;      // heat per second just past the limit (1 = the breaker trips)
+export const HEAT_SLOPE = 0.25;     // and more for each 100% over it
+export const COOL = 0.15;           // heat lost per second under the limit
+export const WARN_HEAT = 0.4;       // from here the cable sparks and Q-1 says why
+export const RESET_HEAT = 0.5;      // a reset breaker starts warm: still too much power trips it again soon
+
+/** A line of the island grid that can be overloaded: splitter to regulator, regulator to bunker. */
+export type LineId = 'trunk' | 'feed';
+export interface Line { id: LineId; thick: boolean; trafo: boolean; /** W through it now */ flow: number; /** 0..1, 1 trips the breaker */ heat: number; tripped: boolean; warned: boolean }
+export const lineRating = (l: Line): number => (l.thick ? THICK_W : THIN_W) * (l.trafo ? TRAFO_MULT : 1);
+/** Something worth a flash, a puff or a number over it (the view and the HUD read these). */
+export interface Pop { kind: 'take' | 'fit' | 'link' | 'made' | 'tick' | 'spark' | 'trip' | 'reset'; at: V2; text?: string }
 
 /** Island outline: an ellipse; outside it the wheel sinks into glass gravel. */
 const CX = 22, CY = 17, RX = 23, RY = 17.5;
@@ -108,8 +128,8 @@ function heaps(): Heap[] {
     heap('k3', tr('kupka złomu', 'scrap heap'), 10, 12, 1, 1, 2.5, { copper: 2, plastic: 2 }),
     heap('k4', tr('kupka złomu', 'scrap heap'), 29, 2, 1, 1, 2.5, { copper: 2, plastic: 1, iron: 1 }),
     heap('k5', tr('kupka złomu', 'scrap heap'), 36, 10, 1, 1, 2.5, { copper: 2, plastic: 2, iron: 1 }),
-    heap('crateB', tr('przewrócony kontener', 'overturned container'), 31, 12, 4, 2, 4, { battery: 2, iron: 2 }, undefined, 'container'),
-    heap('boat', tr('wrak łodzi', 'boat wreck'), 30, 28, 3, 1, 4, { battery: 2, copper: 2, plastic: 2, glass: 1 }, undefined, 'crate'),
+    heap('crateB', tr('przewrócony kontener', 'overturned container'), 31, 12, 4, 2, 4, { battery: 2, iron: 2, trafo: 1 }, undefined, 'container'),
+    heap('boat', tr('wrak łodzi', 'boat wreck'), 30, 28, 3, 1, 4, { battery: 2, copper: 2, plastic: 2, glass: 1, cableThick: 5 }, undefined, 'crate'),
   ];
 }
 
@@ -176,7 +196,7 @@ export function shadeAt(p: V2, t: number): number {
 }
 
 export interface IsHint { key: string; text: string; at: V2; ok: boolean; progress?: number; need?: string }
-export type IsEvent = 'step' | 'bog' | 'deny' | 'scan' | 'learn' | 'take' | 'craft' | 'fit' | 'hook' | 'unhook' | 'link' | 'power' | 'door' | 'dock' | 'plug' | 'download' | 'blow' | 'bridge' | 'lighthouse' | 'answer' | 'drop' | 'full' | 'note' | 'panel';
+export type IsEvent = 'step' | 'bog' | 'deny' | 'scan' | 'learn' | 'take' | 'craft' | 'fit' | 'hook' | 'unhook' | 'link' | 'power' | 'door' | 'dock' | 'plug' | 'download' | 'blow' | 'bridge' | 'lighthouse' | 'answer' | 'drop' | 'full' | 'note' | 'panel' | 'made' | 'hot' | 'trip' | 'reset';
 
 /** One line of the grid for the HUD, W. */
 export interface GridLine { label: string; w: number; state: 'on' | 'wait' | 'off' }
@@ -250,6 +270,12 @@ export class Island {
   reading: string | null = null;
   message: { text: string; t: number } | null = null;
   events: IsEvent[] = [];
+  /** Flashes, puffs and "+2 copper" for the view and the HUD; the scene empties it each frame. */
+  pops: Pop[] = [];
+  readonly lines: Record<LineId, Line> = {
+    trunk: { id: 'trunk', thick: false, trafo: false, flow: 0, heat: 0, tripped: false, warned: false },
+    feed: { id: 'feed', thick: false, trafo: false, flow: 0, heat: 0, tripped: false, warned: false },
+  };
   log: TestLog = { stages: {}, inPlace: 0, menuCrafts: 0, menuOpens: 0, overflow: 0, sledHooks: 0, denies: 0 };
   private stepAcc = 0;
   private bogAcc = 0;
@@ -280,6 +306,7 @@ export class Island {
   }
   /** Into the slots or onto the sled; what does not fit lands on the ground next to Wolt. */
   give(id: ItemId, n: number, at: V2 = this.pos) {
+    this.pop('take', at, `+${n}${ITEMS[id].unit ?? ''} ${ITEMS[id].name}`);
     if (ITEMS[id].big) {
       for (let k = 0; k < n; k++) {
         if (this.sledNear(at) && this.cargo.length < SLED_CAP) this.cargo.push(id);
@@ -339,6 +366,8 @@ export class Island {
     }
   }
 
+  private pop(kind: Pop['kind'], at: V2, text?: string) { this.pops.push({ kind, at, text }); if (this.pops.length > 64) this.pops.shift(); }
+
   private observe(recipe: RecipeId, what: string) {
     if (this.known.has(recipe) || this.learning.some(l => l.recipe === recipe)) return;
     this.learning.push({ recipe, what, t: 0 });
@@ -350,17 +379,28 @@ export class Island {
   sun(p: V2): number { return 1 - (1 - SHADE_SUN) * shadeAt(p, this.t); }
   private flowing(): boolean { return this.regOk || this.bridged; }
 
-  /** The grid: panels through the splitter and the regulator, the storage as a buffer. */
+  /** Port load at the cabinet: it sits before the feed line to the bunker. */
+  private portLoad(): number { return this.plugged && this.battery < 100 ? PORT_W : 0; }
+  /** W the panels can send into the bunker through the feed line (0 when it is down). */
+  inside(): number { return this.flowing() && this.fed && !this.lines.feed.tripped ? Math.max(0, this.supply - this.portLoad()) : 0; }
+
+  /**
+   * The grid: panels through the splitter and the trunk to the regulator, then the feed line
+   * into the bunker, where the storage sits as a buffer. Each line heats when it carries more
+   * than its cable can.
+   */
   private solve(dt: number) {
     let supply = 0;
-    if (this.flowing() && this.junction) for (const p of this.pads) if (p.panel && !p.fault && p.linked) supply += PANEL_W * this.sun(p.at);
+    if (this.flowing() && this.junction && !this.lines.trunk.tripped) for (const p of this.pads) if (p.panel && !p.fault && p.linked) supply += PANEL_W * this.sun(p.at);
     this.supply = supply;
+    const avail = this.inside();
     const base = (this.fed && this.doorOpen < 1 ? LOCK_W : 0) + (this.crafting && RECIPES[this.crafting.recipe].bench ? BENCH_W : 0)
-      + (this.docked && this.battery < 100 ? CRADLE_W : 0) + (this.plugged && this.battery < 100 ? PORT_W : 0);
+      + (this.docked && this.battery < 100 ? CRADLE_W : 0);
     const canStore = this.storage && this.soc > 0.001 ? STORE_W : 0;
-    this.terminalOn = this.downloading && this.flowing() && supply + canStore >= base + TERMINAL_W;
-    this.demand = base + (this.terminalOn ? TERMINAL_W : 0);
-    let net = supply - this.demand;
+    this.terminalOn = this.downloading && this.flowing() && avail + canStore >= base + TERMINAL_W;
+    const inBunker = base + (this.terminalOn ? TERMINAL_W : 0);
+    this.demand = inBunker + this.portLoad();
+    let net = avail - inBunker;
     this.storeFlow = 0;
     if (this.storage) {
       const w = net > 0 ? Math.min(net, STORE_W) * (this.soc < 1 ? 1 : 0) : -Math.min(-net, STORE_W, this.soc > 0 ? STORE_W : 0);
@@ -368,6 +408,9 @@ export class Island {
       this.storeFlow = w;
       net -= w;
     }
+    this.lines.trunk.flow = this.junction && !this.lines.trunk.tripped ? supply : 0;
+    this.lines.feed.flow = this.fed && avail > 0 ? Math.min(avail, inBunker + this.storeFlow) : 0;
+    this.heatLines(dt);
     // what the grid cannot carry stops: the bench and the chargers first
     this.benchOn = !!this.crafting && RECIPES[this.crafting.recipe].bench && net >= -1;
     if (supply >= 450) this.stage('450W');
@@ -387,19 +430,52 @@ export class Island {
     }
   }
 
+  /** Too much power through a line: it heats, sparks, and its breaker in the regulator trips. */
+  private heatLines(dt: number) {
+    for (const l of Object.values(this.lines)) {
+      const r = lineRating(l), over = l.flow / r - 1;
+      l.heat = over > 0 ? Math.min(1, l.heat + (HEAT_BASE + over * HEAT_SLOPE) * dt) : Math.max(0, l.heat - COOL * dt);
+      if (l.heat < 0.05) l.warned = false;
+      const where = l.id === 'trunk' ? P.junction : { x: (P.reg.x + P.door.x) / 2, y: (P.reg.y + P.door.y) / 2 };
+      if (l.heat > WARN_HEAT && over > 0 && Math.random() < dt * 6) this.pop('spark', where);
+      if (l.heat > WARN_HEAT && !l.warned) {
+        l.warned = true; this.events.push('hot');
+        this.say(l.id === 'trunk'
+          ? tr(`Kabel od rozgałęźnika do szafy grzeje się i brzęczy: ${Math.round(l.flow)} W na cienkim przewodzie, który znosi ${r} W.`, `The cable from the splitter to the cabinet heats up and buzzes: ${Math.round(l.flow)} W on a thin lead rated for ${r} W.`)
+          : tr(`Kabel do bunkra grzeje się i brzęczy: ${Math.round(l.flow)} W na cienkim przewodzie, który znosi ${r} W.`, `The cable to the bunker heats up and buzzes: ${Math.round(l.flow)} W on a thin lead rated for ${r} W.`));
+      }
+      if (l.heat >= 1 && !l.tripped) {
+        l.tripped = true; l.flow = 0; this.events.push('trip'); this.pop('trip', where); this.stage('trip');
+        this.say(l.id === 'trunk'
+          ? tr('Trzask w szafie: wybiło zabezpieczenie linii od paneli. E przy szafie je załącza. Na stałe: gruby kabel.', 'A crack in the cabinet: the breaker of the panel line tripped. E at the cabinet switches it back on. For good: heavy cable.')
+          : tr('Trzask w szafie: wybiło zabezpieczenie linii do bunkra. E przy szafie je załącza. Na stałe: transformator w szafie.', 'A crack in the cabinet: the breaker of the bunker line tripped. E at the cabinet switches it back on. For good: a transformer in the cabinet.'));
+      }
+    }
+  }
+
+  /** The two lines for the HUD: what they carry and what they can. */
+  lineInfo(): { label: string; flow: number; rating: number; heat: number; tripped: boolean }[] {
+    const out: { label: string; flow: number; rating: number; heat: number; tripped: boolean }[] = [];
+    const kind = (l: Line) => (l.thick ? tr('gruby', 'heavy') : tr('cienki', 'thin')) + (l.trafo ? tr(' + transformator', ' + transformer') : '');
+    if (this.junction) out.push({ label: tr('panele → szafa, ', 'panels → cabinet, ') + kind(this.lines.trunk), flow: Math.round(this.lines.trunk.flow), rating: lineRating(this.lines.trunk), heat: this.lines.trunk.heat, tripped: this.lines.trunk.tripped });
+    if (this.fed) out.push({ label: tr('szafa → bunkier, ', 'cabinet → bunker, ') + kind(this.lines.feed), flow: Math.round(this.lines.feed.flow), rating: lineRating(this.lines.feed), heat: this.lines.feed.heat, tripped: this.lines.feed.tripped });
+    return out;
+  }
+  private anyTripped(): boolean { return this.lines.trunk.tripped || this.lines.feed.tripped; }
+
   /** Grid lines for the HUD. */
   grid(): { sources: GridLine[]; loads: GridLine[] } | null {
     if (!this.regOk && !this.junction && !this.pads.some(p => p.linked) && !this.overloaded) return null;
     const sources: GridLine[] = this.pads.filter(p => p.panel).map(p => ({
       label: tr(`panel ${p.i + 1}`, `panel ${p.i + 1}`) + (p.fault ? tr(' (uszkodzony)', ' (broken)') : !p.linked ? tr(' (niepodłączony)', ' (not connected)') : this.sun(p.at) < 0.6 ? tr(' (cień)', ' (shade)') : ''),
-      w: p.linked && !p.fault && this.flowing() && this.junction ? Math.round(PANEL_W * this.sun(p.at)) : 0,
-      state: p.linked && !p.fault ? (this.flowing() ? 'on' : 'wait') : 'off',
+      w: p.linked && !p.fault && this.flowing() && this.junction && !this.lines.trunk.tripped ? Math.round(PANEL_W * this.sun(p.at)) : 0,
+      state: p.linked && !p.fault ? (this.flowing() && !this.lines.trunk.tripped ? 'on' : 'wait') : 'off',
     }));
     if (this.storage) sources.push({ label: tr(`magazyn ${Math.round(this.soc * 100)}%`, `storage ${Math.round(this.soc * 100)}%`) + (this.storeFlow > 1 ? tr(' (ładuje się)', ' (charging)') : ''), w: Math.round(-this.storeFlow), state: 'on' });
     const loads: GridLine[] = [];
     if (this.fed && this.doorOpen < 1) loads.push({ label: tr('zamek bunkra', 'bunker lock'), w: -LOCK_W, state: this.flowing() ? 'on' : 'off' });
     if (this.doorOpen >= 1) loads.push({ label: tr('stół warsztatowy', 'workbench'), w: this.benchOn ? -BENCH_W : 0, state: this.benchOn ? 'on' : 'wait' });
-    if (this.docked || this.plugged) loads.push({ label: tr('ładowanie Wolta', 'charging Wolt'), w: -(this.docked ? CRADLE_W : PORT_W), state: 'on' });
+    if (this.docked || this.plugged) loads.push({ label: tr('ładowanie Wolta', 'charging Wolt'), w: -(this.docked ? CRADLE_W : PORT_W), state: (this.docked ? this.inside() > 0 : this.supply > 0) ? 'on' : 'off' });
     if (this.scanned.has('terminal')) loads.push({ label: tr('terminal (pobieranie)', 'terminal (download)'), w: this.terminalOn ? -TERMINAL_W : 0, state: this.terminalOn ? 'on' : this.downloading ? 'wait' : 'off' });
     return { sources, loads };
   }
@@ -409,7 +485,8 @@ export class Island {
     // with the regulator down nothing reaches the terminal, the storage included
     if (!this.flowing()) return { have: 0, want: TERMINAL_W };
     const store = this.storage && this.soc > 0.001 ? STORE_W : 0;
-    return { have: Math.round(this.supply + store - (this.demand - (this.terminalOn ? TERMINAL_W : 0))), want: TERMINAL_W };
+    const others = this.demand - this.portLoad() - (this.terminalOn ? TERMINAL_W : 0);
+    return { have: Math.round(this.inside() + store - others), want: TERMINAL_W };
   }
 
   // ---------- things to use
@@ -420,6 +497,7 @@ export class Island {
     t.push({ id: 'reg', at: P.reg }, { id: 'port', at: P.port }, { id: 'noteA', at: P.noteA });
     if (!this.crateOpen) t.push({ id: 'crateA', at: P.crateA });
     if (!this.junction) t.push({ id: 'junction', at: P.junction });
+    else if (!this.lines.trunk.thick) t.push({ id: 'trunk', at: P.junction });
     for (const p of this.pads) if (p.fault || !p.linked || !p.panel) t.push({ id: 'pad' + p.i, at: p.at });
     for (const h of this.heaps) if (!h.done) t.push({ id: 'heap:' + h.id, at: h.at });
     for (const pl of this.piles) t.push({ id: 'pile:' + pl.id, at: pl.at });
@@ -492,9 +570,16 @@ export class Island {
       case 'noteA': return { key: 'E', text: tr('kartka na kontenerze', 'note on the container'), at, ok: true };
       case 'crateA': return { key: 'E', text: tr('skrzynia serwisowa: otwórz', 'service crate: open'), at, ok: true };
       case 'junction': return this.known.has('splitter') || this.have('splitter') ? fix(tr('rozgałęźnik na słupku', 'the splitter on the post'), { splitter: 1, cable: JUNCTION_CABLE }) : { key: 'E', text: tr('pusty słupek z czterema przewodami: tu coś było', 'an empty post with four leads: something sat here'), at, ok: false };
+      case 'trunk': {
+        const l = this.lines.trunk;
+        if (this.have('cableThick') >= JUNCTION_CABLE) return { key: 'E', text: tr(`przytrzymaj: wymień przewód do szafy na gruby (${JUNCTION_CABLE} m, do ${THICK_W} W)`, `hold: swap the lead to the cabinet for heavy cable (${JUNCTION_CABLE} m, up to ${THICK_W} W)`), at, ok: true, progress: prog, need: `${JUNCTION_CABLE}m ${ITEMS.cableThick.name}` };
+        return { key: '·', text: tr(`przewód do szafy: cienki, ${Math.round(l.flow)} / ${lineRating(l)} W`, `lead to the cabinet: thin, ${Math.round(l.flow)} / ${lineRating(l)} W`) + (l.heat > WARN_HEAT ? tr(' · grzeje się (gruby kabel: wrak łodzi)', ' · heating up (heavy cable: the boat wreck)') : ''), at, ok: l.heat <= WARN_HEAT };
+      }
       case 'reg':
         if (this.bridged) return { key: 'Q', text: tr('Wolt jest bezpiecznikiem · Q odpina', 'Wolt is the fuse · Q lets go'), at, ok: true };
-        if (this.regOk) return { key: '·', text: tr('regulator działa', 'the regulator works'), at, ok: true };
+        if (this.anyTripped()) return { key: 'E', text: tr('załącz zabezpieczenie linii', 'switch the line breaker back on'), at, ok: true };
+        if (this.regOk && this.fed && !this.lines.feed.trafo && this.have('trafo')) return { key: 'E', text: tr('przytrzymaj: zamontuj transformator na linii do bunkra (cienki kabel uniesie 1500 W)', 'hold: fit the transformer on the bunker line (the thin cable will carry 1500 W)'), at, ok: true, progress: prog };
+        if (this.regOk) return { key: '·', text: tr('regulator działa', 'the regulator works') + (this.fed && !this.lines.feed.trafo && this.lines.feed.heat > WARN_HEAT ? tr(' · linia do bunkra się grzeje (transformator: przewrócony kontener)', ' · the bunker line is heating (transformer: the overturned container)') : ''), at, ok: true };
         if (!this.known.has('fuse') && !this.scanned.has('reg')) return { key: 'E', text: tr('szafa regulatora: zeskanuj', 'regulator cabinet: scan'), at, ok: true };
         if (this.overloaded) {
           const p = this.plan({ fuse: 1 });
@@ -505,10 +590,10 @@ export class Island {
       case 'door':
         if (!this.fed) return fix(tr(`kabel zasilania zamka (${FEED_CABLE} m)`, `lock feed cable (${FEED_CABLE} m)`), { cable: FEED_CABLE });
         if (!this.scanned.has('door')) return { key: 'E', text: tr('drzwi bunkra: zeskanuj', 'bunker door: scan'), at, ok: true };
-        if (!this.flowing() || this.supply < LOCK_W) return { key: 'E', text: tr('zamek bez prądu (potrzeba 50 W)', 'the lock has no power (needs 50 W)'), at, ok: false };
+        if (this.inside() < LOCK_W) return { key: 'E', text: tr('zamek bez prądu (potrzeba 50 W)', 'the lock has no power (needs 50 W)'), at, ok: false };
         return fix(tr('sworzeń i olej w zawiasie', 'pin and oil in the hinge'), { pin: 1, oil: 1 });
-      case 'bench': return { key: 'C', text: this.flowing() && this.supply > 0 ? tr('stół warsztatowy: panel C', 'workbench: C panel') : tr('stół bez prądu', 'the bench has no power'), at, ok: this.flowing() };
-      case 'cradle': return { key: 'E', text: this.docked ? tr('zjedź z kołyski', 'roll off the cradle') : tr('kołyska: ładowanie z sieci', 'cradle: charge from the grid'), at, ok: this.flowing() };
+      case 'bench': return { key: 'C', text: this.inside() > 0 ? tr('stół warsztatowy: panel C', 'workbench: C panel') : tr('stół bez prądu', 'the bench has no power'), at, ok: this.inside() > 0 };
+      case 'cradle': return { key: 'E', text: this.docked ? tr('zjedź z kołyski', 'roll off the cradle') : tr('kołyska: ładowanie z sieci', 'cradle: charge from the grid'), at, ok: this.inside() > 0 };
       case 'stationBatt': return { key: 'E', text: this.known.has('storage') ? tr('martwe akumulatory stacji (zeskanowane)', "the station's dead accumulators (scanned)") : tr('martwe akumulatory stacji: zeskanuj', "the station's dead accumulators: scan"), at, ok: true };
       case 'storeSlot': return { key: 'C', text: tr('miejsce na magazyn energii (zbuduj przy stole)', 'room for an energy storage (build it at the bench)'), at, ok: false };
       case 'terminal': {
@@ -534,13 +619,16 @@ export class Island {
     }
     switch (id) {
       case 'junction': return this.known.has('splitter') || this.have('splitter') ? timed({ splitter: 1, cable: JUNCTION_CABLE }) : 0;
+      case 'trunk': return this.have('cableThick') >= JUNCTION_CABLE ? FIT_TIME + 1 : 0;
       case 'reg':
-        if (this.bridged || this.regOk || (!this.known.has('fuse') && !this.scanned.has('reg'))) return 0;
+        if (this.bridged || this.anyTripped()) return 0;
+        if (this.regOk) return this.fed && !this.lines.feed.trafo && this.have('trafo') ? FIT_TIME + 1.5 : 0;
+        if (!this.known.has('fuse') && !this.scanned.has('reg')) return 0;
         if (this.overloaded && !this.plan({ fuse: 1 }).ok) return 1.2;
         return timed({ fuse: 1 });
       case 'door':
         if (!this.fed) return timed({ cable: FEED_CABLE });
-        if (!this.scanned.has('door') || !this.flowing() || this.supply < LOCK_W) return 0;
+        if (!this.scanned.has('door') || this.inside() < LOCK_W) return 0;
         return timed({ pin: 1, oil: 1 }) + 1.5;
     }
     return 0;
@@ -590,7 +678,7 @@ export class Island {
     // Q-1 recovers at rest, faster on the port or the cradle while the grid gives power
     this.idle = this.moving || this.work ? 0 : this.idle + dt;
     const fed = this.flowing() && this.supply > 0;
-    const rate = this.docked && fed ? CRADLE_CHARGE : this.plugged && fed ? PORT_CHARGE : this.idle > 1 && !this.bridged ? RECHARGE : 0;
+    const rate = this.docked && this.inside() > 0 ? CRADLE_CHARGE : this.plugged && fed ? PORT_CHARGE : this.idle > 1 && !this.bridged ? RECHARGE : 0;
     this.charging = rate > 0 && this.battery < 100;
     if (this.charging) this.battery = Math.min(100, this.battery + rate * dt);
   }
@@ -664,7 +752,7 @@ export class Island {
       if (!inp.use) return;
       if (!this.work) this.work = { id: n, t: 0, need: hold };
       this.work.t += dt;
-      if (Math.floor(this.work.t / 0.4) !== Math.floor((this.work.t - dt) / 0.4)) this.events.push('craft');
+      if (Math.floor(this.work.t / 0.4) !== Math.floor((this.work.t - dt) / 0.4)) { this.events.push('craft'); this.pop('tick', this.at(n) ?? this.pos); }
       if (this.work.t >= this.work.need) { this.work = null; this.finish(n); }
       return;
     }
@@ -685,31 +773,43 @@ export class Island {
     }
     if (id.startsWith('pad')) {
       const p = this.pads[+id.slice(3)];
-      if (!p.panel) { this.takeItem('panel', 1); p.panel = true; this.events.push('fit'); this.say(tr('Panel stoi na stelażu. Teraz kabel do rozgałęźnika.', 'The panel is on its stand. Now a cable to the splitter.')); return; }
-      if (p.fault === 'pane') { this.spend({ pane: 1 }); p.fault = null; this.events.push('fit'); return; }
-      if (p.fault === 'connector') { this.spend({ connector: 1 }); p.fault = null; this.events.push('fit'); return; }
-      this.spend({ cable: this.linkLen(p) }); p.linked = true; this.events.push('link');
+      if (!p.panel) { this.takeItem('panel', 1); p.panel = true; this.events.push('fit'); this.pop('fit', p.at); this.say(tr('Panel stoi na stelażu. Teraz kabel do rozgałęźnika.', 'The panel is on its stand. Now a cable to the splitter.')); return; }
+      if (p.fault === 'pane') { this.spend({ pane: 1 }); p.fault = null; this.events.push('fit'); this.pop('fit', p.at); return; }
+      if (p.fault === 'connector') { this.spend({ connector: 1 }); p.fault = null; this.events.push('fit'); this.pop('fit', p.at); return; }
+      this.spend({ cable: this.linkLen(p) }); p.linked = true; this.events.push('link'); this.pop('link', p.at);
       if (this.regOk) this.events.push('power');
       return;
     }
     switch (id) {
       case 'junction':
-        this.spend({ splitter: 1, cable: JUNCTION_CABLE }); this.junction = true; this.events.push('fit');
+        this.spend({ splitter: 1, cable: JUNCTION_CABLE }); this.junction = true; this.events.push('fit'); this.pop('fit', P.junction);
         this.say(tr('Rozgałęźnik siedzi na słupku i jest połączony z szafą. Ma sześć gniazd na panele.', 'The splitter sits on the post, wired to the cabinet. It has six sockets for panels.'));
         break;
+      case 'trunk':
+        this.takeItem('cableThick', JUNCTION_CABLE); this.lines.trunk.thick = true; this.lines.trunk.heat = 0; this.lines.trunk.tripped = false;
+        this.events.push('link'); this.pop('link', P.junction); this.stage('thick');
+        this.say(tr(`Gruby kabel od rozgałęźnika do szafy. Uniesie ${THICK_W} W.`, `Heavy cable from the splitter to the cabinet. It carries ${THICK_W} W.`));
+        break;
       case 'reg':
+        if (this.regOk) {
+          // the only hold at a working regulator: the transformer for the bunker line
+          this.takeItem('trafo', 1); this.lines.feed.trafo = true; this.lines.feed.heat = 0;
+          this.events.push('fit'); this.pop('fit', P.reg); this.stage('trafo');
+          this.say(tr(`Transformator w szafie podnosi napięcie na linii do bunkra: ten sam cienki kabel uniesie ${lineRating(this.lines.feed)} W.`, `The transformer in the cabinet steps up the bunker line: the same thin cable now carries ${lineRating(this.lines.feed)} W.`));
+          break;
+        }
         if (this.overloaded && !this.plan({ fuse: 1 }).ok) {
           this.bridged = true; this.events.push('bridge'); this.stage('bridge');
           this.say(tr('Ramię Wolta zamyka obwód. Prąd płynie przez niego: każda rzecz, którą zasilasz z siebie, to twoje życie.', "Wolt's arm closes the circuit. The power flows through him: everything you power from yourself is your life."));
           break;
         }
-        this.spend({ fuse: 1 }); this.regOk = true; this.events.push('fit', 'power');
+        this.spend({ fuse: 1 }); this.regOk = true; this.events.push('fit', 'power'); this.pop('fit', P.reg);
         if (this.overloaded) this.stage('fuse2');
         this.say(this.junction ? tr('Nowy bezpiecznik. Szafa mruczy.', 'A new fuse. The cabinet hums.') : tr('Nowy bezpiecznik w regulatorze. Panele trzeba jeszcze zebrać w jedną linię.', 'A new fuse in the regulator. The panels still have to be gathered into one line.'));
         break;
       case 'door':
-        if (!this.fed) { this.spend({ cable: FEED_CABLE }); this.fed = true; this.events.push('link'); this.say(tr('Kabel od szafy do zamka bunkra.', 'A cable from the cabinet to the bunker lock.')); break; }
-        this.spend({ pin: 1, oil: 1 }); this.doorOpen = 0.001; this.stage('door'); this.events.push('door');
+        if (!this.fed) { this.spend({ cable: FEED_CABLE }); this.fed = true; this.events.push('link'); this.pop('link', P.door); this.say(tr('Kabel od szafy do zamka bunkra.', 'A cable from the cabinet to the bunker lock.')); break; }
+        this.spend({ pin: 1, oil: 1 }); this.doorOpen = 0.001; this.stage('door'); this.events.push('door'); this.pop('fit', P.door);
         this.say(tr('Zamek puszcza, nowy sworzeń trzyma, zawias skrzypi na oleju. Drzwi bunkra się otwierają.', 'The lock gives, the new pin holds, the hinge creaks on the oil. The bunker door opens.'));
         break;
     }
@@ -750,6 +850,12 @@ export class Island {
         this.say(tr('W skrzyni: 10 m kabla, trochę miedzi i plastiku.', 'In the crate: 10 m of cable, some copper and plastic.'));
         return;
       case 'reg':
+        if (this.anyTripped()) {
+          for (const l of Object.values(this.lines)) if (l.tripped) { l.tripped = false; l.heat = RESET_HEAT; l.warned = false; }
+          this.events.push('reset'); this.pop('reset', P.reg);
+          this.say(tr('Klik: zabezpieczenie linii załączone. Jeśli kabel dalej jest za cienki, wybije znowu.', 'Click: the line breaker is back on. If the cable is still too thin, it will trip again.'));
+          return;
+        }
         if (!this.scanned.has('reg') && !this.regOk) { this.scanned.add('reg'); this.observe('fuse', tr('bezpiecznik regulatora', 'the regulator fuse')); this.say(tr('W regulatorze spalił się bezpiecznik. Q-1 bierze go pod lupę.', 'The regulator fuse has burnt out. Q-1 takes a close look.')); return; }
         { const h = this.hint(); if (h && !h.ok) this.deny(h.text); }
         return;
@@ -763,7 +869,7 @@ export class Island {
         { const h = this.hint(); if (h && !h.ok) this.deny(h.text); }
         return;
       case 'cradle':
-        if (!this.flowing() || this.supply < 1) { this.deny(tr('Kołyska nie ma prądu.', 'The cradle has no power.')); return; }
+        if (this.inside() < 1) { this.deny(tr('Kołyska nie ma prądu.', 'The cradle has no power.')); return; }
         this.docked = !this.docked; this.events.push(this.docked ? 'dock' : 'drop');
         return;
       case 'stationBatt':
@@ -793,7 +899,7 @@ export class Island {
     if (!this.known.has(id)) return tr('Q-1 nie zna przepisu', 'Q-1 does not know it');
     if (r.bench) {
       if (this.doorOpen < 1 || dist(this.pos, P.bench) > 2.4) return tr('tylko przy stole w bunkrze', 'only at the bench in the bunker');
-      if (!this.flowing() || this.supply < BENCH_W * 0.5) return tr('stół nie ma prądu', 'the bench has no power');
+      if (this.inside() < BENCH_W * 0.5) return tr('stół nie ma prądu', 'the bench has no power');
     }
     for (const [m, q] of Object.entries(r.need) as [ItemId, number][]) if (this.have(m) < q) return tr('brakuje: ', 'missing: ') + `${q - this.have(m)}${ITEMS[m].unit ?? ''} ${ITEMS[m].name}` + (ITEMS[m].big ? tr(' (na sankach przy stole)', ' (on the sled by the bench)') : '');
     if (r.out && ITEMS[r.out.id].big && this.cargo.length >= SLED_CAP && this.sledNear()) return tr('sanki są pełne', 'the sled is full');
@@ -822,9 +928,9 @@ export class Island {
     if ((Object.entries(r.need) as [ItemId, number][]).some(([m, q]) => this.have(m) < q)) { this.deny(tr('Czegoś zabrakło w trakcie. Nic nie zużyto.', 'Something went missing while it worked. Nothing was used.')); return; }
     for (const [m, q] of Object.entries(r.need) as [ItemId, number][]) this.takeItem(m, q);
     this.log.menuCrafts++;
-    if (c.recipe === 'storage') { this.storage = true; this.stage('storage'); this.events.push('fit'); this.say(tr('Magazyn energii stoi pod ścianą i łapie nadwyżkę z paneli.', 'The energy storage stands by the wall and soaks up the spare power.')); return; }
-    this.give(r.out!.id, r.out!.n, P.bench);
-    this.events.push('fit');
+    if (c.recipe === 'storage') { this.storage = true; this.stage('storage'); this.events.push('fit', 'made'); this.pop('fit', P.storeSlot); this.say(tr('Magazyn energii stoi pod ścianą i łapie nadwyżkę z paneli.', 'The energy storage stands by the wall and soaks up the spare power.')); return; }
+    this.give(r.out!.id, r.out!.n, r.bench ? P.bench : this.pos);
+    this.events.push('made'); this.pop('made', r.bench ? P.bench : this.pos);
   }
 
   /** Recipes for the C panel, known first. */

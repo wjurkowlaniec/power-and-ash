@@ -44,6 +44,7 @@ await new Promise(r => setTimeout(r, 30));
 
 const q = new URLSearchParams(location.search);
 const game = new SunGame(MISSIONS.find(m => m.id === q.get('mission')) ?? MISSIONS[0]);
+game.wearOn = false; // wear and its warnings are tested in "Żegluga" first
 try {
   const saved = JSON.parse(localStorage.getItem('sun-best') ?? '{}');
   if (saved && typeof saved === 'object') game.bestSun = saved;

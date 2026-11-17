@@ -69,6 +69,8 @@ Jak to działa w demie (`src/sail/sim/training.ts`):
 | Spacja | hamulec (odzyskuje trochę energii) |
 | R | koła ↔ płozy (tylko na postoju, ~2,5 s) |
 | G | Wolt odczepia się / wczepia (tylko na postoju, ~4,5 s) |
+| X | napraw najbardziej zużytą część (tylko na postoju, 3 s) |
+| K | karta stanu Żaglowozu |
 | C | następna trasa (albo przyciski w panelu trasy) |
 | N / Esc | w symulatorze: pomiń lekcję / wyjdź |
 | T | trasa od nowa |
@@ -79,7 +81,23 @@ Jak to działa w demie (`src/sail/sim/training.ts`):
 
 **Na telefonie i tablecie** (Wojtek 2026-11-11) są kontrolki na ekranie, pokazywane tylko na urządzeniach dotykowych: z lewej ster ◀ ▶ (trzymaj stronę, przesunięcie palca przełącza), z prawej pionowy szot (góra wybiera, dół luzuje). Obok przyciski: przytrzymywane hamulec, balast, silnik, wstecz (przerywana ramka) oraz stuknięcia odczep / wczep, koła / płozy, Q-1, trasy (otwiera panel tras, na telefonie domyślnie ukryty) i zoom + / −. Pomoc z klawiszami jest wtedy schowana, a panele HUD zmniejszone. Kontrolki naciskają te same klawisze co klawiatura (wspólny moduł `src/touch.ts`, opis w [ARCHITEKTURA.md](ARCHITEKTURA.md#sterowanie-dotykowe-srctouchts)). `?touch` wymusza je na komputerze, `?touch=0` wyłącza.
 
-Linki: `?touch` pokazuje kontrolki dotykowe, `?course=lake|village|dunes|forest|exam` zaczyna na trasie, `?train` włącza szkolenie (`?train=exam` sam egzamin), `?go` pomija kartę startową i intro, `?intro` otwiera od razu intro, `?debug` wystawia `window.sail` i `window.view`.
+Linki: `?touch` pokazuje kontrolki dotykowe, `?course=lake|village|dunes|forest|exam` zaczyna na trasie, `?train` włącza szkolenie (`?train=exam` sam egzamin), `?go` pomija kartę startową i intro, `?intro` otwiera od razu intro, `?debug` wystawia `window.sail` i `window.view`, `?wear=fast` przyspiesza zużycie 8× (do sprawdzania objawów).
+
+## Zużycie i objawy przed awarią (decyzja 2026-11-17)
+
+Wojtek przyjął wniosek 4 z [INSPIRACJE.md](INSPIRACJE.md): usterki Żaglowozu widać i słychać, zanim coś się zepsuje. Na ekranie nie ma paska „stan 63%”, objawy są wskaźnikiem. Logika w `src/sail/sim/wear.ts` (czysty TS, testy w `test/wear.test.ts`).
+
+| Część | Co ją zużywa | Objaw (od 45%, głośniej od 80%) | Awaria (100%) |
+|---|---|---|---|
+| łożyska kół | przejechane metry na kołach, najbardziej sypki popiół, błoto i żwir, najmniej asfalt | pisk przy obrotach koła (częstszy i głośniejszy z zużyciem), koło chwieje się na osi | łożysko się zaciera: duży opór toczenia |
+| żagiel | łopotanie (za luźny szot) i mocny wiatr | odstający płat przy liku trzepocze i brzęczy, coraz większy | żagiel się drze: ciągnie o połowę słabiej |
+| szot | jazda na granicy wywrotki, każda wywrotka | skrzypi pod obciążeniem (przy mocnym zużyciu też trze), lina jaśnieje i drży | szot pęka: bom lata swobodnie, żagiel łopocze |
+
+- Stary Żaglowóz startuje z częściowym zużyciem (łożyska 36%, żagiel 30%, szot 25%), więc pierwsze objawy przychodzą po kilku minutach jazdy.
+- **Naprawa** jest krótka i fizyczna (lekcja z Pacific Drive): stań, X, 3 s. Wolt naprawia najbardziej zużytą część, a Żaglowóz w tym czasie stoi na hamulcu. Naprawiona część zostaje na 8% (łata, nie nowa). W demie naprawa nie kosztuje materiałów; w grze ma kosztować (smar, płótno, lina).
+- **Karta stanu** (K) to rysunek techniczny, który potwierdza to, co już widać i słychać: stan każdej części słowem (w porządku, zużyte, zaraz puści, zepsute), pasek i opis objawu.
+- W symulatorze Q-1 nic się nie zużywa. Demo „Słońce” na razie ma zużycie wyłączone.
+- Liczby (tempo zużycia, progi, skutki awarii) to propozycja agenta do strojenia.
 
 ## Fizyka (src/sail/sim/landYacht.ts)
 
@@ -101,12 +119,13 @@ Czysty TS, testy w `test/sail.test.ts`.
 | `src/sail/sim/landYacht.ts` | fizyka żaglowozu |
 | `src/sail/sim/courses.ts` | trasy, bramki, pomiar czasu, limit czasu egzaminu |
 | `src/sail/sim/training.ts` | szkolenie w symulatorze: lekcje z warunkami zaliczenia i egzamin |
-| `src/sail/sim/sailGame.ts` | całość: mapa, wiatr, żaglowóz, trasa, rekordy, statystyki |
+| `src/sail/sim/wear.ts` | zużycie części, objawy, awarie i naprawa |
+| `src/sail/sim/sailGame.ts` | całość: mapa, wiatr, żaglowóz, zużycie, trasa, rekordy, statystyki |
 | `src/sail/render/sailView.ts` | scena 3D: teren z shaderem (krawędzie podłoży z pól, szkwały na popiele, cień), smugi pyłu, bramki z chorągiewkami, kamera |
 | `src/sail/render/yachtRig.ts` | żaglowóz 3D: wózek z warsztatu, oś z kołami albo płozy, maszt, żagiel z balonu, Wolt w siodle na dziobie, balast na szynie, całe olinowanie |
 | `src/sail/render/rope.ts` | liny i linki: rurka przez punkty przeliczana co klatkę (zwis, bujanie, zwoje), faktura skręconej liny |
 | `src/sail/intro.ts` | intro rysowane na płótnie 2D |
-| `src/sail/rollSound.ts` | szum kół na podłożu, łopot żagla |
+| `src/sail/rollSound.ts` | szum kół na podłożu, łopot żagla, brzęczenie rozdartego płata |
 | `src/sail/main.ts`, `sail.css`, `demo-sail/index.html` | HUD, sterowanie, strona |
 
 Żaglowóz używa części z demo „Warsztat” (`mastRig`, `runnerRig`, `balloonSailTexture` z `src/craft/render/yachtModels.ts`, model wózka `spacetruck_trailer`) i wspólnego silnika (`Sail`, `woltMonoModel`, `WoltAnimator`, `GroundFx`, `Sound`). W `loadCraftModels` doszedł opcjonalny filtr `only`, żeby to demo ładowało tylko wózek, a `runnerRig(front = true)` może pominąć przednią płozę (tu przodem jest Wolt).
@@ -152,6 +171,7 @@ Trzy stopnie widoczności wiatru jako postęp Wolta:
 
 ## Do sprawdzenia przez Wojtka
 
+- Zużycie (2026-11-17): czy objawy (pisk łożyska, chwiejące się koło, łopoczący płat, jaśniejący i skrzypiący szot) są czytelne, zanim coś pęknie; czy tempo jest dobre (`?wear=fast` do szybkiego sprawdzenia); czy naprawa ma kosztować materiały już w demie.
 - Czy czucie jazdy jest dobre: prędkości (do ~70 km/h), jak łatwo się przewrócić, czy poślizg na solnisku nie jest za mocny.
 - Czy szkwały są czytelne na popiele i czy smug pyłu nie jest za dużo.
 - Czy mapa 400 m nie jest za mała przy tych prędkościach (łatwo ją powiększyć).

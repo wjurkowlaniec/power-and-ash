@@ -84,6 +84,7 @@ Używają go i gra, i tech demo. Zmiana tutaj musi zostawić obie strony działa
 | `wolt.ts` | Wolt-monocykl (etap „Rdzeń”): koło, kapsuła z Q-1, lampa, bęben kabla, ramię dwuprzegubowe, hak; `WoltAnimator` (balans, przechył, ramię, rozglądanie się) |
 | `loads.ts` | modele holowanych ładunków i liny |
 | `groundFx.ts` | ślady koła i opony zależne od podłoża, pył przy buksowaniu |
+| `juice.ts` | „soczystość” drobnych akcji (decyzja 2026-11-17): pula iskier i kurzu, krótkie błyski światła, sprężyste drgnięcie obiektu (`Juice.burst`, `flash`, `bump`); tylko rysuje, nie zmienia symulacji. Używa go Wyspa |
 | `deck.ts` | pokład żaglowozu: stalowa rama z dwuteowników, europalety |
 | `sail.ts`, `sailTexture.ts` | żagiel falujący w shaderze za wiatrem i wypłowiała reklama wymyślonej oranżady „Zefir”; opcjonalnie własna tekstura i `sheet` (szot ogranicza bom), z czego korzysta Żaglowóz w „Warsztacie” |
 | `view.ts` | **tylko tech demo**: cała scena 3D poziomu „Rozruch” |
@@ -126,7 +127,7 @@ Korzysta ze wspólnego silnika (`World`, `Cable`, `solveNetworks`, `findPath`, `
 
 Trzeci poligon (decyzja Wojtka 2026-11-10): jazda Żaglowozem jako rdzeń rozgrywki. Logika w `src/sail/sim/` (teren z polami podłoży, pole wiatru ze szkwałami i cieniem przeszkód, fizyka żaglowozu z przechyłem i poślizgiem, trasy na czas), widok w `src/sail/render/`, intro rysowane na płótnie 2D w `src/sail/intro.ts`. Opis, sterowanie i fizyka: [DEMO-ZEGLUGA.md](DEMO-ZEGLUGA.md).
 
-Korzysta ze wspólnego silnika (`Sail`, model i animator Wolta, `GroundFx`, `Sound`) i z części „Warsztatu” (maszt, płozy, żagiel z balonu, wózek). Zmiany poza `src/sail/` (zgodne wstecz): opcjonalny filtr `only` w `loadCraftModels` i parametr `runnerRig(front = true)` w `src/craft/render/yachtModels.ts`. Od 2026-11-11 Wolt jest przednim kołem Żaglowozu (silnik z baterią, przesuwny balast), a olinowanie rysuje `src/sail/render/rope.ts`.
+Korzysta ze wspólnego silnika (`Sail`, model i animator Wolta, `GroundFx`, `Sound`) i z części „Warsztatu” (maszt, płozy, żagiel z balonu, wózek). Zmiany poza `src/sail/` (zgodne wstecz): opcjonalny filtr `only` w `loadCraftModels` i parametr `runnerRig(front = true)` w `src/craft/render/yachtModels.ts`. Od 2026-11-11 Wolt jest przednim kołem Żaglowozu (silnik z baterią, przesuwny balast), a olinowanie rysuje `src/sail/render/rope.ts`. Od 2026-11-17 części się zużywają z objawami przed awarią (`src/sail/sim/wear.ts`, skutki awarii przez opcjonalne `YachtState.fault` i `hold` w fizyce; `SunGame` ma zużycie wyłączone przez `wearOn = false`).
 
 
 ## Tech demo „Słońce” (`/demo-sun/`)

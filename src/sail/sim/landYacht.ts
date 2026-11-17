@@ -154,6 +154,10 @@ export interface YachtState {
   bump: number;
   /** A wheel touched down after flying (m/s of heel rate), decays. */
   land: number;
+  /** What broken parts do (src/sail/sim/wear.ts); none when absent. */
+  fault?: { crr: number; sail: number; sheetFree: boolean };
+  /** Wolt is fixing something: the yacht is held on its brake, sail let fly. */
+  hold?: boolean;
 }
 
 export function newYacht(x: number, y: number, heading: number, gear: Gear = 'wheels'): YachtState {
@@ -234,6 +238,8 @@ function substep(s: YachtState, dt: number, wind: { dir: number; speed: number }
     s.sheet += Math.sign(d) * Math.min(Math.abs(d), YACHT.sheetRate * (d > 0 && over > 0 ? 1.6 : 0.8) * dt);
   }
   if (input.sheet) { s.auto = false; s.sheet += input.sheet * YACHT.sheetRate * dt; }
+  // a snapped sheet holds nothing: the boom swings out as far as it goes
+  if (s.fault?.sheetFree) s.sheet = YACHT.boomMax;
   s.sheet = Math.max(YACHT.sheetMin, Math.min(YACHT.boomMax, s.sheet));
 
   // docking: without its bow wheel the yacht stands on its props, sail let fly
@@ -241,14 +247,14 @@ function substep(s: YachtState, dt: number, wind: { dir: number; speed: number }
     s.dock = Math.max(0, Math.min(1, s.dock + s.docking * dt / YACHT.dockTime));
     if (s.dock >= 1 || s.dock <= 0) { ev.docked = s.docking; s.docking = 0; }
   }
-  const held = s.swap > 0 || s.dock < 1;
+  const held = s.swap > 0 || s.dock < 1 || !!s.hold;
   const upright = s.capsized <= 0 && !held;
   s.boom = Math.min(s.beta, s.sheet, YACHT.boomMax);
   s.aoa = Math.max(0, s.beta - s.boom);
   // heeled, the sail sees less wind; on its side, none
   const heelCos = Math.cos(s.heel);
   s.cn = upright ? sailCn(s.aoa) : 0;
-  const N = YACHT.sail * s.app * s.app * s.cn * heelCos * heelCos;
+  const N = YACHT.sail * s.app * s.app * s.cn * heelCos * heelCos * (s.fault?.sail ?? 1);
   const sailF = N * Math.sin(s.boom), sailS = N * Math.cos(s.boom) * lee;
   s.drive = sailF;
 
@@ -280,7 +286,7 @@ function substep(s: YachtState, dt: number, wind: { dir: number; speed: number }
   if (s.capsized > 0) {
     aLong = -Math.sign(s.u) * Math.min(Math.abs(s.u) / dt, 6);
   } else {
-    const hold = crr * g + (input.brake || held ? YACHT.brake * Math.min(1, grip + 0.3) : 0);
+    const hold = (crr + (s.fault?.crr ?? 0)) * g + (input.brake || held ? YACHT.brake * Math.min(1, grip + 0.3) : 0);
     if (Math.abs(s.u) < 0.05 && Math.abs(aLongFree) <= hold) aLong = -s.u / dt;
     else {
       aLong = aLongFree - Math.sign(s.u || aLongFree) * hold;

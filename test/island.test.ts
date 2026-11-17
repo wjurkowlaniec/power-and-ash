@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { Island, P, PAD_X, SLED_CAP, OVERLOAD_AT, TERMINAL_W, PANEL_W, STORE_W, bogDepth, BOG_DEPTH, START_BATTERY } from '../src/game/sim/island';
+import { Island, P, PAD_X, SLED_CAP, OVERLOAD_AT, TERMINAL_W, PANEL_W, STORE_W, bogDepth, BOG_DEPTH, START_BATTERY, THIN_W, THICK_W, TRAFO_MULT, lineRating } from '../src/game/sim/island';
 import { RECIPES, ItemId, Inventory } from '../src/game/sim/craft';
 import { findPath } from '../src/sim/path';
 import { V2, sub, len, dist } from '../src/sim/vec';
@@ -170,7 +170,8 @@ describe('Level "Wyspa": crafting test', () => {
 
   it('the bridge finishes the download even on an empty battery', () => {
     const s = new Island();
-    Object.assign(s, { regOk: false, junction: true, overloaded: true, downloading: true, progress: OVERLOAD_AT, bridged: true, battery: 1, storage: true, soc: 1 });
+    Object.assign(s, { regOk: false, junction: true, fed: true, doorOpen: 1, overloaded: true, downloading: true, progress: OVERLOAD_AT, bridged: true, battery: 1, storage: true, soc: 1 });
+    s.lines.trunk.thick = true; s.lines.feed.trafo = true;
     s.pads.forEach(p => { p.panel = true; p.fault = null; p.linked = true; });
     expect(until(s, () => s.lighthouseT >= 0, 300)).toBe(true);
     expect(s.battery).toBe(0);
@@ -190,7 +191,8 @@ describe('Level "Wyspa": crafting test', () => {
 
   it('six panels in full sun give 900 W without a storage', () => {
     const s = new Island();
-    Object.assign(s, { regOk: true, junction: true, t: 0 });
+    Object.assign(s, { regOk: true, junction: true, fed: true, doorOpen: 1, t: 0 });
+    s.lines.trunk.thick = true; s.lines.feed.trafo = true;   // 900 W does not fit a thin line
     s.pads.forEach(p => { p.panel = true; p.fault = null; p.linked = true; });
     // find a moment with no cloud over the panels
     expect(until(s, () => s.pads.every(p => s.sun(p.at) > 0.999), 200)).toBe(true);
@@ -263,10 +265,59 @@ describe('Level "Wyspa": crafting test', () => {
 
   it('the storage gives up to its power and is charged by spare sun', () => {
     const s = new Island();
-    Object.assign(s, { regOk: true, junction: true, storage: true, soc: 0.2 });
+    Object.assign(s, { regOk: true, junction: true, fed: true, doorOpen: 1, storage: true, soc: 0.2 });
     s.pads.forEach((p, i) => { if (i < 3) { p.fault = null; p.linked = true; } });
     idle(s, 20);
     expect(s.soc).toBeGreaterThan(0.2);
     expect(STORE_W).toBe(600);
+  });
+
+  it('cable classes: a thin line heats, sparks and trips its breaker; E at the cabinet resets it', () => {
+    const s = new Island();
+    Object.assign(s, { regOk: true, junction: true, t: 0 });
+    s.pads.forEach(p => { p.panel = true; p.fault = null; p.linked = true; });
+    expect(lineRating(s.lines.trunk)).toBe(THIN_W);
+    expect(until(s, () => s.lines.trunk.flow > THIN_W * 1.2, 200)).toBe(true);
+    // it warns before it trips: heat climbs for several seconds
+    expect(until(s, () => s.lines.trunk.heat > 0.4, 30)).toBe(true);
+    expect(s.lines.trunk.tripped).toBe(false);
+    expect(until(s, () => s.lines.trunk.tripped, 30)).toBe(true);
+    expect(s.pops.some(p => p.kind === 'spark')).toBe(true);
+    idle(s, 0.1);
+    expect(s.supply).toBe(0);
+    // switched back on it starts warm, so it trips again soon with the same load
+    at(s, 'reg', P.reg); press(s);
+    expect(s.lines.trunk.tripped).toBe(false);
+    expect(s.lines.trunk.heat).toBeGreaterThan(0.3);
+  });
+
+  it('heavy cable on the trunk and the transformer on the feed carry 900 W', () => {
+    const s = new Island();
+    Object.assign(s, { regOk: true, junction: true, fed: true, doorOpen: 1, t: 0 });
+    s.world.remove(s.world.obstacles.find(o => o.kind === 'crate' && o.x === 17 && o.y === 19)!);
+    s.pads.forEach(p => { p.panel = true; p.fault = null; p.linked = true; });
+    // where they come from: the boat wreck and the overturned container
+    expect(s.heaps.find(h => h.id === 'boat')!.loot.cableThick).toBeGreaterThanOrEqual(3);
+    expect(s.heaps.find(h => h.id === 'crateB')!.loot.trafo).toBe(1);
+    s.inv.add('cableThick', 5); s.inv.add('trafo', 1);
+    at(s, 'trunk', P.junction); hold(s, 3);
+    expect(s.lines.trunk.thick).toBe(true);
+    expect(s.inv.count('cableThick')).toBe(2);
+    at(s, 'reg', P.reg); hold(s, 4);
+    expect(s.lines.feed.trafo).toBe(true);
+    expect(lineRating(s.lines.feed)).toBe(THIN_W * TRAFO_MULT);
+    expect(lineRating(s.lines.trunk)).toBe(THICK_W);
+    expect(until(s, () => s.pads.every(p => s.sun(p.at) > 0.999), 200)).toBe(true);
+    s.downloading = true;
+    idle(s, 20);
+    expect(s.lines.trunk.tripped || s.lines.feed.tripped).toBe(false);
+    expect(s.lines.trunk.heat).toBe(0);
+  });
+
+  it('every bit of loot and every fitted part leaves a pop for the view', () => {
+    const s = new Island();
+    take(s, 'k2');
+    expect(s.pops.filter(p => p.kind === 'take' && p.text).length).toBeGreaterThanOrEqual(3);
+    expect(s.pops.some(p => p.kind === 'tick')).toBe(true);
   });
 });

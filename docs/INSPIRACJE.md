@@ -4,6 +4,8 @@ Analiza gier, które są blisko „Popiołu i Prądu” mechaniką, nastrojem al
 
 **Zasada [ustalone 2026-11-06, przypomniane 2026-11-17]:** bierzemy mechaniki, rytmy i lekcje projektowe, nigdy nazw, postaci, grafiki, muzyki, poziomów ani wyglądu. Każdy wniosek niżej jest przetłumaczony na nasz świat (Wolt, Q-1, kabel, Żaglowóz, bunkry, hibernacja). Wszystko w tym dokumencie to **[propozycja]** agenta, dopóki Wojtek czegoś nie przyjmie; przyjęte rzeczy przenosimy do [DECYZJE.md](DECYZJE.md) i dokumentu, którego dotyczą.
 
+**Decyzje Wojtka z 2026-11-17** (szczegóły w [Do decyzji](#do-decyzji)): wniosek 1 **odrzucony**, wnioski 2, 4 i 10 **przyjęte i zrobione**.
+
 **Skąd wiedza:** opisy gier, recenzje i ogólnie znana wiedza o gatunku (lista źródeł na końcu). Agent nie grał w te gry w tej sesji, więc szczegóły liczbowe (np. ile energii zużywa akcja) są celowo pominięte. Patrz [Dane z dekompilacji](#dane-z-dekompilacji-i-własne-analizy-wojtka).
 
 ## Spis
@@ -24,16 +26,16 @@ Analiza gier, które są blisko „Popiołu i Prądu” mechaniką, nastrojem al
 
 Uporządkowane od tego, co daje najwięcej przy najmniejszym koszcie.
 
-1. **Brak prądu spowalnia, a nie wyłącza** (Factorio, Oxygen Not Included). Gdy sieć ma za mało mocy, urządzenia pracują wolniej proporcjonalnie do zasilenia, lampa przygasa, fabrykator zwalnia. Wolt przy prawie pustej baterii jedzie ospale, zamiast stanąć. To czytelne, uczciwe i pasuje do zasady „brak martwych punktów”. Gdzie: `src/sim` (sieć), [RUCH-I-ANIMACJA.md](RUCH-I-ANIMACJA.md).
-2. **Przeciążenie przewodu jako zagadka** (Oxygen Not Included, Satisfactory). Kabel ma przepustowość; za duży odbiór grzeje przewód, iskrzy, a w końcu przepala bezpiecznik, który trzeba ręcznie załączyć. Transformator ze Sceny 2 dostaje sens: łączy linię grubą z cienką. Gdzie: [SWIAT.md: Ładowanie](SWIAT.md#ładowanie-zawsze-przez-fizyczne-połączenie), [PLAN.md](PLAN.md).
+1. **[ODRZUCONE 2026-11-17: „brak prądu to brak prądu, urządzenia się wyłączają”]** ~~**Brak prądu spowalnia, a nie wyłącza** (Factorio, Oxygen Not Included).~~ Gdy sieć ma za mało mocy, urządzenia pracują wolniej proporcjonalnie do zasilenia, lampa przygasa, fabrykator zwalnia. Wolt przy prawie pustej baterii jedzie ospale, zamiast stanąć. To czytelne, uczciwe i pasuje do zasady „brak martwych punktów”. Gdzie: `src/sim` (sieć), [RUCH-I-ANIMACJA.md](RUCH-I-ANIMACJA.md).
+2. **[PRZYJĘTE 2026-11-17, zrobione na Wyspie: [POZIOM-WYSPA.md](POZIOM-WYSPA.md#klasy-kabli-i-przeciążenie-decyzja-2026-11-17); grubsze kable będzie można później fabrykować]** **Przeciążenie przewodu jako zagadka** (Oxygen Not Included, Satisfactory). Kabel ma przepustowość; za duży odbiór grzeje przewód, iskrzy, a w końcu przepala bezpiecznik, który trzeba ręcznie załączyć. Transformator ze Sceny 2 dostaje sens: łączy linię grubą z cienką. Gdzie: [SWIAT.md: Ładowanie](SWIAT.md#ładowanie-zawsze-przez-fizyczne-połączenie), [PLAN.md](PLAN.md).
 3. **Panel „skąd i dokąd płynie prąd”** (Factorio). Mamy już bilans linia po linii (decyzja 2026-11-08). Dołożyć krótki wykres z ostatnich minut (produkcja vs zużycie vs akumulatory), żeby gracz widział noc i szkwały, a nie tylko chwilę. Na karcie bazy, nie w stałym HUD.
-4. **Pojazd jako dom, który się psuje po swojemu** (Pacific Drive, The Last Caretaker). Żaglowóz ma mieć charakter: konkretne usterki z objawami (piszczy łożysko, łopocze rozdarty żagiel), a nie pasek „stan 63%”. Mamy już tabelę części zużywalnych; brakuje **objawów słyszalnych i widocznych** przed awarią. Gdzie: [SWIAT.md: Żaglowóz](SWIAT.md#żaglowóz).
+4. **[PRZYJĘTE 2026-11-17, zrobione w demie „Żegluga”: [DEMO-ZEGLUGA.md](DEMO-ZEGLUGA.md#zużycie-i-objawy-przed-awarią-decyzja-2026-11-17)]** **Pojazd jako dom, który się psuje po swojemu** (Pacific Drive, The Last Caretaker). Żaglowóz ma mieć charakter: konkretne usterki z objawami (piszczy łożysko, łopocze rozdarty żagiel), a nie pasek „stan 63%”. Mamy już tabelę części zużywalnych; brakuje **objawów słyszalnych i widocznych** przed awarią. Gdzie: [SWIAT.md: Żaglowóz](SWIAT.md#żaglowóz).
 5. **Wyprawa i powrót jako rytm** (The Last Caretaker, Pacific Drive, Subnautica). Każde wyjście ma cel, ryzyko (prąd, pogoda, zmrok) i decyzję „jeszcze trochę czy wracam”. Baza i Żaglowóz to miejsca odpoczynku i porządkowania łupów. Mamy to w zasadzie „pętla wraca do bazy”; trzeba pilnować, żeby powrót był przyjemny (światło, ciepło, dźwięk ładowania), a nie tylko konieczny.
 6. **Uczenie się przez skanowanie fragmentów** (Subnautica). Nie dostajesz przepisu z drzewka, tylko znajdujesz kawałki rzeczy i analizujesz je. To dokładnie nasz system „Obliczenia w tle”. Lekcja: pokazywać postęp jako „2 z 3 próbek”, żeby gracz wiedział, że ma szukać jeszcze jednej. Gdzie: [SWIAT.md: Rozwój](SWIAT.md#rozwój-obliczenia-w-tle).
 7. **Postęp przez wiedzę, nie tylko przez sprzęt** (Outer Wilds). Część barier znika, gdy gracz *zrozumie*, a nie gdy coś zbuduje: rozkład wiatru w dolinie, godzina, o której mikroboty śpią, notatka-rysunek z drogą. Pasuje do Wolta, który nie czyta pisma i uczy się świata. Gdzie: [FABULA.md](FABULA.md), notatki.
 8. **Podróż jako rozgrywka, nie przerwa** (Death Stranding, Sable). Teren czyta się wzrokiem: gdzie popiół sypki, gdzie ubity, gdzie woda. Trasa jest decyzją, a postawione przez gracza rzeczy (drogi, słupy, porty ładowania) zostają w świecie i skracają następne przejazdy. To wzmacnia „robot pomocnik robi drogę” z [POMYSLY.md](POMYSLY.md).
 9. **Kolor tylko dla tego, z czym można coś zrobić** (Inside, Limbo). Już przyjęte. Dopisać regułę testową: na każdym zrzucie ekranu gracz w 2 sekundy wskazuje, co jest interaktywne. Jeśli nie, coś jest za szare albo za kolorowe.
-10. **Mała akcja, duża satysfakcja** (GrassChopper, gry inkrementalne). Proste czynności (rozbiórka złomu, wpięcie wtyczki, napięcie kabla) muszą być „soczyste”: krótki dźwięk, drgnięcie, iskra, licznik. To tani sposób, żeby powtarzalne rzeczy nie nudziły.
+10. **[PRZYJĘTE 2026-11-17, zrobione na Wyspie i we wspólnym `src/render/juice.ts`: [POZIOM-WYSPA.md](POZIOM-WYSPA.md#soczyste-drobne-akcje-decyzja-2026-11-17)]** **Mała akcja, duża satysfakcja** (GrassChopper, gry inkrementalne). Proste czynności (rozbiórka złomu, wpięcie wtyczki, napięcie kabla) muszą być „soczyste”: krótki dźwięk, drgnięcie, iskra, licznik. To tani sposób, żeby powtarzalne rzeczy nie nudziły.
 11. **Odbudowa, która widać w krajobrazie** (Terra Nil). Najlepsza nagroda to świat, który się zmienia: zieleń przez popiół, światło w oknie bunkra, ptaki wracające nad zalew. Mamy to w [Długofalowych skutkach](SWIAT.md#długofalowe-skutki-propozycja-2026-11-09-na-prośbę-wojtka); Terra Nil dodaje pomysł, że na końcu **rozbiera się własną infrastrukturę** i zostawia czystą przyrodę. Możliwe zakończenie albo „Gra po fabule”.
 12. **Ludzie oceniają cię po skutkach, nie po dialogach** (Frostpunk). Bunkry mają nastrój (nadzieja, strach), który zmienia się od tego, co Wolt robi z prądem: dał światło na zimę, zabrał wodę elektrowni. Pokazane cicho, przez zachowanie ludzi, nie przez paski.
 
@@ -91,7 +93,7 @@ Uporządkowane od tego, co daje najwięcej przy najmniejszym koszcie.
 - Siatka i czytelne zasięgi (słup pokazuje, co obejmuje).
 
 **Co przenosimy:**
-- Płynna degradacja w sieci i w Wolcie (wniosek 1).
+- ~~Płynna degradacja w sieci i w Wolcie (wniosek 1).~~ Odrzucone 2026-11-17: brak prądu wyłącza urządzenia.
 - Wykres na karcie bazy (wniosek 3), nie w stałym HUD, bo HUD ma być pusty jak w Inside.
 - **Duchy dla robota pomocnika:** gracz rysuje trasę kabla albo drogi jako półprzezroczysty ślad, pomocnik ją wykonuje (pomysł z [POMYSLY.md](POMYSLY.md)). To naturalny interfejs zlecania.
 - Alarmy dopiero po zbudowaniu anteny (już w [SWIAT.md: Bazy](SWIAT.md#bazy)); wyglądać mają jak cichy sygnał na krawędzi ekranu, nie jak wyskakujące okno.
@@ -145,7 +147,7 @@ Już przyjęte jako wzór archiwum notatek i prześwitu w dachu. Dodatkowa lekcj
 
 **Co działa:** gdy pobór przekroczy moc, cała sieć się wyłącza (bezpiecznik) i trzeba ją ręcznie przywrócić; akumulatory chronią przed tym na chwilę.
 
-**Co przenosimy:** **bezpiecznik w szafce** jako drobna, fizyczna interakcja (Wolt podjeżdża i przełącza dźwignię). Uwaga: łączyć z płynną degradacją ostrożnie. Propozycja: odbiorniki zwalniają przy niedoborze, a bezpiecznik wybija tylko przy przeciążeniu kabla (za dużo mocy przez za cienki przewód). Dwie różne przyczyny, dwa różne objawy.
+**Co przenosimy:** **bezpiecznik w szafce** jako drobna, fizyczna interakcja (Wolt podjeżdża i przełącza dźwignię). Po decyzjach z 2026-11-17: przy niedoborze odbiorniki się wyłączają (bez spowalniania), a zabezpieczenie linii wybija przy przeciążeniu kabla (za dużo mocy przez za cienki przewód) i Wolt załącza je przy szafie. Tak działa Wyspa.
 
 ### Subnautica (Unknown Worlds)
 
@@ -287,8 +289,12 @@ Najwygodniejsza forma: notatka Wojtka albo tabela z liczbami w tym pliku, w sekc
 
 ## Do decyzji
 
-- Które z 12 wniosków wchodzą do pracy i w jakiej kolejności. Propozycja agenta na start: 1 (płynna degradacja), 2 (klasy kabla i przeciążenie), 4 (usterki z objawem), 10 (soczyste akcje), bo są tanie i wzmacniają to, co już jest w grze i demach.
-- Czy bezpiecznik do ręcznego załączenia wchodzi obok płynnej degradacji.
+- ~~Które z 12 wniosków wchodzą do pracy i w jakiej kolejności. Propozycja agenta na start: 1, 2, 4, 10.~~ **Odpowiedź Wojtka (2026-11-17):**
+  - **1 (płynna degradacja): odrzucone.** „Brak prądu to brak prądu, urządzenia się wyłączają.”
+  - **2 (klasy kabli i przeciążenie z transformatorem): tak.** Grubsze kable będzie można później fabrykować (crafting). Zrobione na Wyspie.
+  - **4 (usterki Żaglowozu z objawem): tak.** Usterki widać i słychać, zanim coś się zepsuje. Zrobione w demie „Żegluga”.
+  - **10 (soczyste drobne akcje): tak.** Dźwięk, błysk, drgnięcie przy naprawie, wpięciu kabla, craftingu. Zrobione na Wyspie (wspólny moduł `src/render/juice.ts`).
+- ~~Czy bezpiecznik do ręcznego załączenia wchodzi obok płynnej degradacji.~~ Wchodzi zabezpieczenie linii do ręcznego załączenia przy przeciążeniu kabla (degradacja odrzucona).
 - Czy ładownia ma być siatką z kształtami (Dredge) czy zostaje listą.
 - Czy rozbiórka własnej sieci na końcu (Terra Nil) to kandydat na zakończenie.
 - Czy dodać stały znak na horyzoncie dla całej gry.

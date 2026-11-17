@@ -11,6 +11,7 @@ import { Training, LESSONS } from './sim/training';
 import { SailView } from './render/sailView';
 import { CART_MODELS } from './render/yachtRig';
 import { RollSound } from './rollSound';
+import { PARTS, PART_NAME, loudness, stage, startRepair, REPAIR_TIME } from './sim/wear';
 import { Intro } from './intro';
 import { mountTouch, showTouch } from '../touch';
 
@@ -27,10 +28,10 @@ $('startSub').textContent = tr('Tech demo · Żegluga Żaglowozem', 'Tech demo �
 $('startText').innerHTML = tr(
   `<p>Wolt wczepiony w dziób Żaglowozu jest jego przednim kołem: skręca, a gdy wiatr siądzie, pcha silnikiem z baterii. Przed nim popielna kraina: stara szosa, solnisko, wydmy, wieś w ruinie i martwy las. Wiatr nie jest wszędzie taki sam. Szkwały widać na popiele jako ciemne, biegnące zmarszczki, za domami wiatr siada i szarpie.</p>
    <p>Trymuj szot do kąta wiatru, łap szkwały, uważaj, żeby nie położyć się na bok. Na sypkim popiele koła grzęzną, płozy suną. Pływaj swobodnie albo jedź trasy na czas.</p>
-   <p class="keys"><span class="k">A/D</span>ster <span class="k">W/S</span>szot <span class="k">F</span>Q-1 trymuje <span class="k">Shift</span>balast <span class="k">E</span>silnik <span class="k">Spacja</span>hamulec <span class="k">R</span>koła/płozy <span class="k">C</span>trasa</p>`,
+   <p class="keys"><span class="k">A/D</span>ster <span class="k">W/S</span>szot <span class="k">F</span>Q-1 trymuje <span class="k">Shift</span>balast <span class="k">E</span>silnik <span class="k">Spacja</span>hamulec <span class="k">R</span>koła/płozy <span class="k">C</span>trasa <span class="k">X</span>napraw <span class="k">K</span>karta stanu</p>`,
   `<p>Wolt, docked in the bow of the land yacht, is its front wheel: he steers, and when the wind dies he pushes with his motor off the battery. The ash country ahead: an old road, a salt pan, dunes, a ruined village and a dead wood. The wind is not the same everywhere. Gusts show on the ash as dark running ripples; behind the houses the wind drops and tugs.</p>
    <p>Trim the sheet to the wind, catch the gusts, try not to tip over. On loose ash the wheels sink and the runners glide. Sail freely or race the courses.</p>
-   <p class="keys"><span class="k">A/D</span>steer <span class="k">W/S</span>sheet <span class="k">F</span>Q-1 trims <span class="k">Shift</span>ballast <span class="k">E</span>motor <span class="k">Space</span>brake <span class="k">R</span>wheels/runners <span class="k">C</span>course</p>`);
+   <p class="keys"><span class="k">A/D</span>steer <span class="k">W/S</span>sheet <span class="k">F</span>Q-1 trims <span class="k">Shift</span>ballast <span class="k">E</span>motor <span class="k">Space</span>brake <span class="k">R</span>wheels/runners <span class="k">C</span>course <span class="k">X</span>repair <span class="k">K</span>state card</p>`);
 $('startSmall').textContent = tr('prototyp · fizyka i wiatr w czystym TS, render Three.js · modele CC0: Kay Lousberg, Quaternius', 'prototype · physics and wind in plain TS, Three.js rendering · CC0 models: Kay Lousberg, Quaternius');
 $('start').querySelector('.card')!.appendChild(langSwitch());
 
@@ -50,6 +51,7 @@ try {
   const saved = JSON.parse(localStorage.getItem('sail-best') ?? '{}');
   if (saved && typeof saved === 'object') game.best = saved;
 } catch { /* no storage */ }
+try { if (new URLSearchParams(location.search).get('wear') === 'fast') game.wearRate = 8; } catch { /* no location */ }
 const view = new SailView(game, $('app'), models);
 const sound = new Sound();
 const roll = new RollSound();
@@ -70,6 +72,7 @@ const sail = () => {
 };
 function startTraining(at = 0) {
   training = new Training(game);
+  game.wearOn = false; // nothing wears in Q-1's head
   if (at) training.go(at);
   document.body.classList.add('sim');
   courseKey = ''; lessonKey = '';
@@ -77,6 +80,7 @@ function startTraining(at = 0) {
 }
 function endTraining() {
   training = null;
+  game.wearOn = true;
   game.wind.strength = WINDS[windLevel].k;
   document.body.classList.remove('sim');
   $('lesson').hidden = true; courseKey = ''; lessonKey = '';
@@ -103,6 +107,14 @@ addEventListener('keydown', e => {
     case 'Escape': if (training) { endTraining(); game.setCourse(null); toast(tr('Symulator wyłączony. Wrócisz do niego z panelu trasy.', 'Simulator off. You can return to it from the course panel.')); } break;
     case 'KeyT': case 'Backspace': if (training && !training.exam) { training.go(training.index); lessonKey = ''; } else if (game.run) { game.restart(); toast(tr('Od nowa', 'Restart')); } break;
     case 'KeyV': windLevel = (windLevel + 1) % WINDS.length; game.wind.strength = WINDS[windLevel].k; toast(WINDS[windLevel].name); break;
+    case 'KeyX': {
+      if (!game.wearOn) break;
+      const p = startRepair(game.wear, game.yacht);
+      if (p) { toast(tr(`Wolt naprawia: ${PART_NAME[p]}…`, `Wolt is fixing: ${PART_NAME[p]}…`)); sound.play('grab'); }
+      else toast(game.yacht.speed > 0.6 ? tr('Najpierw stań (Spacja)', 'Stop first (Space)') : tr('Nic nie wymaga naprawy', 'Nothing needs fixing'));
+      break;
+    }
+    case 'KeyK': cardOn = !cardOn; $('wearCard').hidden = !cardOn; cardKey = ''; break;
     case 'KeyH': helpOn = !helpOn; $('help').hidden = !helpOn; break;
     case 'KeyM': sound.toggleMute(); roll.toggleMute(); break;
   }
@@ -126,6 +138,8 @@ const pad = mountTouch({
     { label: tr('odczep / wczep', 'undock / dock'), code: 'KeyG' },
     { label: tr('koła / płozy', 'wheels / runners'), code: 'KeyR' },
     { label: 'Q-1', code: 'KeyF' },
+    { label: tr('napraw', 'repair'), code: 'KeyX' },
+    { label: tr('stan', 'state'), code: 'KeyK' },
     { label: tr('trasy', 'courses'), onTap: () => { $('course').hidden = !$('course').hidden; } },
     { label: tr('zoom +', 'zoom +'), onTap: () => view.zoomBy(1 / 1.25) },
     { label: tr('zoom −', 'zoom −'), onTap: () => view.zoomBy(1.25) },
@@ -141,6 +155,31 @@ const WINDS = [
 ];
 let windLevel = 1;
 let helpOn = true;
+
+// the state card (K): a technical drawing that confirms what you already saw and heard
+const card = document.createElement('div');
+card.className = 'panel wearp'; card.id = 'wearCard'; card.hidden = true;
+$('hud').appendChild(card);
+let cardOn = false, cardKey = '';
+function wearCard() {
+  if (!cardOn) return;
+  const W = game.wear;
+  const key = JSON.stringify([PARTS.map(p => Math.round(W.w[p] * 40)), W.repair?.part, Math.round((W.repair?.t ?? 0) * 4), game.yacht.gear]);
+  if (key === cardKey) return;
+  cardKey = key;
+  const word = { ok: tr('w porządku', 'fine'), symptom: tr('zużyte', 'worn'), critical: tr('zaraz puści', 'about to go'), broken: tr('zepsute', 'broken') };
+  const sign: Record<string, string> = {
+    bearing: tr('piszczy przy każdym obrocie, koło się chwieje', 'squeals each turn, the wheel wobbles'),
+    sail: tr('łopocze odstający płat przy liku', 'a loose flap flutters at the leech'),
+    sheet: tr('skrzypi pod obciążeniem, jaśnieje i się strzępi', 'creaks under load, goes pale and hairy'),
+  };
+  card.innerHTML = `<div class="lbl">${tr('KARTA STANU · ŻAGLOWÓZ', 'STATE CARD · LAND YACHT')}</div>` + PARTS.map(p => {
+    const v = W.w[p], st = stage(v), off = p === 'bearing' && game.yacht.gear === 'runners';
+    return `<div class="row"><span>${PART_NAME[p]}${off ? tr(' (na płozach stoi)', ' (resting on runners)') : ''}</span><b class="${st === 'ok' ? 'okc' : st === 'symptom' ? 'tense' : 'limit'}">${word[st]}</b></div>
+      <div class="tipm ${st === 'critical' || st === 'broken' ? 'bad' : st === 'symptom' ? 'hot' : ''}"><i style="width:${(v * 100).toFixed(0)}%"></i></div>
+      ${st !== 'ok' ? `<div class="dim small">${sign[p]}</div>` : ''}`;
+  }).join('') + (W.repair ? `<div class="row"><span class="tense">${tr('naprawa', 'repairing')}: ${PART_NAME[W.repair.part]}</span><b>${Math.ceil(REPAIR_TIME - W.repair.t)} s</b></div>` : `<div class="dim small">${tr('X: stań i napraw najbardziej zużytą część', 'X: stop and fix the most worn part')}</div>`);
+}
 
 function input() {
   const k = (c: string) => keys.has(c);
@@ -170,8 +209,8 @@ function announceCourse() {
 }
 
 $('help').innerHTML = tr(
-  '<b>I</b> intro · <b>A/D</b> ster · <b>W/S</b> wybierz/luzuj szot · <b>F</b> Q-1 trymuje · <b>Shift</b> balast na nawietrzną · <b>E</b> silnik Wolta (<b>Q</b> wstecz) · <b>Spacja</b> hamulec (ładuje baterię) · <b>R</b> koła↔płozy · <b>G</b> odczep/wczep Wolta · <b>C</b> trasa · <b>N</b> pomiń lekcję · <b>Esc</b> wyjdź z symulatora · <b>T</b> od nowa · <b>V</b> siła wiatru · <b>kółko</b> zoom (z bliska widać olinowanie) · <b>H</b> ukryj',
-  '<b>I</b> intro · <b>A/D</b> steer · <b>W/S</b> haul in/ease the sheet · <b>F</b> Q-1 trims · <b>Shift</b> ballast to windward · <b>E</b> Wolt’s motor (<b>Q</b> reverse) · <b>Space</b> brake (charges the battery) · <b>R</b> wheels↔runners · <b>G</b> undock/dock Wolt · <b>C</b> course · <b>N</b> skip a lesson · <b>Esc</b> leave the simulator · <b>T</b> restart · <b>V</b> wind strength · <b>wheel</b> zoom (up close you see the rigging) · <b>H</b> hide');
+  '<b>X</b> napraw (na postoju) · <b>K</b> karta stanu · <b>I</b> intro · <b>A/D</b> ster · <b>W/S</b> wybierz/luzuj szot · <b>F</b> Q-1 trymuje · <b>Shift</b> balast na nawietrzną · <b>E</b> silnik Wolta (<b>Q</b> wstecz) · <b>Spacja</b> hamulec (ładuje baterię) · <b>R</b> koła↔płozy · <b>G</b> odczep/wczep Wolta · <b>C</b> trasa · <b>N</b> pomiń lekcję · <b>Esc</b> wyjdź z symulatora · <b>T</b> od nowa · <b>V</b> siła wiatru · <b>kółko</b> zoom (z bliska widać olinowanie) · <b>H</b> ukryj',
+  '<b>X</b> repair (stopped) · <b>K</b> state card · <b>I</b> intro · <b>A/D</b> steer · <b>W/S</b> haul in/ease the sheet · <b>F</b> Q-1 trims · <b>Shift</b> ballast to windward · <b>E</b> Wolt’s motor (<b>Q</b> reverse) · <b>Space</b> brake (charges the battery) · <b>R</b> wheels↔runners · <b>G</b> undock/dock Wolt · <b>C</b> course · <b>N</b> skip a lesson · <b>Esc</b> leave the simulator · <b>T</b> restart · <b>V</b> wind strength · <b>wheel</b> zoom (up close you see the rigging) · <b>H</b> hide');
 
 // the lesson panel
 let lessonKey = '';
@@ -307,6 +346,7 @@ function hud() {
 let last = performance.now();
 let t = 0;
 let creak = 0;
+let turnAcc = 0, sheetCreak = 0;
 let motorWas = false;
 function frame(now: number) {
   const dt = Math.min(0.05, (now - last) / 1000);
@@ -334,7 +374,25 @@ function frame(now: number) {
     // the wind roars with the apparent wind; the frame groans near the tipping point
     const y = game.yacht;
     sound.update(dt, { humNear: Math.abs(y.thrust), wind: Math.min(1.4, y.app / 13), tension: Math.max(0, Math.min(1, (Math.abs(y.tip) - 0.7) * 3)) });
-    roll.update(dt, y.speed, y.surface, y.capsized <= 0, y.capsized > 0 || y.swap > 0 ? 0 : Math.max(0, 1 - y.cn / 0.4), y.app);
+    const W = game.wear.w, on = game.wearOn;
+    roll.update(dt, y.speed, y.surface, y.capsized <= 0, y.capsized > 0 || y.swap > 0 ? 0 : Math.max(0, 1 - y.cn / 0.4), y.app, on ? (W.sail >= 1 ? 1 : loudness(W.sail)) : 0);
+    // symptoms before the break: the bearing squeals with the wheel's turns, the sheet creaks under load
+    if (on && y.gear === 'wheels' && y.capsized <= 0) {
+      turnAcc += Math.abs(y.u) * dt;
+      const lb = loudness(W.bearing);
+      if (turnAcc > 1.88) { turnAcc = 0; if (lb > 0 && Math.random() < 0.25 + 0.75 * lb) sound.squeak(true, Math.min(1, lb * 1.2)); }
+    }
+    sheetCreak -= dt;
+    const ls = on ? loudness(W.sheet) : 0;
+    if (ls > 0 && sheetCreak < 0 && Math.abs(y.tip) > 0.35 && y.speed > 2) { sound.squeak(false, 0.4 + ls * 0.6); if (ls > 0.6) sound.scrape(); sheetCreak = (1.6 - ls) * (0.7 + Math.random()); }
+    if (ev.wear.broke) {
+      const p = ev.wear.broke;
+      toast(p === 'bearing' ? tr('Łożysko się zatarło: koło ledwo się toczy. Stań i napraw (X).', 'The bearing seized: the wheel barely rolls. Stop and fix it (X).')
+        : p === 'sail' ? tr('Żagiel się rozdarł: ciągnie o połowę słabiej. Stań i napraw (X).', 'The sail tore: it pulls half as hard. Stop and fix it (X).')
+          : tr('Szot pękł: bom lata swobodnie. Stań i napraw (X).', 'The sheet snapped: the boom swings free. Stop and fix it (X).'), 'bad');
+      sound.play('deny'); sound.scrape(); view.kick(0.4);
+    }
+    if (ev.wear.fixed) { toast(tr(`Naprawione: ${PART_NAME[ev.wear.fixed]}`, `Fixed: ${PART_NAME[ev.wear.fixed]}`), 'good'); sound.play('craft'); view.kick(0.15); }
     creak -= dt;
     if (creak < 0 && Math.abs(y.tip) > 0.75 && y.speed > 3) { sound.squeak(false, Math.abs(y.tip)); creak = 0.6 + Math.random(); }
     // the motor asked for and nothing happens: say why, once per press
@@ -351,7 +409,7 @@ function frame(now: number) {
       else if (te === 'passed') { sound.play('win'); toast(tr('Egzamin zdany: żegluga lądowa opanowana', 'Exam passed: land sailing learned'), 'good'); try { localStorage.setItem('sail-licence', '1'); } catch { /* no storage */ } }
       lessonPanel();
     }
-    hud(); coursePanel();
+    hud(); coursePanel(); wearCard();
   }
   view.update(dt, t);
   requestAnimationFrame(frame);

@@ -257,4 +257,66 @@ export class GameSound {
     o.connect(lp); lp.connect(g); g.connect(this.master);
     o.start(t); o.stop(t + 0.15);
   }
+
+  /** A plug or a part seating home: a hard, short click with a tiny ring. */
+  snap(pitch = 1) {
+    const ctx = this.ctx; if (!ctx) return;
+    const t = ctx.currentTime;
+    const n = ctx.createBufferSource(); n.buffer = this.noise; n.playbackRate.value = 3;
+    const hp = ctx.createBiquadFilter(); hp.type = 'highpass'; hp.frequency.value = 2500 * pitch;
+    const g = ctx.createGain();
+    g.gain.setValueAtTime(0.16, t); g.gain.exponentialRampToValueAtTime(0.0001, t + 0.03);
+    n.connect(hp); hp.connect(g); g.connect(this.world);
+    n.start(t, Math.random() * 2); n.stop(t + 0.05);
+    const o = ctx.createOscillator(); o.type = 'sine'; o.frequency.value = 2400 * pitch;
+    const og = ctx.createGain();
+    og.gain.setValueAtTime(0.03, t); og.gain.exponentialRampToValueAtTime(0.0001, t + 0.12);
+    o.connect(og); og.connect(this.world); o.start(t); o.stop(t + 0.15);
+  }
+
+  /** Electric sparks: a dry crackle of a few clicks. */
+  zap(amount = 1) {
+    const ctx = this.ctx; if (!ctx) return;
+    const t0 = ctx.currentTime;
+    const k = 2 + Math.round(amount * 5);
+    for (let i = 0; i < k; i++) {
+      const t = t0 + Math.random() * 0.18 * (1 + amount);
+      const n = ctx.createBufferSource(); n.buffer = this.noise; n.playbackRate.value = 2.5;
+      const bp = ctx.createBiquadFilter(); bp.type = 'bandpass'; bp.frequency.value = 3000 + Math.random() * 3000; bp.Q.value = 1.5;
+      const g = ctx.createGain();
+      g.gain.setValueAtTime(0.09 * amount, t); g.gain.exponentialRampToValueAtTime(0.0001, t + 0.015 + Math.random() * 0.02);
+      n.connect(bp); bp.connect(g); g.connect(this.world);
+      n.start(t, Math.random() * 2); n.stop(t + 0.05);
+    }
+  }
+
+  /** Something made: two soft rising tones, like Q-1 nodding. */
+  chime(pitch = 1) {
+    const ctx = this.ctx; if (!ctx) return;
+    const t = ctx.currentTime;
+    [660, 990].forEach((f, i) => {
+      const o = ctx.createOscillator(); o.type = 'sine'; o.frequency.value = f * pitch;
+      const g = ctx.createGain(), at = t + i * 0.09;
+      g.gain.setValueAtTime(0.0001, at); g.gain.exponentialRampToValueAtTime(0.04, at + 0.01); g.gain.exponentialRampToValueAtTime(0.0001, at + 0.5);
+      o.connect(g); g.connect(this.master); g.connect(this.reverb);
+      o.start(at); o.stop(at + 0.55);
+    });
+  }
+
+  private buzzO: OscillatorNode | null = null;
+  private buzzG!: GainNode;
+  /** A cable carrying too much: a mains buzz that grows and rises with the heat (0 = silent). */
+  setBuzz(heat: number) {
+    const ctx = this.ctx; if (!ctx) return;
+    if (!this.buzzO) {
+      this.buzzO = ctx.createOscillator(); this.buzzO.type = 'sawtooth'; this.buzzO.frequency.value = 100;
+      const bp = ctx.createBiquadFilter(); bp.type = 'bandpass'; bp.frequency.value = 400; bp.Q.value = 1.2;
+      this.buzzG = ctx.createGain(); this.buzzG.gain.value = 0;
+      this.buzzO.connect(bp); bp.connect(this.buzzG); this.buzzG.connect(this.world);
+      this.buzzO.start();
+    }
+    const t = ctx.currentTime, h = Math.max(0, Math.min(1, heat));
+    this.buzzG.gain.setTargetAtTime(h * h * 0.05, t, 0.1);
+    this.buzzO.frequency.setTargetAtTime(100 + h * 60, t, 0.2);
+  }
 }

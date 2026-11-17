@@ -75,3 +75,6 @@ body.touch .lessonp { top: calc(8px + env(safe-area-inset-top, 0px)); bottom: au
 body.touch .lessonp h3 { font-size: 14px; }
 body.touch .lessonp p { font-size: 11px; line-height: 1.45; }
 @media (orientation: portrait) { body.touch .lessonp { top: calc(150px + env(safe-area-inset-top, 0px)); } }
+/* the state card (K): wear of the parts, a confirmation of the symptoms (decision 2026-11-17) */
+.wearp { right: max(16px, env(safe-area-inset-right, 0px)); bottom: calc(16px + env(safe-area-inset-bottom, 0px)); width: 260px; display: grid; gap: 3px; }
+.wearp .small { font-size: 11px; margin-bottom: 4px; }
