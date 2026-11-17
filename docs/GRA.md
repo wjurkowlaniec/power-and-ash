@@ -153,7 +153,9 @@ Poziom z [POZIOM-WYSPA.md](POZIOM-WYSPA.md) (finał: [SPOILER-WYSPA.md](SPOILER-
 | `src/game/scenes/island.ts` | klej i HUD: Q-1 i słońce, „Q-1 analizuje”, linijka celu, sieć wyspy z licznikiem terminala, dok z 6 miejscami i sankami, panel C (cyfry 1–8), karta końca z dziennikiem testu (`localStorage` `pip.testWyspa`) |
 | `test/island.test.ts` | przejście drogą przez magazyn (od skrzyni do latarni, z przeciążeniem i mostkiem), bezpiecznik jako drugie wyjście, 900 W z sześciu paneli, nowy panel ze stołu, przepełniony ekwipunek, tryby `a` i `b`, bilans surowców dla drogi przez same panele, żwir i powrót |
 
-Przełączniki: `?craft=a` (tylko naprawa w miejscu), `?craft=b` (tylko panel C). W konsoli stan jest w `window.island`.
+Przełączniki: `?craft=a` (tylko naprawa w miejscu), `?craft=b` (tylko panel C). W konsoli stan jest w `window.island`, a widok w `window.islandView` (`project` daje punkt na ekranie, przydatne do klikania w testach w przeglądarce).
+
+**Test w przeglądarce (2026-11-17, na prośbę Wojtka).** Przejście klikaniem w rzeczy jak gracz (skrzynia, skan regulatora, latarenka, bezpiecznik, rozgałęźnik, panele, ładowanie z portu, wraki, sanki przez drzwi bunkra, stół i panel C, magazyn). Poprawione: start z 22% zamiast 14% (na 14% Wolt schodził do 8% przed pierwszym panelem), podpowiedź „Q-1 jeszcze liczy przepis” zamiast „nie zna przepisu”, gdy przepis jest w analizie, komunikaty nad dokiem z ekwipunkiem, a nie na nim. Do obserwacji: klik w podłogę tuż obok kołyski wybiera kołyskę (Wolt dokuje).
 
 Liczby to propozycje agenta, do strojenia po teście: panel 150 W, magazyn 0,4 kWh (czas gry ×40) i 600 W, terminal 900 W przez 90 s, przeciążenie przy 70%, sanki na 4 duże rzeczy, drzwi bunkra 3 m (sanki przejeżdżają).
 

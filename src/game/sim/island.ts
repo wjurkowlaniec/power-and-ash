@@ -38,7 +38,7 @@ export const TOW_COST = 0.05;       // extra % per metre with the sled
 export const RECHARGE = 0.15;       // %/s Q-1 recovers at rest
 export const PORT_CHARGE = 1.2;     // %/s from the regulator port (own cable)
 export const CRADLE_CHARGE = 1.8;   // %/s in the bunker cradle
-export const START_BATTERY = 14;
+export const START_BATTERY = 22;   // tight, but enough to bring the first panel back (browser playtest 2026-11-17)
 export const SLOTS = 6;
 export const SLED_CAP = 4;          // big things on the sled (four accumulators make a storage)
 export const NEAR_SLED = 4;         // m: the sled counts as "here" for a bench or an install
@@ -462,6 +462,8 @@ export class Island {
       const p = this.plan(need);
       if (p.ok) return { key: 'E', text: (p.crafts.length ? tr('przytrzymaj: zrób i zamontuj ', 'hold: make and fit ') : tr('przytrzymaj: zamontuj ', 'hold: fit ')) + what + extra, at, ok: true, progress: prog, need: bagText(need) };
       const miss = bagText(p.missing);
+      // Q-1 is still working the recipe out: say so, instead of "does not know"
+      if (p.unknown.length && p.unknown.every(r => this.learning.some(l => l.recipe === r))) return { key: '…', text: what + tr(': Q-1 jeszcze liczy przepis (', ': Q-1 is still working out the recipe (') + p.unknown.map(r => RECIPES[r].name).join(', ') + ')', at, ok: false, need: bagText(need) };
       const why = p.unknown.length ? tr(' · Q-1 nie zna przepisu: ', ' · Q-1 does not know how to make: ') + p.unknown.map(r => RECIPES[r].name).join(', ') : this.mode === 'b' && p.crafts.length === 0 && Object.keys(p.missing).some(id => (Object.values(RECIPES) as Recipe[]).some(r => r.out?.id === id && !r.bench)) ? tr(' · zrób w panelu C', ' · make it in the C panel') : '';
       return { key: 'E', text: what + tr(': brakuje ', ': missing ') + miss + why, at, ok: false, need: bagText(need) };
     };
