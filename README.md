@@ -15,6 +15,8 @@ Top-down gra survivalowa w przeglądarce. Automat serwisowy Wolt ciągnie kable 
 
 **Tech demo „Warsztat”:** https://wjurkowlaniec.github.io/power-and-ash/demo-craft/ (wytwarzanie, ekwipunek i wózek, rozbiórka, sieć, drzewko technologii, moduły Wolta, antena; budowa i żegluga Żaglowozu; 14 etapów po kolei, opis w [docs/DEMO-WARSZTAT.md](docs/DEMO-WARSZTAT.md))
 
+**Podgląd modeli i animacji:** https://wjurkowlaniec.github.io/power-and-ash/viewer/ (wszystkie modele gry i dem z bliska: obracanie, przybliżanie, odtwarzanie animacji wolno i klatka po klatce, suwaki ruchu Wolta i Żaglowozu; opis w [docs/ARCHITEKTURA.md](docs/ARCHITEKTURA.md#podgląd-modeli-viewer))
+
 Gra i demo są w jednym repo i dzielą kod silnika (`src/sim`, `src/render`, `src/audio`). Gra ma swoje wejście `index.html` → `src/game/main.ts`, demo `demo/index.html` → `src/main.ts`. W grze `?scene=hall` przeskakuje do wybranej sceny (do testów), a przytrzymana spacja pomija Scenę 0.
 
 - [Plan implementacji i kamienie milowe](docs/PLAN.md)
@@ -45,6 +47,7 @@ Wszystko działa w przeglądarce, bez instalowania. Najlepiej Chrome albo Firefo
 | **Tech demo „Żegluga”** | https://wjurkowlaniec.github.io/power-and-ash/demo-sail/ | Jazda Żaglowozem: wiatr ze szkwałami i cieniem za domami, różne podłoża, przechył, trasy na czas, intro. Wolt jest przednim kołem (E silnik, Shift balast), z bliska widać całe olinowanie. Pierwsze uruchomienie zaczyna się szkoleniem w symulatorze Q-1 z egzaminem pod wiatr (`?train`, `?go` pomija). `?course=lake` (village, dunes, forest) zaczyna na trasie. |
 | **Tech demo „Słońce”** | https://wjurkowlaniec.github.io/power-and-ash/demo-sun/ | Przewóz ładunku na panelach słonecznych: cienie chmur płyną z wiatrem, w cieniu ładunek ma zapas ok. 20 s, trzeba trzymać się jasnych plam od A do B. Trzy misje, `?mission=samples` (seedlings, culture) wybiera misję. |
 | **Tech demo „Powroty”** | https://wjurkowlaniec.github.io/power-and-ash/demo-returns/ | Jedna osada przez lata, bez napisów w świecie. Podepnij kabel przy ostatnim słupie (E), śpij przy zimowisku (przytrzymaj E), wróć do domu i patrz, co się zmieniło. Do oceny: czy znaki da się odczytać bez podpowiedzi. |
+| **Podgląd modeli i animacji** | https://wjurkowlaniec.github.io/power-and-ash/viewer/ | Każdy model z bliska: Wolt, Żaglowóz, maszyny Sceny 2, budynki i przedmioty „Warsztatu”, wszystkie pliki GLB. Lewy przycisk obraca, kółko przybliża, spacja pauzuje, `.` przesuwa o klatkę. Suwaki po prawej sterują animacją (np. ramię Wolta, buksowanie, dokowanie, zmiana kół na płozy). Link z paska adresu otwiera dokładnie ten sam widok, więc wklej go do zgłoszenia. |
 | Wersja angielska | dopisz `?lang=en` do linku (np. https://wjurkowlaniec.github.io/power-and-ash/demo/?lang=en) | Ta sama gra po angielsku, przydatne do sprawdzania tłumaczeń. |
 | Dokument projektowy | https://wjurkowlaniec.github.io/power-and-ash/docs/design.html | Koncepcja i wizualizacje, do czytania. |
 
@@ -84,6 +87,8 @@ Ta sama mysz działa w grze (Hala, Stacja) i w tech demach „Rozruch” i „Wa
 | Esc (gra) | menu: wróć, zacznij scenę od nowa, inna scena, tech demo (gdy otwarta jest notatka, Esc najpierw ją zamyka) |
 
 **Telefon i tablet:** w tech demach („Rozruch”, „Warsztat”, „Żegluga”) na ekranach dotykowych pojawiają się kontrolki: gałka do ruchu albo w „Żegludze” ster ◀▶ i szot, plus przyciski akcji. Stuknięcie w teren to „idź tam”. Na komputerze można je włączyć dodając `?touch` do adresu. Szczegóły: [docs/DEMO-ZEGLUGA.md](docs/DEMO-ZEGLUGA.md#sterowanie), [docs/ARCHITEKTURA.md](docs/ARCHITEKTURA.md#sterowanie-dotykowe-srctouchts).
+
+**Podgląd modeli** (`/viewer/`): LPM obrót, PPM przesuw, kółko przybliżenie (do kursora), spacja pauza, `.` jedna klatka, F wyśrodkuj, R obracanie, ↑↓ poprzedni / następny model. Na telefonie przyciski Lista i Panel.
 
 ## Grafika i licencje
 
