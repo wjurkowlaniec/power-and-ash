@@ -12,7 +12,7 @@
 | [docs/ARCHITEKTURA.md](docs/ARCHITEKTURA.md) | repo, silnik, demo, build, deploy |
 | [docs/SWIAT.md](docs/SWIAT.md) | świat, fabuła, bateria, notatki, ładowanie, ton i styl; decyzje oznaczone **[ustalone data]** albo **[propozycja]** |
 | [docs/POCZATEK.md](docs/POCZATEK.md) | pierwszy rozdział gry scena po scenie (docelowy projekt) |
-| [docs/POZIOM-R2.md](docs/POZIOM-R2.md) | projekt poziomu „R-2: Pierwszy Żaglowóz” (budowa od zera, prąd, żegluga), propozycja do akceptacji |
+| [docs/POZIOM-R2.md](docs/POZIOM-R2.md) | projekt poziomu „R-2: Uśpiona rozdzielnia” (test craftingu: naprawa, budowa, prąd, terminal), propozycja do akceptacji |
 | [docs/GRA.md](docs/GRA.md) | jak jest zbudowany kod gry (`src/game`), co już działa, różnice względem POCZATEK.md, decyzje dotyczące gry |
 | [docs/PLAN.md](docs/PLAN.md) | tech demo „Rozruch” i kamienie milowe silnika |
 | [docs/INSPIRACJE.md](docs/INSPIRACJE.md) | podobne gry (The Last Caretaker, Factorio, Inside i inne): co w nich działa i co przenosimy, bez kopiowania |

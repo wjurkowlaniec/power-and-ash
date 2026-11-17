@@ -85,7 +85,7 @@ Pierwsza noc przychodzi niezależnie od postępu, zwykle w trakcie Sceny 2 albo 
 
 ## Scena 5. Rozdzielnia polowa i pierwszy pojazd (ok. 20 min)
 
-> **[propozycja 2026-11-17]** Szczegółowy projekt nowej wersji tej sceny, w której Wolt składa pierwszy Żaglowóz od zera i wyjeżdża żaglem, jest w [POZIOM-R2.md](POZIOM-R2.md). Po akceptacji zastąpi opis poniżej i część Sceny 6.
+> **[propozycja 2026-11-17]** Projekt poziomu-testu craftingu w R-2 (naprawa paneli, drzwi bunkra, stół warsztatowy, terminal wymagający dużo prądu) jest w [POZIOM-R2.md](POZIOM-R2.md). Po akceptacji i teście zmieni opis poniżej.
 
 Rozdzielnia polowa R-2 stoi w kotlinie: kontenery, ogrodzenie, rząd paneli słonecznych (600 W, zakurzonych), mała szafa sterownicza. Pod wiatą stoi **wózek serwisowy misji**.
 
