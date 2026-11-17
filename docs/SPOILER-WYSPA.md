@@ -22,5 +22,5 @@
 ## Liczby
 
 - Przeciążenie przy 70% postępu (`OVERLOAD_AT`).
-- Wolt jako mostek: kosztuje go ok. 1,2%/s, przez ok. 27 s (reszta pobierania), maks. ok. 33% baterii; przy każdym stanie baterii pobieranie się kończy, bo na rezerwie Wolt dalej przewodzi.
+- Wolt jako mostek: kosztuje go ok. 1,2%/s, ale tylko wtedy, gdy prąd naprawdę płynie (cień chmury wstrzymuje i pobieranie, i koszt). Za ok. 27 s pobierania to maks. ok. 33% baterii; przy każdym stanie baterii pobieranie się kończy, bo na rezerwie Wolt dalej przewodzi. Sprawdzone w przeglądarce 2026-11-17.
 - Latarnia: obrót 6 s, odpowiedź z Kopuły po 2 obrotach.

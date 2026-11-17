@@ -99,5 +99,5 @@ canvas { display: block; }
 .craftp .rc.unknown { border-left-color: #ffffff11; opacity: .6; }
 .craftp .rc .n { opacity: .5; }
 .craftp .rc.close { border-left-color: transparent; opacity: .6; display: block; text-align: right; }
-.endcard textarea { width: 100%; box-sizing: border-box; font: 11px/1.5 ui-monospace, monospace; background: #f2efe7; border: 1px solid #26292b33; padding: 8px; resize: none; }
+.endcard textarea { width: 100%; box-sizing: border-box; font: 11px/1.5 ui-monospace, monospace; color: #26292b; background: #f2efe7; border: 1px solid #26292b33; padding: 8px; resize: none; }
 .island-hud .hmsg { bottom: calc(108px + env(safe-area-inset-bottom, 0px)); }
