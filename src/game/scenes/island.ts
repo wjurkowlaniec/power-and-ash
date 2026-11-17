@@ -102,6 +102,11 @@ export class IslandScene implements Scene {
     });
     for (const e of st.events) this.onEvent(e, c);
     st.events.length = 0;
+    // small actions get their juice: the view draws it, the HUD floats "+2 copper" over it
+    let texts = 0;
+    for (const p of st.pops) { this.view.pop(p); if (p.text) this.float(p.text, p.at, texts++); }
+    st.pops.length = 0;
+    c.sound.setBuzz(Math.max(...Object.values(st.lines).map(l => (l.tripped ? 0 : l.heat))));
     if (st.towing && st.towTaut && st.moving) {
       this.towAcc += dt;
       if (this.towAcc > 0.4 - st.cargo.length * 0.04) { this.towAcc = 0; c.sound.step(st.cargo.length === 0); }
@@ -111,6 +116,17 @@ export class IslandScene implements Scene {
     c.fx.black = this.fadeIn;
     this.view.frame(dt);
     this.hud();
+  }
+
+  /** A number or a name rising and fading over the place it came from. */
+  private float(text: string, at: { x: number; y: number }, k: number) {
+    const p = this.view.project(at, 1.2);
+    const el = document.createElement('div');
+    el.className = 'hfloat'; el.textContent = text;
+    el.style.left = p.x + 'px'; el.style.top = (p.y - k * 18) + 'px';
+    el.style.animationDelay = (k * 0.08) + 's';
+    this.el.appendChild(el);
+    setTimeout(() => el.remove(), 1600 + k * 80);
   }
 
   private togglePanel() {
@@ -126,15 +142,19 @@ export class IslandScene implements Scene {
       case 'deny': s.blip(0.5); setTimeout(() => s.blip(0.45), 160); break;
       case 'scan': s.blip(1.4); setTimeout(() => s.blip(1.7), 120); break;
       case 'learn': s.swell(); s.blip(1.9); break;
-      case 'take': s.clank(1.3, 0.07); break;
+      case 'take': s.clank(1.3, 0.07); s.blip(1.6 + Math.random() * 0.2); break;
       case 'craft': s.servo(1.1, 0.8 + Math.random() * 0.4); if (Math.random() < 0.4) s.clank(2.2, 0.03); break;
-      case 'fit': s.clank(1.6, 0.08); s.servo(0.6, 1.2); break;
+      case 'fit': s.snap(0.9); s.clank(1.6, 0.08); s.servo(0.6, 1.2); s.zap(0.3); break;
+      case 'made': s.chime(); break;
+      case 'hot': s.zap(0.7); break;
+      case 'trip': s.zap(1.4); s.staticBurst(0.3, 0.15); s.clank(0.6, 0.15); c.fx.static = 0.4; break;
+      case 'reset': s.snap(0.7); s.clank(1.2, 0.05); break;
       case 'hook': s.clank(0.9, 0.1); s.servo(0.7, 1); break;
       case 'unhook': case 'drop': s.clank(0.8, 0.07); break;
-      case 'link': s.clank(1.9, 0.05); break;
+      case 'link': s.snap(1.2); s.clank(1.9, 0.05); break;
       case 'power': s.swell(); c.fx.static = 0.25; break;
       case 'door': s.creak(1); s.servo(1, 0.6); break;
-      case 'dock': case 'plug': s.clank(1.8, 0.05); s.blip(0.9); break;
+      case 'dock': case 'plug': s.snap(1.1); s.clank(1.8, 0.05); s.blip(0.9); break;
       case 'download': s.blip(1.2); setTimeout(() => s.blip(1.5), 140); setTimeout(() => s.blip(1.8), 280); break;
       case 'blow': s.staticBurst(0.9, 0.3); s.clank(0.5, 0.25); c.fx.static = 1; break;
       case 'bridge': s.staticBurst(0.4, 0.15); s.servo(1.4, 0.5); c.fx.static = 0.6; break;
@@ -190,6 +210,7 @@ export class IslandScene implements Scene {
       gel.innerHTML = `<div class="lbl">${tr('SIEĆ WYSPY', 'ISLAND GRID')}${st.regOk ? '' : st.bridged ? tr(' · MOSTEK: WOLT', ' · BRIDGE: WOLT') : tr(' · REGULATOR STOI', ' · REGULATOR DOWN')}</div>
         <div class="sub">${tr('źródła', 'sources')}</div>${g.sources.map(line).join('')}
         ${g.loads.length ? `<div class="sub">${tr('odbiorniki', 'consumers')}</div>${g.loads.map(line).join('')}` : ''}
+        ${st.lineInfo().length ? `<div class="sub">${tr('kable', 'cables')}</div>${st.lineInfo().map(l => `<div class="row"><span>${l.label}</span><b class="${l.tripped ? 'neg' : l.flow > l.rating ? 'neg' : 'dim'}">${l.tripped ? tr('wybite', 'tripped') : `${l.flow} / ${l.rating} W`}</b></div>${l.heat > 0.02 && !l.tripped ? `<div class="bar hot"><i style="width:${l.heat * 100}%"></i></div>` : ''}`).join('')}` : ''}
         ${st.scanned.has('terminal') ? `<div class="row sum"><span>${tr('terminal', 'terminal')}</span><b class="${nd.have >= TERMINAL_W ? 'pos' : 'neg'}">${Math.max(0, nd.have)} / ${nd.want} W</b></div>` : ''}
         ${st.downloading || st.progress > 0 ? `<div class="row"><span>${tr('pobieranie', 'download')}</span><b>${Math.floor(st.progress * 100)}%</b></div><div class="bar"><i style="width:${st.progress * 100}%"></i></div>` : ''}`;
     }

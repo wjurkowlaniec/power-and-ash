@@ -101,3 +101,9 @@ canvas { display: block; }
 .craftp .rc.close { border-left-color: transparent; opacity: .6; display: block; text-align: right; }
 .endcard textarea { width: 100%; box-sizing: border-box; font: 11px/1.5 ui-monospace, monospace; color: #26292b; background: #f2efe7; border: 1px solid #26292b33; padding: 8px; resize: none; }
 .island-hud .hmsg { bottom: calc(108px + env(safe-area-inset-bottom, 0px)); }
+
+/* juice: "+2 copper" rising over the place it came from (decision 2026-11-17) */
+.island-hud .hfloat { position: fixed; transform: translate(-50%, -50%); pointer-events: none; font: 600 13px/1 system-ui, sans-serif; color: #f2ead8; text-shadow: 0 1px 3px #000c; white-space: nowrap; animation: hfloat 1.5s ease-out both; z-index: 7; }
+@keyframes hfloat { 0% { opacity: 0; translate: 0 6px; scale: .8; } 12% { opacity: 1; scale: 1.08; } 25% { scale: 1; } 100% { opacity: 0; translate: 0 -38px; } }
+.island-hud .bar.hot { height: 3px; margin: 0 0 4px; }
+.island-hud .bar.hot > i { background: linear-gradient(90deg, #e8a64e, #ff5a2a); }

@@ -10,7 +10,7 @@ import { tr } from '../../i18n';
  */
 export type ItemId =
   | 'copper' | 'plastic' | 'iron' | 'glass' | 'oil'
-  | 'cell' | 'pane' | 'cable' | 'connector' | 'fuse' | 'splitter' | 'pin'
+  | 'cell' | 'pane' | 'cable' | 'cableThick' | 'trafo' | 'connector' | 'fuse' | 'splitter' | 'pin'
   | 'battery' | 'frame' | 'panel';
 
 export interface ItemSpec { name: string; stack: number; big?: boolean; unit?: string }
@@ -24,6 +24,9 @@ export const ITEMS: Record<ItemId, ItemSpec> = {
   cell: { name: tr('ogniwo PV', 'PV cell'), stack: 6 },
   pane: { name: tr('szyba panelu', 'panel pane'), stack: 2 },
   cable: { name: tr('kabel', 'cable'), stack: 40, unit: 'm' },
+  // the heavy line cable: only found for now; making it comes later in the game (decision 2026-11-17)
+  cableThick: { name: tr('gruby kabel', 'heavy cable'), stack: 20, unit: 'm' },
+  trafo: { name: tr('transformator', 'transformer'), stack: 1 },
   connector: { name: tr('złącze panelu', 'panel connector'), stack: 5 },
   fuse: { name: tr('bezpiecznik', 'fuse'), stack: 5 },
   splitter: { name: tr('rozgałęźnik', 'splitter'), stack: 2 },

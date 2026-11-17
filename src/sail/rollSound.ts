@@ -18,6 +18,8 @@ export class RollSound {
   private ctx: AudioContext | null = null;
   private roll!: GainNode; private rollF!: BiquadFilterNode;
   private flap!: GainNode;
+  private tear!: GainNode;
+  private tearPhase = 0;
   private flapPhase = 0;
   muted = false;
 
@@ -36,11 +38,15 @@ export class RollSound {
     const ff = ctx.createBiquadFilter(); ff.type = 'lowpass'; ff.frequency.value = 700;
     this.flap = ctx.createGain(); this.flap.gain.value = 0;
     src(0.6).connect(ff); ff.connect(this.flap); this.flap.connect(ctx.destination);
+    // a torn flap at the leech: a fast, papery buzz (wear.ts)
+    const tf = ctx.createBiquadFilter(); tf.type = 'bandpass'; tf.frequency.value = 1400; tf.Q.value = 0.8;
+    this.tear = ctx.createGain(); this.tear.gain.value = 0;
+    src(1.3).connect(tf); tf.connect(this.tear); this.tear.connect(ctx.destination);
   }
 
   toggleMute() { this.muted = !this.muted; }
 
-  update(dt: number, speed: number, surface: SurfaceId, onGround: boolean, luff: number, app: number) {
+  update(dt: number, speed: number, surface: SurfaceId, onGround: boolean, luff: number, app: number, torn = 0) {
     const ctx = this.ctx; if (!ctx) return;
     const t = ctx.currentTime;
     const s = TONE[surface];
@@ -54,5 +60,8 @@ export class RollSound {
     const beat = Math.max(0, Math.sin(this.flapPhase * Math.PI * 2)) ** 3;
     const fg = this.muted ? 0 : luff * Math.min(1, app / 10) * 0.12 * beat;
     this.flap.gain.setTargetAtTime(fg, t, 0.02);
+    this.tearPhase += dt * (11 + app * 1.4);
+    const tb = 0.5 + 0.5 * Math.sin(this.tearPhase * Math.PI * 2);
+    this.tear.gain.setTargetAtTime(this.muted ? 0 : torn * Math.min(1, app / 8) * 0.05 * tb, t, 0.01);
   }
 }

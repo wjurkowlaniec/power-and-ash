@@ -1,4 +1,5 @@
 import * as THREE from 'three';
+import { loudness } from '../sim/wear';
 import { PAL } from '../../render/palette';
 import { mat, mesh } from '../../render/models';
 import { Models, fit } from '../../render/assets';
@@ -397,6 +398,8 @@ export class SailView {
 
     // the yacht and its tracks
     const ground = (x: number, z: number) => heightAt(x, z);
+    const W = this.g.wear.w, on = this.g.wearOn;
+    this.yacht.setWear(on && y.gear === 'wheels' ? loudness(W.bearing) : 0, on ? loudness(W.sail) : 0, on ? loudness(W.sheet) : 0, on && W.sail >= 1);
     this.yacht.update(dt, t, y, ground);
     this.tracks(dt);
 

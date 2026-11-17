@@ -3,6 +3,7 @@ import { buildObstacles, Obstacle, surfaceAt, slopeAt, heightAt, START } from '.
 import { WindField, WindSample } from './windField';
 import { YachtState, newYacht, yachtStep, startSwap, toggleDock, YachtInput, StepEvents, World } from './landYacht';
 import { COURSES, Course, Run, newRun, runStep } from './courses';
+import { Wear, WearEvents, newWear, wearStep, applyFaults } from './wear';
 
 /**
  * The land yacht driving demo as a whole: the map, the wind over it, the yacht, an optional
@@ -11,7 +12,7 @@ import { COURSES, Course, Run, newRun, runStep } from './courses';
  */
 export interface Stats { top: number; dist: number; flying: number; longestFly: number; capsizes: number }
 
-export interface Events extends StepEvents { gate: number; finished: number | null; record: boolean }
+export interface Events extends StepEvents { gate: number; finished: number | null; record: boolean; wear: WearEvents }
 
 export class SailGame {
   readonly obstacles: Obstacle[] = buildObstacles();
@@ -24,6 +25,11 @@ export class SailGame {
   best: Record<string, number> = {};
   stats: Stats = { top: 0, dist: 0, flying: 0, longestFly: 0, capsizes: 0 };
   time = 0;
+  /** Parts wear and give warning before they break (off in the Q-1 simulator). */
+  wear: Wear = newWear();
+  wearOn = true;
+  /** ?wear=fast for testing: everything wears this many times faster. */
+  wearRate = 1;
   private fly = 0;
 
   constructor(seed = 7) {
@@ -42,6 +48,7 @@ export class SailGame {
       const { dock, docking, energy } = this.yacht;
       this.yacht = newYacht(c.start.x, c.start.y, c.heading, gear);
       Object.assign(this.yacht, { dock, docking, energy });
+      applyFaults(this.wear, this.yacht);
     }
   }
 
@@ -67,7 +74,9 @@ export class SailGame {
     this.wind.update(dt, from);
     this.here = this.wind.at(y.x, y.y);
     const ev = yachtStep(y, dt, this.here, input, this.world);
-    const out: Events = { ...ev, gate: -1, finished: null, record: false };
+    const wev = this.wearOn ? wearStep(this.wear, y, dt, ev.capsized, this.wearRate) : { broke: null, fixed: null };
+    if (!this.wearOn) { y.fault = undefined; y.hold = false; this.wear.repair = null; }
+    const out: Events = { ...ev, gate: -1, finished: null, record: false, wear: wev };
 
     this.stats.top = Math.max(this.stats.top, y.speed);
     this.stats.dist += Math.hypot(y.x - from.x, y.y - from.y);

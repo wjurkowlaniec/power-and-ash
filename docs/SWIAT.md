@@ -230,6 +230,10 @@ Ulepszenia Wolta to zamienne moduły na ramie bazowej (patrz [Ciała i transfer]
 | **Kołyska / stacja dokująca** | tylko w bazach (hala stacji, później żaglowóz) | niska stalowa rampa z dwiema miedzianymi szynami i ramieniem stykowym nad nią | Wolt wjeżdża kołem na rampę, a ramię stykowe opada jak pantograf tramwaju i dociska się do styków na ramie. Krótki trzask, potem ciche buczenie. |
 | **Kabel z nawijaka (20 m)** | między portami: stacja → pojazd, baza → baza | miedziany kabel z wtyczkami na obu końcach | jak w obecnej mechanice kabla |
 
+**Brak prądu to brak prądu** **[ustalone 2026-11-17]:** odbiornik, który nie dostaje pełnej mocy, stoi (stół nie pracuje, terminal nie pobiera, kołyska nie ładuje). Nie ma płynnej degradacji „70% mocy = 70% tempa” (pomysł z Factorio odrzucony, [INSPIRACJE.md](INSPIRACJE.md)). Wyjątek to rezerwa samego Wolta, który na resztkach baterii jedzie wolniej, ale jedzie, żeby gracz nie utknął.
+
+**Klasy kabli i przeciążenie** **[ustalone 2026-11-17, liczby to propozycja]:** kabel ma przepustowość. Cienki (z nawijaka, z miedzi i plastiku) niesie ok. 500 W, gruby (linia) ok. 1500 W. Za dużo mocy przez za cienki przewód: kabel jaśnieje na pomarańczowo, brzęczy coraz wyżej, iskrzy, a po kilku sekundach wybija zabezpieczenie linii, które Wolt załącza ręcznie przy szafie. **Transformator** łączy klasy: podnosi napięcie, więc ten sam cienki kabel niesie więcej (na Wyspie 3×). Gruby kabel na początku tylko się znajduje; jego wytwarzanie przyjdzie później w grze. Działa na Wyspie: [POZIOM-WYSPA.md](POZIOM-WYSPA.md#klasy-kabli-i-przeciążenie-decyzja-2026-11-17).
+
 **Wygląd portu w terenie:** metalowa skrzynka na słupku albo przy ścianie, wyblakła farba, uchylna klapka chroniąca przed popiołem, a pod nią okrągłe przemysłowe gniazdo wielopinowe. Obok mała tabliczka z numerem stacji, bursztynowa dioda stanu i zegarowy amperomierz, którego wskazówka drga podczas ładowania. Port jest czytelny z daleka dzięki diodzie i kształtowi klapki. Żadnych płaskich prostokątów.
 
 **Uzasadnienie:** ładowanie bez kabla zabrałoby sens nawijakowi, kablom i rozbudowie sieci. Każde ładowanie ma za to swój koszt: Wolt stoi przy porcie, jest przywiązany przewodem, a w terenie to chwila, w której mogą podejść mikroboty.
@@ -256,6 +260,7 @@ Ulepszenia Wolta to zamienne moduły na ramie bazowej (patrz [Ciała i transfer]
 
 - **Budowany od zera przez całą grę.** **[ustalone]**
 - **Maintenance:** żagiel się strzępi, łożyska się zapiaszczają, bateria traci pojemność, kable kruszeją. Rytm do ustalenia w testach. **[ustalone]**
+- **Usterka widać i słychać, zanim się zdarzy.** **[ustalone 2026-11-17]** Każda część psuje się po swojemu i daje objawy na długo przed awarią: łożysko piszczy przy każdym obrocie i koło się chwieje, rozdarty płat żagla łopocze, przetarty szot skrzypi i jaśnieje. Karta stanu potwierdza, a nie odkrywa. Pierwsza wersja w demie „Żegluga”: [DEMO-ZEGLUGA.md](DEMO-ZEGLUGA.md#zużycie-i-objawy-przed-awarią-decyzja-2026-11-17).
 
 Etapy **[propozycja]**:
 

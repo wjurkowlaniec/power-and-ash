@@ -121,6 +121,8 @@ function ballastBox(): THREE.Group {
   return g;
 }
 
+const SHEET_PALE = new THREE.Color(0xe2dccb);
+
 export class YachtView {
   readonly root = new THREE.Group();
   private tilt = new THREE.Group();
@@ -157,6 +159,11 @@ export class YachtView {
   private boomBlock = new THREE.Object3D();
   private neckBlock = new THREE.Object3D();
   private slackVis = 0;
+  private sheetMat!: THREE.MeshStandardMaterial;
+  private sheetCol!: THREE.Color;
+  private flap!: THREE.Mesh;
+  /** How loud each worn part is, 0..1 (from wear.ts loudness). */
+  private worn = { bearing: 0, sail: 0, sheet: 0, sailBroken: false };
   private tmpA = new THREE.Vector3(); private tmpB = new THREE.Vector3(); private tmpC = new THREE.Vector3();
 
   // fixed points, body frame
@@ -314,13 +321,25 @@ export class YachtView {
     const D = this.deckBlock;
     body.add(mesh(new THREE.TorusGeometry(0.11, 0.009, 5, 14, Math.PI), M.steel, D.x, D.y - 0.1, D.z));
     const db = block(); db.position.set(D.x, D.y - 0.035, D.z); db.rotation.set(Math.PI, Math.PI / 2, 0); body.add(db);
-    for (let i = 0; i < 2; i++) { const r = new Rope(12, 0.009, hemp); this.falls.push(r); body.add(r.mesh); }
-    this.lead = new Rope(4, 0.009, hemp); body.add(this.lead.mesh);
+    // the sheet has its own material: it goes pale and hairy as it chafes (wear.ts)
+    this.sheetMat = (hemp as THREE.MeshStandardMaterial).clone();
+    this.sheetCol = this.sheetMat.color.clone();
+    for (let i = 0; i < 2; i++) { const r = new Rope(12, 0.009, this.sheetMat); this.falls.push(r); body.add(r.mesh); }
+    this.lead = new Rope(4, 0.009, this.sheetMat); body.add(this.lead.mesh);
     const fb = block(); fb.position.copy(this.footBlock); fb.rotation.x = Math.PI / 2; body.add(fb);
     body.add(new Rope(2, 0.009, hemp).path([this.footBlock, this.fairlead]).mesh);
     body.add(mesh(new THREE.TorusGeometry(0.022, 0.007, 5, 10).rotateY(0), M.steel, this.fairlead.x, this.fairlead.y, this.fairlead.z));
     body.add(rbox(0.03, 0.05, 0.03, 0.006, M.dark, this.fairlead.x, this.fairlead.y - 0.04, this.fairlead.z));
-    this.toReel = new Rope(7, 0.009, hemp); body.add(this.toReel.mesh);
+    this.toReel = new Rope(7, 0.009, this.sheetMat); body.add(this.toReel.mesh);
+
+    // a torn flap at the sail's leech: shows only once the sail is frayed (wear.ts)
+    const fm = new THREE.MeshStandardMaterial({ color: 0xd9d2c2, side: THREE.DoubleSide, roughness: 1 });
+    const fg = new THREE.PlaneGeometry(0.34, 0.26).translate(0.17, 0, 0);
+    this.flap = new THREE.Mesh(fg, fm);
+    this.flap.position.set(sail.foot * 0.5, sail.height * 0.5, 0.01);
+    this.flap.rotation.z = -Math.atan2(sail.height, sail.foot) + Math.PI / 2;
+    this.flap.visible = false;
+    sail.group.add(this.flap);
 
     this.root.traverse(o => { if ((o as THREE.Mesh).isMesh) { o.castShadow = true; } });
   }
@@ -346,6 +365,9 @@ export class YachtView {
 
   /** Track half-width for the marks the rig leaves. */
   get trackHalf() { return this.gearKey === 'runners' ? 1.2 : YACHT.track.wheels; }
+
+  /** Symptoms of wear, 0 (fine) to 1 (about to go); broken sail shows a bigger tear. */
+  setWear(bearing: number, sail: number, sheet: number, sailBroken: boolean) { Object.assign(this.worn, { bearing, sail, sheet, sailBroken }); }
 
   /** A point of some part of the yacht, in the body's frame. */
   private inBody(o: THREE.Object3D, out: THREE.Vector3) { return this.body.worldToLocal(o.getWorldPosition(out)); }
@@ -378,7 +400,9 @@ export class YachtView {
     // wheels roll; Wolt, the bow wheel, steers
     const roll1 = y.u * dt;
     this.wheelA += roll1 / RIG.wheelR;
-    for (const w of this.spin) w.rotation.x = this.wheelA;
+    // a worn bearing: the wheel wobbles on its axle, more as it gets worse
+    const wob = this.worn.bearing * 0.14;
+    this.spin.forEach((w, i) => { w.rotation.x = this.wheelA; w.rotation.z = wob * Math.sin(this.wheelA + i * 1.7); });
     this.steer.rotation.y = y.steer;
 
     // the sail fills with the apparent wind, the pennant streams
@@ -386,6 +410,16 @@ export class YachtView {
     const sheetWas = this.sheetVis;
     this.sheetVis += (y.sheet - this.sheetVis) * Math.min(1, dt * 8);
     this.sail.update(dt, t, appLocal, y.capsized > 0 ? 0 : y.app * (0.2 + 0.8 * Math.min(1, y.cn / 1.0)), this.sheetVis);
+    // a frayed sail: a loose flap at the leech flutters faster with the wind
+    const W = this.worn;
+    this.flap.visible = W.sail > 0.02 || W.sailBroken;
+    if (this.flap.visible) {
+      const sz = W.sailBroken ? 2.4 : 0.6 + W.sail * 0.8;
+      this.flap.scale.set(sz, sz, 1);
+      this.flap.rotation.y = Math.sin(t * (14 + y.app * 1.5)) * (0.4 + 0.8 * Math.min(1, y.app / 10)) * (0.5 + W.sail);
+    }
+    // a chafed sheet goes pale
+    this.sheetMat.color.copy(this.sheetCol).lerp(SHEET_PALE, W.sheet * 0.8);
     this.pennant.rotation.y = -y.appDir - yaw + Math.sin(t * 9) * 0.07 * Math.min(1, y.app / 6);
 
     // docking: Wolt rides up beside the bow, turns his back to the yacht, backs in under the
@@ -449,7 +483,8 @@ export class YachtView {
     const sag = Math.min(0.45, sagOf(this.slackVis, now));
     // a slack sheet swings with the flapping sail; a loaded one only hums
     const flap = Math.sin(t * 6.3) * 0.6 + Math.sin(t * 9.7 + 1) * 0.4;
-    const swing = sag * 0.5 * flap * Math.min(1, y.app / 6) + 0.003 * Math.sin(t * 40) * Math.min(1, y.drive / 3);
+    // a chafed sheet shivers under load (the twang you also hear)
+    const swing = sag * 0.5 * flap * Math.min(1, y.app / 6) + (0.003 + this.worn.sheet * 0.012) * Math.sin(t * 40) * Math.min(1, y.drive / 3);
     C.set(swing, 0, -sag * 0.35);
     const floor = RIG.rim + 0.02;
     B.copy(D).x += 0.014; this.falls[0].span(B, this.tmpD.copy(A).setX(A.x + 0.014), sag, C, floor);
