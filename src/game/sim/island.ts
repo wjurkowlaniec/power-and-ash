@@ -406,6 +406,8 @@ export class Island {
 
   /** What the terminal shows: watts it has and wants. */
   terminalNeed(): { have: number; want: number } {
+    // with the regulator down nothing reaches the terminal, the storage included
+    if (!this.flowing()) return { have: 0, want: TERMINAL_W };
     const store = this.storage && this.soc > 0.001 ? STORE_W : 0;
     return { have: Math.round(this.supply + store - (this.demand - (this.terminalOn ? TERMINAL_W : 0))), want: TERMINAL_W };
   }
@@ -574,7 +576,8 @@ export class Island {
     }
     if (this.bridged) {
       // Wolt is the fuse: the last part of the download goes through him (docs/SPOILER-WYSPA.md)
-      this.battery = Math.max(0, this.battery - BRIDGE_COST * dt);
+      // it only costs him while the power actually flows through (a cloud pauses both)
+      if (this.terminalOn) this.battery = Math.max(0, this.battery - BRIDGE_COST * dt);
       this.moving = false; this.speed = 0;
     } else {
       const want = len(inp.move) > 0.01;
