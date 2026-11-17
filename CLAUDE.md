@@ -14,6 +14,7 @@
 | [docs/POCZATEK.md](docs/POCZATEK.md) | pierwszy rozdział gry scena po scenie (docelowy projekt) |
 | [docs/GRA.md](docs/GRA.md) | jak jest zbudowany kod gry (`src/game`), co już działa, różnice względem POCZATEK.md, decyzje dotyczące gry |
 | [docs/PLAN.md](docs/PLAN.md) | tech demo „Rozruch” i kamienie milowe silnika |
+| [docs/INSPIRACJE.md](docs/INSPIRACJE.md) | podobne gry (The Last Caretaker, Factorio, Inside i inne): co w nich działa i co przenosimy, bez kopiowania |
 | [CREDITS.md](CREDITS.md) | licencje modeli (CC0) |
 
 ## Stałe zasady

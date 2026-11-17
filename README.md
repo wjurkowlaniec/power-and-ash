@@ -24,6 +24,7 @@ Gra i demo są w jednym repo i dzielą kod silnika (`src/sim`, `src/render`, `sr
 - [Początek gry scena po scenie](docs/POCZATEK.md)
 - [Rejestr decyzji](docs/DECYZJE.md) (co Wojtek ustalił, kiedy i co odrzucono; każda nowa decyzja trafia tam i do dokumentu, którego dotyczy)
 - [Ruch, animacja i ślady Wolta](docs/RUCH-I-ANIMACJA.md) (model jazdy, holowanie, animator, ślady i pył, wstawanie i bateria w hali)
+- [Inspiracje: podobne gry i co z nich bierzemy](docs/INSPIRACJE.md)
 - [Pomysły na później](docs/POMYSLY.md) (myśli Wojtka jeszcze nie do zrobienia)
 - [Jak testować i zgłaszać błędy oraz pomysły](#jak-testować) (dla testerów)
 - [Dokument projektowy](docs/design.html) (research gatunku, koncepcja, zasady kabli, wizualizacje)
