@@ -6,6 +6,7 @@ import { Darkness } from './scenes/darkness';
 import { Todo } from './scenes/todo';
 import { HallScene } from './scenes/hall';
 import { StationScene } from './scenes/station';
+import { IslandScene } from './scenes/island';
 import { loadModels, Models } from '../render/assets';
 import { loadStationModels } from './render/station/models';
 import { tr, lang, langSwitch } from '../i18n';
@@ -68,6 +69,7 @@ const scenes: Record<string, () => Scene> = {
   darkness: () => new Darkness(),
   hall: () => new HallScene(),
   station: () => new StationScene(),
+  wyspa: () => new IslandScene(),
   odjazd: () => new Todo('odjazd', tr('Scena 4 · Odjazd: droga do podstacji R-2', 'Scene 4 · Departure: the road to substation R-2')),
 };
 let scene: Scene | null = null;

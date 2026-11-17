@@ -10,6 +10,7 @@ export const CHAPTERS: MenuItem[] = [
   { id: 'darkness', title: tr('Nowa gra', 'New game'), sub: tr('od przebudzenia w ciemności', 'from waking up in the dark') },
   { id: 'hall', title: tr('Scena 1 · Hala pomiarowa', 'Scene 1 · Measurement hall'), sub: tr('Wolt na kablu diagnostycznym, bateria Q-1', 'Wolt on the diagnostic cable, the Q-1 battery') },
   { id: 'station', title: tr('Scena 2 · Martwa stacja', 'Scene 2 · Dead station'), sub: tr('warsztat, transformator na oponie, kabel, mapa z plotera, odjazd', 'workshop, transformer on the tyre, cable, the plotter map, departure') },
+  { id: 'wyspa', title: tr('Test · Wyspa', 'Test · The island'), sub: tr('crafting: naprawa paneli, bunkier, stół, terminal na dużą moc (~15 min)', 'crafting: fix the panels, the bunker, the bench, a power-hungry terminal (~15 min)') },
 ];
 
 const q = lang === 'en' ? '?lang=en' : '';
