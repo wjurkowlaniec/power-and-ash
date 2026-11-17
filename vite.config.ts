@@ -10,11 +10,12 @@ import { resolve } from 'node:path';
 //   demo-sail/index.html -> the land yacht driving demo ("Żegluga"), src/sail/main.ts
 //   demo-sun/index.html -> delivery in the sun ("Słońce"), src/sun/main.ts
 //   demo-returns/index.html -> one homestead over the years ("Powroty"), src/returns/main.ts
+//   viewer/index.html -> every model and animation up close ("Podgląd modeli"), src/viewer/main.ts
 // `npm run build` -> dist/ for GitHub Pages (relative base so it works under /power-and-ash/)
-// `npm run build:single` -> dist-single/, one self-contained file per page (PAGE=game|demo|craft|sail|sun|returns, default game)
+// `npm run build:single` -> dist-single/, one self-contained file per page (PAGE=game|demo|craft|sail|sun|returns|viewer, default game)
 export default defineConfig(({ mode }) => {
   const single = mode === 'single';
-  const page = process.env.PAGE === 'demo' ? 'demo/index.html' : process.env.PAGE === 'craft' ? 'demo-craft/index.html' : process.env.PAGE === 'sail' ? 'demo-sail/index.html' : process.env.PAGE === 'sun' ? 'demo-sun/index.html' : process.env.PAGE === 'returns' ? 'demo-returns/index.html' : 'index.html';
+  const page = process.env.PAGE === 'demo' ? 'demo/index.html' : process.env.PAGE === 'craft' ? 'demo-craft/index.html' : process.env.PAGE === 'sail' ? 'demo-sail/index.html' : process.env.PAGE === 'sun' ? 'demo-sun/index.html' : process.env.PAGE === 'returns' ? 'demo-returns/index.html' : process.env.PAGE === 'viewer' ? 'viewer/index.html' : 'index.html';
   return {
     base: './',
     plugins: single ? [viteSingleFile()] : [],
@@ -26,7 +27,7 @@ export default defineConfig(({ mode }) => {
       rollupOptions: {
         input: single
           ? resolve(__dirname, page)
-          : { game: resolve(__dirname, 'index.html'), demo: resolve(__dirname, 'demo/index.html'), craft: resolve(__dirname, 'demo-craft/index.html'), sail: resolve(__dirname, 'demo-sail/index.html'), sun: resolve(__dirname, 'demo-sun/index.html'), returns: resolve(__dirname, 'demo-returns/index.html') },
+          : { game: resolve(__dirname, 'index.html'), demo: resolve(__dirname, 'demo/index.html'), craft: resolve(__dirname, 'demo-craft/index.html'), sail: resolve(__dirname, 'demo-sail/index.html'), sun: resolve(__dirname, 'demo-sun/index.html'), returns: resolve(__dirname, 'demo-returns/index.html'), viewer: resolve(__dirname, 'viewer/index.html') },
       },
     },
     test: { include: ['test/**/*.test.ts'] },

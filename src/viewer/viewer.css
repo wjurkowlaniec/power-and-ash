@@ -1,0 +1,64 @@
+/* Model viewer (/viewer/): list on the left, the 3D view in the middle, controls on the right. */
+[hidden] { display: none !important; }
+:root {
+  --ink: #eceae4; --dim: #eceae499; --panel: #1a1c1ef2; --line: #ffffff1f; --warn: #f08c35;
+  --mono: "IBM Plex Mono", ui-monospace, "SFMono-Regular", Menlo, Consolas, monospace;
+  --nav: 270px; --side: 300px; --top: 40px;
+  color-scheme: dark;
+}
+html, body { margin: 0; height: 100%; overflow: hidden; background: #8d8a84; font-family: var(--mono); color: var(--ink); font-size: 12px; }
+button, input, select { font: inherit; color: inherit; }
+.dim { color: var(--dim); }
+#top { position: fixed; inset: 0 0 auto 0; height: var(--top); display: flex; align-items: center; gap: 12px; padding: 0 16px; background: var(--panel); border-bottom: 1px solid var(--line); z-index: 3; }
+#top h1 { font-size: 13px; font-weight: 500; letter-spacing: .04em; margin: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+#status { flex: 1; overflow: hidden; white-space: nowrap; text-overflow: ellipsis; }
+#listBtn, #sideBtn { display: none; }
+.lang-switch { display: flex; gap: 4px; align-items: center; }
+.lang-switch button { background: none; border: 0; cursor: pointer; color: var(--dim); padding: 2px; }
+.lang-switch button.on { color: var(--ink); }
+#nav { position: fixed; top: var(--top); bottom: 0; left: 0; width: var(--nav); background: var(--panel); border-right: 1px solid var(--line); display: flex; flex-direction: column; z-index: 2; }
+#search { margin: 10px; padding: 6px 8px; background: #0005; border: 1px solid var(--line); border-radius: 3px; }
+#list { overflow: auto; padding: 0 6px 16px; flex: 1; }
+#list summary { cursor: pointer; padding: 6px 4px; color: var(--dim); letter-spacing: .06em; font-size: 11px; }
+#list button { display: block; width: 100%; text-align: left; background: none; border: 0; border-radius: 3px; padding: 4px 8px 4px 18px; cursor: pointer; position: relative; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+#list button:hover { background: #ffffff10; }
+#list button.on { background: #f08c3530; color: #fff; }
+#list button i { position: absolute; left: 5px; font-style: normal; font-size: 8px; top: 7px; color: var(--warn); }
+#app { position: fixed; top: var(--top); bottom: 0; left: var(--nav); right: var(--side); }
+#app canvas { display: block; width: 100%; height: 100%; touch-action: none; }
+#side { position: fixed; top: var(--top); bottom: 0; right: 0; width: var(--side); background: var(--panel); border-left: 1px solid var(--line); overflow: auto; padding: 12px 14px 20px; box-sizing: border-box; z-index: 2; }
+#info .name { font-size: 13px; font-weight: 500; margin-bottom: 2px; }
+#info code { display: block; margin: 6px 0 8px; color: var(--dim); font-size: 10.5px; word-break: break-all; }
+.row { display: flex; justify-content: space-between; gap: 12px; font-variant-numeric: tabular-nums; }
+section { border-top: 1px solid var(--line); margin-top: 12px; padding-top: 10px; display: grid; gap: 8px; }
+.lbl { font-size: 10px; letter-spacing: .12em; color: var(--dim); }
+.btns { display: flex; gap: 6px; flex-wrap: wrap; }
+#side button { background: #ffffff12; border: 1px solid var(--line); border-radius: 3px; padding: 5px 9px; cursor: pointer; }
+#side button:hover { border-color: var(--warn); }
+#side button.act { border-color: #f08c3580; }
+#side button.small { justify-self: start; font-size: 11px; }
+.rng, .sel { display: grid; gap: 3px; }
+.rng span, .sel span { display: flex; justify-content: space-between; gap: 8px; }
+.rng b { font-weight: 400; color: var(--warn); font-variant-numeric: tabular-nums; }
+.rng input { width: 100%; accent-color: var(--warn); }
+.sel select { background: #0005; border: 1px solid var(--line); border-radius: 3px; padding: 4px; }
+.chk { display: flex; gap: 8px; align-items: center; cursor: pointer; }
+.chk input { accent-color: var(--warn); margin: 0; }
+#help { margin-top: 16px; line-height: 1.6; font-size: 11px; }
+#loading { position: fixed; inset: 0; display: grid; place-items: center; background: #8d8a84; z-index: 5; }
+#loading .card { width: min(320px, 80vw); }
+.bar { height: 4px; background: #ffffff30; margin-top: 8px; }
+.bar > i { display: block; height: 100%; width: 0; background: var(--ink); transition: width .1s; }
+
+/* narrow screens: the 3D view takes the page, the list slides in, the panel sits at the bottom */
+@media (max-width: 760px) {
+  #listBtn, #sideBtn { display: inline-block; background: #ffffff12; border: 1px solid var(--line); border-radius: 3px; padding: 3px 8px; }
+  #top { padding: 0 max(16px, env(safe-area-inset-left)); gap: 8px; }
+  #nav { width: min(85vw, 320px); transform: translateX(-100%); transition: transform .2s; z-index: 4; }
+  body.show-list #nav { transform: none; }
+  #app { left: 0; right: 0; bottom: 45vh; }
+  #side { top: auto; height: 45vh; width: auto; left: 0; border-left: 0; border-top: 1px solid var(--line); padding-bottom: calc(20px + env(safe-area-inset-bottom)); }
+  body.hide-side #side { display: none; }
+  body.hide-side #app { bottom: 0; }
+  #help { display: none; }
+}

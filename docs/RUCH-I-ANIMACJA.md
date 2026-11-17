@@ -31,7 +31,7 @@ Widoki (`src/render/view.ts`, `src/game/render/hallView.ts`, `stationView.ts`) b
 
 ## Animator: `src/render/wolt.ts`
 
-`WoltAnimator.update(frame)` steruje balansem (przechył na sprężynach), kołem, bębnem, prowadnicą kabla, ramieniem i lampą.
+`WoltAnimator.update(frame)` steruje balansem (przechył na sprężynach), kołem, bębnem, prowadnicą kabla, ramieniem i lampą. Każde wejście animatora da się przestawić ręcznie w podglądzie modeli: https://wjurkowlaniec.github.io/power-and-ash/viewer/#wolt (zestawy ruchu, wolne tempo, klatka po klatce).
 
 - `slip` (0..1) narasta i opada płynnie, gdy `strain` się włącza i wyłącza. Koło kręci się wtedy dodatkowo z prędkością do 16 rad/s, a kapsuła drży (gładki szum, nie piła).
 - `kick(pitch, roll)` daje impuls sprężynom balansu: lądowanie po zjeździe z kołyski, stuknięcie wkładanej baterii.
