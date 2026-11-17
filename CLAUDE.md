@@ -12,7 +12,7 @@
 | [docs/ARCHITEKTURA.md](docs/ARCHITEKTURA.md) | repo, silnik, demo, build, deploy |
 | [docs/SWIAT.md](docs/SWIAT.md) | świat, fabuła, bateria, notatki, ładowanie, ton i styl; decyzje oznaczone **[ustalone data]** albo **[propozycja]** |
 | [docs/POCZATEK.md](docs/POCZATEK.md) | pierwszy rozdział gry scena po scenie (docelowy projekt) |
-| [docs/POZIOM-R2.md](docs/POZIOM-R2.md) | projekt poziomu „R-2: Uśpiona rozdzielnia” (test craftingu: naprawa, budowa, prąd, terminal), propozycja do akceptacji |
+| [docs/POZIOM-WYSPA.md](docs/POZIOM-WYSPA.md) | poziom-test craftingu „Wyspa” (naprawa, budowa, prąd, terminal); finał w [docs/SPOILER-WYSPA.md](docs/SPOILER-WYSPA.md), którego Wojtek nie czyta przed zagraniem |
 | [docs/GRA.md](docs/GRA.md) | jak jest zbudowany kod gry (`src/game`), co już działa, różnice względem POCZATEK.md, decyzje dotyczące gry |
 | [docs/PLAN.md](docs/PLAN.md) | tech demo „Rozruch” i kamienie milowe silnika |
 | [docs/INSPIRACJE.md](docs/INSPIRACJE.md) | podobne gry (The Last Caretaker, Factorio, Inside i inne): co w nich działa i co przenosimy, bez kopiowania |
@@ -31,7 +31,7 @@
 
 ## Praktyczne
 
-- `npm run dev`, `npm test`, `npm run build`. `?scene=hall|station|odjazd` przeskakuje do sceny gry, a `?lang=en` włącza angielski.
+- `npm run dev`, `npm test`, `npm run build`. `?scene=hall|station|wyspa|odjazd` przeskakuje do sceny gry, a `?lang=en` włącza angielski.
 - Modele: `tools/pack-models.mjs` pakuje paczki CC0 do `src/assets/models`.
 - **Praca tylko lokalnie (od 2026-11-17).** Projekt rozwijamy wyłącznie na MacBooku Wojtka, klon w `~/games/power-and-ash`. Nie zakładaj sesji w chmurze ani worktree; przed pracą `git pull` na `main`, potem gałąź i PR jak zwykle.
 - Podgląd lokalnie: `npm run dev` (Vite na localhost). Stara uwaga z czasów chmury: `vite preview` w headless Chromium dawał 404 na skryptach; obejście to skopiować `dist/` do `<katalog>/power-and-ash/` i uruchomić `python3 -m http.server`.

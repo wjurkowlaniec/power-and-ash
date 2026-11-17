@@ -67,6 +67,7 @@ Zasady kodu:
 | 1. Hala pomiarowa | `hall` | działa: zdalne sterowanie pustym monocyklem po kablu diagnostycznym (9 m), dźwignia + rura, bateria w kasecie, kolor i dźwięk wracają |
 | 2. Martwa stacja | `station` | działa od początku do wyjazdu przez bramę (niżej); maszynownia od środka i suwnica są na później |
 | 4. Odjazd | `odjazd` | karta „w budowie”, na nią kończy się Scena 2 |
+| test craftingu „Wyspa” | `wyspa` | działa od przyjazdu do finału ([POZIOM-WYSPA.md](POZIOM-WYSPA.md)), poza fabułą, w menu jako „Test · Wyspa” |
 | 3–8 | | jeszcze nie ma |
 
 ### Scena 2 w obecnej wersji
@@ -139,6 +140,22 @@ Testy w `test/station.test.ts`: każda interakcja jest osiągalna, opona w drzwi
 - Moduł transformatora leży gotowy na półce. Nie ma jeszcze rozbiórki złomu. Łożyska i drabinki nie ma celowo: Wolt ma koło i się nie wspina (Wojtek 2026-11-09).
 - Zamiast szpuli 12 m przez okno dyżurki jest bęben 18 m pod masztem, a przyłącze maszynowni jest od strony podwórza. To odpowiedź na uwagę Wojtka, że poziom urywał się po turbinie.
 - Suwnicy, wnętrza maszynowni i działającego fabrykatora jeszcze nie ma. Światła w całej stacji zapalają się już pokój po pokoju, ale tylko jako obraz i dźwięk (bez osobnej mechaniki). Echo w Scenie 4 zastąpiła (na razie) mapa z plotera.
+
+### Test craftingu „Wyspa”
+
+Poziom z [POZIOM-WYSPA.md](POZIOM-WYSPA.md) (finał: [SPOILER-WYSPA.md](SPOILER-WYSPA.md)). Pliki:
+
+| Plik | Rola |
+|---|---|
+| `src/game/sim/craft.ts` | jądro craftingu gry: przedmioty (`ITEMS`, duże tylko na sankach), 8 przepisów (`RECIPES`), ekwipunek 6 miejsc. Osobno od dema „Warsztat” (`src/craft`), bo to tylko to, co testuje poziom. |
+| `src/game/sim/island.ts` | logika poziomu: mapa (elipsa wyspy, poza nią szklany żwir jak sypki popiół), panele i ich usterki, rozgałęźnik, regulator, zasilanie bunkra, drzwi, stół, kołyska, magazyn, terminal, sieć (`solve`), chmury (`shadeAt`), nauka przepisów z obserwacji, naprawa w miejscu (`plan` / `spend`), panel C (`craft` / `whyNot`), dziennik testu (`log`), finał |
+| `src/game/render/islandView.ts` | widok: szklana tafla z odłamkami, wyspa, stelaże i panele z lampkami, szafa, słupek, bunkier (dach znika, gdy Wolt jest w środku), kupki złomu, sanki z ładunkiem, cienie chmur, latarnia z obracającym się snopem, kopuła na horyzoncie |
+| `src/game/scenes/island.ts` | klej i HUD: Q-1 i słońce, „Q-1 analizuje”, linijka celu, sieć wyspy z licznikiem terminala, dok z 6 miejscami i sankami, panel C (cyfry 1–8), karta końca z dziennikiem testu (`localStorage` `pip.testWyspa`) |
+| `test/island.test.ts` | przejście drogą przez magazyn (od skrzyni do latarni, z przeciążeniem i mostkiem), bezpiecznik jako drugie wyjście, 900 W z sześciu paneli, nowy panel ze stołu, przepełniony ekwipunek, tryby `a` i `b`, bilans surowców dla drogi przez same panele, żwir i powrót |
+
+Przełączniki: `?craft=a` (tylko naprawa w miejscu), `?craft=b` (tylko panel C). W konsoli stan jest w `window.island`.
+
+Liczby to propozycje agenta, do strojenia po teście: panel 150 W, magazyn 0,4 kWh (czas gry ×40) i 600 W, terminal 900 W przez 90 s, przeciążenie przy 70%, sanki na 4 duże rzeczy, drzwi bunkra 3 m (sanki przejeżdżają).
 
 ## Decyzje Wojtka dotyczące gry
 

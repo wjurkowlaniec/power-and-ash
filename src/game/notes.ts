@@ -96,6 +96,22 @@ PRZYŁĄCZE · gniazdo, którym budynek przyjmuje prąd z zewnątrz.
 
 ROZDZIELNIA · stacja, która dzieli i kieruje prąd do odbiorców.`,
   },
+  kartkaWyspa: {
+    id: 'kartkaWyspa', label: 'Kartka na kontenerze na wyspie', script: 'hand', kind: 'instrukcja', sketch: `<svg viewBox="0 0 300 130"><rect x="14" y="14" width="40" height="22" ${INK}/><rect x="64" y="14" width="40" height="22" ${INK}/><rect x="114" y="14" width="40" height="22" ${INK}/><path d="M34 36 L150 80 M84 36 L150 80 M134 36 L150 80" ${INK}/><rect x="138" y="76" width="26" height="18" ${RED}/><circle cx="145" cy="85" r="2" fill="#8a2a1e"/><circle cx="157" cy="85" r="2" fill="#8a2a1e"/><path d="M151 94 L151 112 L220 112" ${INK}/><rect x="220" y="96" width="40" height="30" ${INK}/><path d="M236 104 L232 112 L240 112 L236 120" ${RED}/><path d="M176 36 L196 16 M196 36 L176 16" ${RED}/><rect x="170" y="14" width="32" height="22" ${INK} stroke-dasharray="3 3"/></svg>`, title: 'Kartka na kontenerze',
+    body: `Panele do skrzynki na słupku, skrzynka do szafy. Jedna linia, inaczej regulator wariuje. Czwarty stelaż pusty, panel poszedł na części.
+
+Bezpiecznik w szafie strzela przy każdej burzy. Zapasowe się skończyły.
+
+— M.`,
+  },
+  kartkaZawias: {
+    id: 'kartkaZawias', label: 'Kartka na drzwiach bunkra', script: 'hand', kind: 'instrukcja', sketch: `<svg viewBox="0 0 300 110"><rect x="40" y="10" width="70" height="90" ${INK}/><rect x="30" y="24" width="10" height="20" ${INK}/><rect x="30" y="66" width="10" height="20" ${INK}/><path d="M35 20 V90" ${RED}/><path d="M150 30 C150 30 138 48 138 56 A12 12 0 0 0 162 56 C162 48 150 30 150 30 Z" ${RED}/><path d="M190 50 H280 M196 44 V56 M274 44 V56" ${INK}/><text x="226" y="40" font-size="13" fill="#8a2a1e">1×</text></svg>`, title: 'Kartka na drzwiach bunkra',
+    body: `Zawias wyrwany, sworzeń gdzieś w popiele. Nowy z kawałka pręta i kropla oleju, inaczej nie ruszy. Zamek i tak bez prądu nie puści.`,
+  },
+  mapaMisji: {
+    id: 'mapaMisji', label: 'Dane z terminala na wyspie', script: 'image', kind: 'mapa', sketch: `<svg viewBox="0 0 300 140"><ellipse cx="60" cy="96" rx="34" ry="20" ${INK}/><path d="M74 88 V64 M70 64 H78" ${INK}/><path d="M80 66 L110 56 M80 62 L104 46" ${RED}/><path d="M150 96 A34 34 0 0 1 218 96 Z" ${INK}/><path d="M94 96 H150" ${INK} stroke-dasharray="4 4"/><path d="M218 90 C240 80 252 60 270 40" ${RED} stroke-dasharray="3 6"/><circle cx="272" cy="36" r="5" ${RED}/></svg>`, title: 'Dane z terminala: mapa',
+    body: `Terminal oddał to, co miał w pamięci, w formacie maszyn: rysunek. Wyspa z latarnią, kopuła na tafli, a od kopuły kropki dalej, aż do punktu, którego nie ma na żadnej mapie, jaką Wolt dotąd widział.`,
+  },
 };
 
 /** English text of the notes. The corpus each note adds is counted from the Polish original, so decoding moves at the same pace in both languages. */
@@ -162,6 +178,13 @@ INLET · a socket through which a building takes power from outside.
 
 SUBSTATION · a station that splits and routes power to consumers.`,
   },
+  kartkaWyspa: { label: 'Note on the container on the island', title: 'Note on the container', body: `Panels to the box on the post, the box to the cabinet. One line, or the regulator goes mad. The fourth stand is empty, that panel went for parts.
+
+The fuse in the cabinet blows with every storm. The spares are gone.
+
+— M.` },
+  kartkaZawias: { label: 'Note on the bunker door', title: 'Note on the bunker door', body: `The hinge is torn out, the pin somewhere in the ash. A new one from a bit of rod and a drop of oil, or it won't move. The lock won't give without power anyway.` },
+  mapaMisji: { label: 'Data from the island terminal', title: 'Terminal data: a map', body: `The terminal gave up what it held, in the machines' format: a drawing. The island with the lighthouse, the dome on the glass, and from the dome dots going further, to a point that is on no map Wolt has seen so far.` },
 };
 
 export const NOTES: Record<string, Note> = Object.fromEntries(Object.entries(NOTES_PL).map(([id, n]) => {

@@ -85,7 +85,7 @@ Pierwsza noc przychodzi niezależnie od postępu, zwykle w trakcie Sceny 2 albo 
 
 ## Scena 5. Rozdzielnia polowa i pierwszy pojazd (ok. 20 min)
 
-> **[propozycja 2026-11-17]** Projekt poziomu-testu craftingu w R-2 (naprawa paneli, drzwi bunkra, stół warsztatowy, terminal wymagający dużo prądu) jest w [POZIOM-R2.md](POZIOM-R2.md). Po akceptacji i teście zmieni opis poniżej.
+> **[2026-11-17]** Test craftingu, który miał być osadzony tutaj, Wojtek przeniósł na wyspę na Szklanym Zalewie: [POZIOM-WYSPA.md](POZIOM-WYSPA.md). Opis Sceny 5 poniżej zostaje bez zmian do czasu wniosków z testu.
 
 Rozdzielnia polowa R-2 stoi w kotlinie: kontenery, ogrodzenie, rząd paneli słonecznych (600 W, zakurzonych), mała szafa sterownicza. Pod wiatą stoi **wózek serwisowy misji**.
 
