@@ -82,7 +82,7 @@ Surowce jak w PLAN.md (M5): **miedź, plastik, żelazo, szkło**, plus **olej** 
 
 | Minuta | Etap | Co robi gracz | Wynik |
 |---|---|---|---|
-| 0:00–1:00 | **Przyjazd** | Wolt zjeżdża z Żaglowozu na przystań na rezerwie, wpina kabel własny w port szafy: cisza, lampka gaśnie. Panele nie są podłączone. Skan regulatora: spalony bezpiecznik, pierwsza obserwacja | cel: „prąd z paneli” |
+| 0:00–1:00 | **Przyjazd** (Q-1 ma 22%) | Wolt zjeżdża z Żaglowozu na przystań na rezerwie, wpina kabel własny w port szafy: cisza, lampka gaśnie. Panele nie są podłączone. Skan regulatora: spalony bezpiecznik, pierwsza obserwacja | cel: „prąd z paneli” |
 | 1:00–5:00 | **Panele** | P1 sprawny, ale ma zerwany kabel (kabel do rozgałęźnika, metry liczone od odległości). P2 ma pękniętą szybę: zamiana na szybę z wraku panelu na złomowisku. P3 ma spalone złącze: skan, przepis, złącze. P4 to pusty stelaż (na później). Rozgałęźnik (sześć gniazd, 3 m kabla do szafy) zbiera P1–P3 w jedną linię do regulatora, bezpiecznik w regulatorze. Kable owijają się o stelaże i kontenery | 3 × 150 W = **450 W** w słońcu, Wolt się ładuje, kolor obrazu wraca |
 | 5:00–7:00 | **Drzwi bunkra** | Zamek elektryczny dostaje prąd kablem z szafy, ale drzwi stoją: wyrwany zawias. Skan, sworzeń z żelaza, olej z beczki. Przytrzymaj E: drzwi się otwierają | wejście do bazy |
 | 7:00–8:30 | **Baza** | Stół warsztatowy (zasila go linia z paneli), terminal misji: ekran budzi się i odmawia, wymaga **900 W przez 90 s** do pobrania dziennika. Pod ścianą martwe akumulatory stacji (skan, przepis na magazyn). Kołyska w bunkrze ładuje Wolta | cel: „więcej prądu” i licznik W na terminalu |

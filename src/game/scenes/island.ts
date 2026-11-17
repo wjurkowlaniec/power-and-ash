@@ -37,10 +37,12 @@ export class IslandScene implements Scene {
 
   enter(c: Ctx) {
     this.view = new IslandView(this.st, c.app);
-    (window as unknown as { island: Island }).island = this.st;
+    // for the console and the browser playtests: state and the view's projection
+    Object.assign(window, { island: this.st, islandView: this.view });
     c.fx.black = 1; c.fx.grain = 0.12; c.fx.lines = 0; c.fx.dot = { a: 0, r: 0 };
     c.sound.muffle = 0; c.sound.wind = 0.8;
     this.el = document.createElement('div');
+    this.el.className = 'island-hud';
     this.el.innerHTML = `
       <div class="lcol"><div class="vitals" id="iVitals"></div><div class="think" id="iThink" hidden></div><div class="goal" id="iGoal"></div></div>
       <div class="grid" id="iGrid" hidden></div>
